@@ -4,10 +4,9 @@ Recruiter-facing static portfolio for **YoungJun Ryu**, focused on software engi
 
 ## Highlights
 
-- Original project identities and inline SVG artwork for Kestrel, Aster, GTStinger, and LastRide.
-- Resume-aligned experience and metrics.
-- Dark/light themes with saved preference.
-- Interactive project cards, command palette (`/`), animated signal network, and Byteberry mascot.
+- Original project identities and SVG artwork for Kestrel, Aster, GTStinger, and LastRide.
+- Content aligned to the current application resume.
+- Dark/light themes, animated signal network, recruiter-mode shortcuts, case-study interactions, and Byteberry.
 - Responsive and reduced-motion accessible.
 - Zero framework/build dependency: pure HTML, CSS, and JavaScript.
 
@@ -20,8 +19,6 @@ python3 -m http.server 8000
 
 ## GitHub Pages
 
-This repository is ready to serve from its root. In GitHub, enable **Settings → Pages → Deploy from a branch**, then select `main` / `/ (root)`.
+Enable **Settings → Pages → Deploy from a branch**, then select `main` and `/ (root)`.
 
-## Source of truth
-
-The downloadable resume is `YoungJun_Ryu_Resume.pdf`. Update that file and the corresponding public-facing content together when experience or metrics change.
+The recruiter-readable resume lives at `resume.html` and mirrors the current application resume.
