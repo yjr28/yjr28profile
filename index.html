@@ -1,12 +1,147 @@
-<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="YoungJun Ryu — software engineer building distributed systems, hybrid-cloud backend infrastructure, AI/ML infrastructure, and full-stack products."><meta name="theme-color" content="#06101d"><meta name="robots" content="index,follow"><meta property="og:title" content="YoungJun Ryu — Software Engineer"><meta property="og:description" content="Systems, hybrid cloud, AI, infrastructure, and product engineering."><meta property="og:type" content="website"><title>YoungJun Ryu — Software Engineer</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="base.css"><link rel="stylesheet" href="components.css"><link rel="stylesheet" href="responsive.css"></head><body>
-<div class="boot"><div class="boot-logo">YJ<i></i></div><span>INITIALIZING PORTFOLIO</span></div><canvas id="net" aria-hidden="true"></canvas><div class="noise"></div><div class="glow"></div>
-<header><a class="brand" href="#top"><b>YJ</b><span>YoungJun Ryu</span></a><nav><a href="#experience">Experience</a><a href="#projects">Projects</a><a href="#skills">Skills</a><a href="#about">About</a></nav><div class="head-actions"><button id="cmd" title="Recruiter mode">⌘ /</button><button id="theme" title="Toggle theme">◐</button></div></header>
-<main id="top"><section class="hero shell"><div class="hero-copy reveal"><div class="available"><i></i>OPEN TO SUMMER 2027 SWE / SYSTEMS / AI INTERNSHIPS</div><p class="eyebrow">// <span id="role">SOFTWARE ENGINEER</span><em>▋</em></p><h1>YoungJun <span>Ryu</span></h1><p class="lede">I build <strong>high-leverage software under real constraints</strong> — from 250k+ record/day production systems and hybrid-cloud server management to distributed replay, learned query optimization, and multimodal routing.</p><div class="buttons"><a class="primary" href="#projects">Explore Projects ↘</a><a href="#experience">View Experience →</a><a href="resume.html" target="_blank">Resume ↗</a></div><div class="social"><a href="https://github.com/yjr28" target="_blank">GitHub</a><a href="https://www.linkedin.com/in/youngjun-ryu-845618256/" target="_blank">LinkedIn</a><a href="mailto:yryu43@gatech.edu">Email</a></div></div><aside class="console reveal"><div class="console-top"><span>● ● ●</span><code>profile.json</code><b>LIVE</b></div><pre><i>01</i> <b>const</b> engineer = {
-<i>02</i>   focus: <q>systems + cloud + product</q>,
-<i>03</i>   stack: [<q>Go</q>, <q>C++</q>, <q>Java</q>, <q>Python</q>],
-<i>04</i>   infra: [<q>AWS</q>, <q>Docker</q>, <q>Jenkins</q>],
-<i>05</i>   mode: <q>measure → build → verify</q>
-<i>06</i> };</pre><div class="console-stats"><div><strong>250k+</strong><small>records / day</small></div><div><strong>550 ms</strong><small>p95 from 1.8 s</small></div><div><strong>16/1,842</strong><small>top 0.9%</small></div></div></aside></section>
-<div class="ticker"><div>DISTRIBUTED SYSTEMS ✦ AI + ML ✦ CLOUD INFRASTRUCTURE ✦ FULL-STACK ENGINEERING ✦ PERFORMANCE ✦ DISTRIBUTED SYSTEMS ✦ AI + ML ✦ CLOUD INFRASTRUCTURE ✦ FULL-STACK ENGINEERING ✦ PERFORMANCE ✦</div></div><section class="proof shell reveal"><div><small>REPORT PREP</small><strong>−81%</strong><span>2 days → 3 hours</span></div><div><small>PRODUCTION DATA</small><strong>250k+</strong><span>records / day</span></div><div><small>QA REVIEW</small><strong>−80%</strong><span>21.6 → 4.3 min</span></div><div><small>STUDY HUB</small><strong>3,500+</strong><span>connections</span></div></section>
-<div id="experienceSlot"></div><div id="projectsSlot"></div><div id="skillsSlot"></div><div id="aboutSlot"></div><div id="contactSlot"></div></main>
-<footer class="shell"><span>© 2026 YoungJun Ryu</span><span>Designed & engineered from scratch</span><a href="#top">Back to top ↑</a></footer><button class="berry" id="berry" aria-label="Open Byteberry"><span>⌁</span></button><div class="berry-tip" id="tip"><b>BYTEBERRY</b><span>Press / for recruiter mode.</span></div><div class="shade" id="shade" hidden></div><dialog id="palette"><div class="palette-head"><div><b>YJ / RECRUITER MODE</b><small>Jump to signal fast</small></div><button id="close">ESC</button></div><a href="#experience"><kbd>1</kbd>Experience</a><a href="#projects"><kbd>2</kbd>Projects</a><a href="#skills"><kbd>3</kbd>Skills</a><a href="#about"><kbd>4</kbd>Education & Honors</a><a href="resume.html" target="_blank"><kbd>R</kbd>Resume ↗</a><a href="https://www.linkedin.com/in/youngjun-ryu-845618256/" target="_blank"><kbd>L</kbd>LinkedIn ↗</a><a href="https://github.com/yjr28" target="_blank"><kbd>G</kbd>GitHub ↗</a></dialog><dialog id="case"><button class="case-close">×</button><small id="case-kicker"></small><h3 id="case-title"></h3><p id="case-text"></p><div id="case-list"></div></dialog><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="YoungJun Ryu — software engineer building backend systems, cloud infrastructure, distributed software, ML systems, and product experiments.">
+  <meta name="theme-color" content="#07030f">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="YoungJun Ryu — Software Engineer">
+  <meta property="og:description" content="Backend systems, distributed software, cloud infrastructure, ML systems, and products.">
+  <meta property="og:type" content="website">
+  <title>YoungJun Ryu — Software Engineer</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+  <div class="boot" aria-hidden="true">
+    <div class="boot-mark"><span>YJ</span><i></i></div>
+    <div class="boot-copy"><b>PORTFOLIO.SYSTEM</b><span>routing signal…</span></div>
+  </div>
+
+  <div class="ambient" aria-hidden="true">
+    <div class="aurora a"></div><div class="aurora b"></div><div class="grain"></div>
+  </div>
+  <canvas id="net" aria-hidden="true"></canvas>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Home">
+      <span class="brand-mark">YJ</span>
+      <span class="brand-copy"><b>YOUNGJUN RYU</b><small>PORTFOLIO / 2026</small></span>
+    </a>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="#experience"><i>01</i>Experience</a>
+      <a href="#projects"><i>02</i>Projects</a>
+      <a href="#skills"><i>03</i>Stack</a>
+      <a href="#about"><i>04</i>About</a>
+    </nav>
+    <button class="cmd-button" id="cmd" type="button" aria-label="Open quick navigation"><kbd>/</kbd><span>JUMP</span></button>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy reveal">
+        <div class="signal-status"><i></i><span>OPEN TO SUMMER 2027 SOFTWARE / SYSTEMS / AI INTERNSHIPS</span></div>
+        <p class="hero-kicker">TOKYO ⇄ ATLANTA <em>//</em> SOFTWARE + SYSTEMS</p>
+        <h1><span>YOUNGJUN</span><strong>RYU</strong></h1>
+        <p class="lede">I build software where <b>correctness, scale, and messy real-world constraints</b> meet — backend infrastructure, distributed systems, ML tooling, and products that have to work outside a demo.</p>
+        <div class="hero-actions">
+          <a class="action primary magnetic" href="#projects"><span>ENTER PROJECTS</span><b>↘</b></a>
+          <a class="action magnetic" href="#experience"><span>VIEW EXPERIENCE</span><b>→</b></a>
+          <a class="text-link" href="resume.html" target="_blank" rel="noreferrer">RESUME ↗</a>
+        </div>
+        <div class="hero-links">
+          <a href="https://github.com/yjr28" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://www.linkedin.com/in/youngjun-ryu-845618256/" target="_blank" rel="noreferrer">LinkedIn</a>
+          <a href="mailto:yryu43@gatech.edu">Email</a>
+        </div>
+      </div>
+
+      <div class="hero-scene reveal" id="heroScene" aria-hidden="true">
+        <div class="scene-grid"></div>
+        <div class="scene-orbit orbit-a"></div>
+        <div class="scene-orbit orbit-b"></div>
+        <div class="scene-cable cable-a"></div>
+        <div class="scene-cable cable-b"></div>
+        <div class="scene-sign">
+          <small>NIGHT SHIFT / BUILD MODE</small>
+          <strong>YJ SYSTEMS</strong>
+          <span>backend · infra · ml · product</span>
+        </div>
+        <div class="scene-rack rack-a"><i></i><i></i><i></i><b>API</b></div>
+        <div class="scene-rack rack-b"><i></i><i></i><i></i><b>DATA</b></div>
+        <div class="scene-rack rack-c"><i></i><i></i><i></i><b>ML</b></div>
+        <div class="scene-terminal">
+          <span class="terminal-top">RUN / PROFILE</span>
+          <code><i>250k+</i> records/day<br><i>25k+</i> req/s replay<br><i>14</i> scoped tools</code>
+        </div>
+        <div class="scene-platform"></div>
+        <div class="scene-lamp lamp-a"></div>
+        <div class="scene-lamp lamp-b"></div>
+        <div class="scene-node node-a"></div>
+        <div class="scene-node node-b"></div>
+        <div class="scene-node node-c"></div>
+        <div class="scene-label label-a">AWS</div>
+        <div class="scene-label label-b">eBPF</div>
+        <div class="scene-label label-c">POSTGRES</div>
+      </div>
+    </section>
+
+    <section class="signal-strip" aria-label="Selected engineering metrics">
+      <div class="signal-track">
+        <span><b>250K+</b> RECORDS / DAY</span>
+        <span><b>1,200+</b> AUTOMATED TESTS</span>
+        <span><b>25K+</b> REQ / S</span>
+        <span><b>2.34×</b> QUERY EXECUTION</span>
+        <span><b>1ST / 52</b> SHIPATON</span>
+        <span><b>250K+</b> RECORDS / DAY</span>
+        <span><b>1,200+</b> AUTOMATED TESTS</span>
+        <span><b>25K+</b> REQ / S</span>
+        <span><b>2.34×</b> QUERY EXECUTION</span>
+        <span><b>1ST / 52</b> SHIPATON</span>
+      </div>
+    </section>
+
+    <div id="experienceSlot"></div>
+    <div id="projectsSlot"></div>
+    <div id="skillsSlot"></div>
+    <div id="aboutSlot"></div>
+    <div id="contactSlot"></div>
+  </main>
+
+  <footer class="shell footer">
+    <span>© 2026 YOUNGJUN RYU</span>
+    <span>DESIGNED + ENGINEERED FROM SCRATCH</span>
+    <a href="#top">RETURN TO SIGNAL ↑</a>
+  </footer>
+
+  <button class="floating-node" id="berry" aria-label="Portfolio signal node"><span>⌁</span></button>
+  <div class="node-tip" id="tip"><b>SIGNAL NODE</b><span>Press / to jump anywhere.</span></div>
+
+  <div class="shade" id="shade" hidden></div>
+  <dialog id="palette">
+    <div class="palette-head">
+      <div><b>YJ / SIGNAL ROUTER</b><small>keyboard-first navigation</small></div>
+      <button id="close" type="button">ESC</button>
+    </div>
+    <a href="#experience"><kbd>1</kbd><span>Experience</span></a>
+    <a href="#projects"><kbd>2</kbd><span>Projects</span></a>
+    <a href="#skills"><kbd>3</kbd><span>Technical stack</span></a>
+    <a href="#about"><kbd>4</kbd><span>About + education</span></a>
+    <a href="resume.html" target="_blank"><kbd>R</kbd><span>Resume ↗</span></a>
+    <a href="https://github.com/yjr28" target="_blank"><kbd>G</kbd><span>GitHub ↗</span></a>
+  </dialog>
+
+  <dialog id="case">
+    <button class="case-close" type="button" aria-label="Close">×</button>
+    <small id="case-kicker"></small>
+    <h3 id="case-title"></h3>
+    <p id="case-text"></p>
+    <div id="case-list"></div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
