@@ -2,146 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="YoungJun Ryu — software engineer building backend systems, cloud infrastructure, distributed software, ML systems, and product experiments.">
-  <meta name="theme-color" content="#07030f">
-  <meta name="robots" content="index,follow">
-  <meta property="og:title" content="YoungJun Ryu — Software Engineer">
-  <meta property="og:description" content="Backend systems, distributed software, cloud infrastructure, ML systems, and products.">
-  <meta property="og:type" content="website">
-  <title>YoungJun Ryu — Software Engineer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="YoungJun Ryu — software engineer building backend systems, distributed software, cloud infrastructure, ML systems, and products.">
+  <meta name="theme-color" content="#05020b">
+  <title>YoungJun Ryu — Night Lab</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="base.css">
   <link rel="stylesheet" href="components.css">
   <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
-  <div class="boot" aria-hidden="true">
-    <div class="boot-mark"><span>YJ</span><i></i></div>
-    <div class="boot-copy"><b>PORTFOLIO.SYSTEM</b><span>routing signal…</span></div>
+  <div id="boot" class="boot" aria-live="polite">
+    <div class="boot-mark">YJ</div>
+    <div class="boot-copy">
+      <b>INITIALIZING NIGHT LAB</b>
+      <span id="bootStatus">loading environment…</span>
+    </div>
   </div>
 
-  <div class="ambient" aria-hidden="true">
-    <div class="aurora a"></div><div class="aurora b"></div><div class="grain"></div>
-  </div>
-  <canvas id="net" aria-hidden="true"></canvas>
+  <main class="world-shell" aria-label="YoungJun Ryu interactive portfolio">
+    <canvas id="world" aria-label="Interactive 3D cyberpunk systems workshop"></canvas>
 
-  <header class="topbar">
-    <a class="brand" href="#top" aria-label="Home">
-      <span class="brand-mark">YJ</span>
-      <span class="brand-copy"><b>YOUNGJUN RYU</b><small>PORTFOLIO / 2026</small></span>
-    </a>
-    <nav class="nav" aria-label="Primary navigation">
-      <a href="#experience"><i>01</i>Experience</a>
-      <a href="#projects"><i>02</i>Projects</a>
-      <a href="#skills"><i>03</i>Stack</a>
-      <a href="#about"><i>04</i>About</a>
-    </nav>
-    <button class="cmd-button" id="cmd" type="button" aria-label="Open quick navigation"><kbd>/</kbd><span>JUMP</span></button>
-  </header>
-
-  <main id="top">
-    <section class="hero shell">
-      <div class="hero-copy reveal">
-        <div class="signal-status"><i></i><span>OPEN TO SUMMER 2027 SOFTWARE / SYSTEMS / AI INTERNSHIPS</span></div>
-        <p class="hero-kicker">TOKYO ⇄ ATLANTA <em>//</em> SOFTWARE + SYSTEMS</p>
-        <h1><span>YOUNGJUN</span><strong>RYU</strong></h1>
-        <p class="lede">I build software where <b>correctness, scale, and messy real-world constraints</b> meet — backend infrastructure, distributed systems, ML tooling, and products that have to work outside a demo.</p>
-        <div class="hero-actions">
-          <a class="action primary magnetic" href="#projects"><span>ENTER PROJECTS</span><b>↘</b></a>
-          <a class="action magnetic" href="#experience"><span>VIEW EXPERIENCE</span><b>→</b></a>
-          <a class="text-link" href="resume.html" target="_blank" rel="noreferrer">RESUME ↗</a>
-        </div>
-        <div class="hero-links">
-          <a href="https://github.com/yjr28" target="_blank" rel="noreferrer">GitHub</a>
-          <a href="https://www.linkedin.com/in/youngjun-ryu-845618256/" target="_blank" rel="noreferrer">LinkedIn</a>
-          <a href="mailto:yryu43@gatech.edu">Email</a>
-        </div>
+    <div class="hud hud-top">
+      <a class="identity" href="#" data-open="home" aria-label="YoungJun Ryu home">
+        <span class="identity-mark">YJ</span>
+        <span><b>YOUNGJUN RYU</b><small>SOFTWARE ENGINEER / TOKYO ⇄ ATLANTA</small></span>
+      </a>
+      <div class="hud-links">
+        <a href="resume.html" target="_blank" rel="noreferrer">RESUME ↗</a>
+        <a href="https://github.com/yjr28" target="_blank" rel="noreferrer">GITHUB ↗</a>
+        <a href="https://www.linkedin.com/in/youngjun-ryu-845618256/" target="_blank" rel="noreferrer">LINKEDIN ↗</a>
       </div>
+    </div>
 
-      <div class="hero-scene reveal" id="heroScene" aria-hidden="true">
-        <div class="scene-grid"></div>
-        <div class="scene-orbit orbit-a"></div>
-        <div class="scene-orbit orbit-b"></div>
-        <div class="scene-cable cable-a"></div>
-        <div class="scene-cable cable-b"></div>
-        <div class="scene-sign">
-          <small>NIGHT SHIFT / BUILD MODE</small>
-          <strong>YJ SYSTEMS</strong>
-          <span>backend · infra · ml · product</span>
-        </div>
-        <div class="scene-rack rack-a"><i></i><i></i><i></i><b>API</b></div>
-        <div class="scene-rack rack-b"><i></i><i></i><i></i><b>DATA</b></div>
-        <div class="scene-rack rack-c"><i></i><i></i><i></i><b>ML</b></div>
-        <div class="scene-terminal">
-          <span class="terminal-top">RUN / PROFILE</span>
-          <code><i>250k+</i> records/day<br><i>25k+</i> req/s replay<br><i>14</i> scoped tools</code>
-        </div>
-        <div class="scene-platform"></div>
-        <div class="scene-lamp lamp-a"></div>
-        <div class="scene-lamp lamp-b"></div>
-        <div class="scene-node node-a"></div>
-        <div class="scene-node node-b"></div>
-        <div class="scene-node node-c"></div>
-        <div class="scene-label label-a">AWS</div>
-        <div class="scene-label label-b">eBPF</div>
-        <div class="scene-label label-c">POSTGRES</div>
+    <div class="intro-copy" id="introCopy">
+      <p class="eyebrow">WELCOME TO THE NIGHT LAB</p>
+      <h1>YOUNGJUN<br><span>RYU</span></h1>
+      <p class="intro-lede">Backend systems, distributed software, infrastructure, ML systems, and products — explored as one engineering world.</p>
+      <div class="intro-meta">
+        <span><i></i> OPEN TO SUMMER 2027</span>
+        <span>WASEDA / GEORGIA TECH</span>
       </div>
-    </section>
+    </div>
 
-    <section class="signal-strip" aria-label="Selected engineering metrics">
-      <div class="signal-track">
-        <span><b>250K+</b> RECORDS / DAY</span>
-        <span><b>1,200+</b> AUTOMATED TESTS</span>
-        <span><b>25K+</b> REQ / S</span>
-        <span><b>2.34×</b> QUERY EXECUTION</span>
-        <span><b>1ST / 52</b> SHIPATON</span>
-        <span><b>250K+</b> RECORDS / DAY</span>
-        <span><b>1,200+</b> AUTOMATED TESTS</span>
-        <span><b>25K+</b> REQ / S</span>
-        <span><b>2.34×</b> QUERY EXECUTION</span>
-        <span><b>1ST / 52</b> SHIPATON</span>
+    <div class="interaction-hint" id="interactionHint">
+      <span class="mouse-icon"><i></i></span>
+      <div><b>DRAG TO LOOK AROUND</b><small>click the neon signs to explore</small></div>
+    </div>
+
+    <div class="hover-label" id="hoverLabel" hidden></div>
+
+    <div class="hud hud-bottom">
+      <div class="world-nav" aria-label="Portfolio sections">
+        <button data-open="projects"><span>01</span>PROJECTS</button>
+        <button data-open="experience"><span>02</span>EXPERIENCE</button>
+        <button data-open="stack"><span>03</span>STACK</button>
+        <button data-open="about"><span>04</span>ABOUT</button>
+        <button data-open="contact"><span>05</span>CONTACT</button>
       </div>
-    </section>
+      <div class="camera-status"><span id="zoneName">ENTRY PLATFORM</span><b id="fpsHint">LIVE 3D</b></div>
+    </div>
 
-    <div id="experienceSlot"></div>
-    <div id="projectsSlot"></div>
-    <div id="skillsSlot"></div>
-    <div id="aboutSlot"></div>
-    <div id="contactSlot"></div>
+    <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Portfolio content">
+      <div class="drawer-chrome">
+        <div><span id="drawerIndex">01</span><b id="drawerKicker">PROJECT ARCHIVE</b></div>
+        <button id="drawerClose" type="button" aria-label="Close panel">×</button>
+      </div>
+      <div class="drawer-scroll" id="drawerContent"></div>
+    </aside>
+
+    <div class="mobile-fallback" id="mobileFallback" hidden>
+      <button data-open="projects">Projects</button>
+      <button data-open="experience">Experience</button>
+      <button data-open="stack">Stack</button>
+      <button data-open="about">About</button>
+      <button data-open="contact">Contact</button>
+    </div>
   </main>
 
-  <footer class="shell footer">
-    <span>© 2026 YOUNGJUN RYU</span>
-    <span>DESIGNED + ENGINEERED FROM SCRATCH</span>
-    <a href="#top">RETURN TO SIGNAL ↑</a>
-  </footer>
+  <noscript>
+    <section class="noscript">
+      <h1>YoungJun Ryu</h1>
+      <p>Software engineer focused on backend systems, infrastructure, distributed software, ML systems, and product engineering.</p>
+      <p><a href="resume.html">View resume</a> · <a href="https://github.com/yjr28">GitHub</a> · <a href="mailto:yryu43@gatech.edu">Email</a></p>
+    </section>
+  </noscript>
 
-  <button class="floating-node" id="berry" aria-label="Portfolio signal node"><span>⌁</span></button>
-  <div class="node-tip" id="tip"><b>SIGNAL NODE</b><span>Press / to jump anywhere.</span></div>
-
-  <div class="shade" id="shade" hidden></div>
-  <dialog id="palette">
-    <div class="palette-head">
-      <div><b>YJ / SIGNAL ROUTER</b><small>keyboard-first navigation</small></div>
-      <button id="close" type="button">ESC</button>
-    </div>
-    <a href="#experience"><kbd>1</kbd><span>Experience</span></a>
-    <a href="#projects"><kbd>2</kbd><span>Projects</span></a>
-    <a href="#skills"><kbd>3</kbd><span>Technical stack</span></a>
-    <a href="#about"><kbd>4</kbd><span>About + education</span></a>
-    <a href="resume.html" target="_blank"><kbd>R</kbd><span>Resume ↗</span></a>
-    <a href="https://github.com/yjr28" target="_blank"><kbd>G</kbd><span>GitHub ↗</span></a>
-  </dialog>
-
-  <dialog id="case">
-    <button class="case-close" type="button" aria-label="Close">×</button>
-    <small id="case-kicker"></small>
-    <h3 id="case-title"></h3>
-    <p id="case-text"></p>
-    <div id="case-list"></div>
-  </dialog>
-
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
