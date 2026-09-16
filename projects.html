@@ -1,1 +1,160 @@
-<section id="projects" class="section shell"><div class="heading reveal"><small>02 / SELECTED WORK</small><div><h2>Featured Projects</h2><p>Different problems, same rule: make the behavior measurable.</p></div></div><div class="projects"><article class="project card reveal" style="grid-column:1/-1"><div class="art"><img src="assets/northstar.svg" alt="Northstar hybrid-cloud server management architecture"><span>01</span><b>HYBRID CLOUD</b></div><div class="project-body"><div class="project-title"><h3>Northstar</h3><small>HYBRID-CLOUD SERVER MANAGEMENT PLATFORM</small></div><p>A reusable client-server management platform for 100 simulated hosts, combining C firmware telemetry, C++ Linux agents, a Java server application, REST/JSON Web Services over HTTP/TCP, and PostgreSQL.</p><div class="metrics"><span><b>100</b> simulated hosts</span><span><b>12</b> documented endpoints</span><span><b>2</b> deploy targets</span></div><div class="project-foot"><div class="tags"><i>C/C++</i><i>Java</i><i>PostgreSQL</i><i>Docker</i><i>AWS</i><i>Jenkins</i></div><button data-case="northstar">Case study ↗</button></div></div></article><article class="project wide card reveal"><div class="art"><img src="assets/kestrel.svg" alt="Original Kestrel project logo"><span>02</span><b>SYSTEMS</b></div><div class="project-body"><div class="project-title"><h3>Kestrel</h3><small>DISTRIBUTED SYSTEMS FLIGHT RECORDER</small></div><p>Failure replay and root-cause tooling combining application traces with low-level runtime/network evidence using Go, Rust/eBPF, gRPC, and OpenTelemetry.</p><div class="metrics"><span><b>97%</b> failures replayed</span><span><b>25k+</b> req/s</span><span><b>&lt;4.2%</b> p95 overhead</span></div><div class="project-foot"><div class="tags"><i>Go</i><i>Rust/eBPF</i><i>gRPC</i><i>OpenTelemetry</i></div><a href="https://github.com/yjr28/kestrel-replay" target="_blank">GitHub ↗</a></div></div></article><article class="project card reveal"><div class="art"><img src="assets/aster.svg" alt="Original Aster project logo"><span>03</span><b>LEARNED DB</b></div><div class="project-body"><div class="project-title"><h3>Aster</h3><small>LEARNED POSTGRESQL OPTIMIZER</small></div><p>Graph-based query-plan ranking with uncertainty-aware fallback and low selection overhead.</p><div class="metrics"><span><b>2.34×</b> geo-mean</span><span><b>−41%</b> p95</span><span><b>&lt;7ms</b> select</span></div><div class="project-foot"><div class="tags"><i>PostgreSQL</i><i>Graph ML</i><i>PyTorch</i></div><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank">GitHub ↗</a></div></div></article><article class="project card reveal"><div class="art"><img src="assets/stinger.svg" alt="Original GTStinger project logo"><span>04</span><b>ROUTING</b></div><div class="project-body"><div class="project-title"><h3>GTStinger</h3><small>MULTIMODAL CAMPUS NAVIGATOR</small></div><p>Real-time transit routing with arrival calibration, personalized walking speeds, transfer buffers, failover, and offline caching.</p><div class="metrics"><span><b>−72%</b> ETA MAE</span><span><b>99%</b> routes</span><span><b>184ms</b> recompute</span></div><div class="project-foot"><div class="tags"><i>GTFS-RT</i><i>Routing</i><i>Offline Cache</i></div><button data-case="stinger">Case study ↗</button></div></div></article><article class="project wide card reveal"><div class="art"><img src="assets/lastride.svg" alt="Original LastRide project logo"><span>05</span><b class="gold">🏆 SHIPATON GRAND PRIZE</b></div><div class="project-body"><div class="project-title"><h3>LastRide</h3><small>MOBILE PRODUCT / HACKATHON WINNER</small></div><p>A location-aware night-out companion for Japan that helps users catch the last useful train and recover with practical alternatives when the original plan fails.</p><div class="project-foot"><div class="tags"><i>TypeScript</i><i>Expo</i><i>Mapbox</i><i>Location</i><i>Notifications</i></div><button data-case="lastride">Case study ↗</button></div></div></article></div></section>
+<section id="projects" class="section projects-section">
+  <div class="shell">
+    <div class="section-heading reveal">
+      <div class="section-index"><span>02</span><i></i></div>
+      <div>
+        <p class="section-kicker">BUILT / BENCHMARKED / SHIPPED</p>
+        <h2>Projects as systems, not screenshots.</h2>
+        <p class="section-intro">Each one starts from a different constraint: observability, routing, query planning, hybrid cloud, product timing, or research validity. The common thread is making behavior measurable.</p>
+      </div>
+    </div>
+
+    <div class="project-switchboard reveal" role="group" aria-label="Project filter">
+      <button class="active" data-filter="all">ALL <b>10</b></button>
+      <button data-filter="systems">SYSTEMS</button>
+      <button data-filter="backend">BACKEND</button>
+      <button data-filter="ml">ML / RESEARCH</button>
+      <button data-filter="product">PRODUCT</button>
+    </div>
+  </div>
+
+  <div class="project-stack shell">
+    <article class="project-row reveal" data-tags="systems backend cloud">
+      <div class="project-visual visual-northstar">
+        <span class="project-number">P01</span><span class="project-signal">HYBRID CLOUD</span>
+        <img src="assets/northstar.svg" alt="">
+        <div class="visual-caption"><b>100</b><span>simulated hosts</span></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>SYSTEMS / CLOUD</small><h3>Northstar</h3></div><span>2026</span></div>
+        <p>A reusable hybrid-cloud server management platform: C firmware telemetry, a C++ Linux host agent, Java control plane, REST/JSON services over HTTP/TCP, PostgreSQL, Docker, KVM, and AWS deployment.</p>
+        <div class="project-metrics"><span><b>100</b> simulated hosts</span><span><b>12</b> documented endpoints</span><span><b>2</b> deploy targets</span></div>
+        <div class="project-footer"><div>C/C++ · Java · PostgreSQL · Docker · AWS · Jenkins</div><button data-case="northstar">OPEN CASE FILE ↗</button></div>
+      </div>
+    </article>
+
+    <article class="project-row reverse reveal" data-tags="backend systems cloud">
+      <div class="project-visual visual-relay">
+        <span class="project-number">P02</span><span class="project-signal">EVENT PIPELINE</span>
+        <div class="relay-art"><i></i><i></i><i></i><i></i><b>RELAY</b></div>
+        <div class="visual-caption"><b>DLQ</b><span>retries + backpressure</span></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>BACKEND / DISTRIBUTED DATA</small><h3>Relay</h3></div><span>2026</span></div>
+        <p>A production-style event and analytics pipeline combining a Django API and React/TypeScript client with Kafka, Go workers, MySQL, ClickHouse, Redis, tracing, retries, dead-letter handling, and Terraform/AWS infrastructure.</p>
+        <div class="project-metrics"><span><b>Kafka</b> event backbone</span><span><b>Go</b> workers</span><span><b>AWS</b> IaC</span></div>
+        <div class="project-footer"><div>Django · React · Kafka · ClickHouse · Redis · Go · Terraform</div><button data-case="relay">OPEN CASE FILE ↗</button></div>
+      </div>
+    </article>
+
+    <article class="project-row reveal" data-tags="systems backend">
+      <div class="project-visual visual-kestrel">
+        <span class="project-number">P03</span><span class="project-signal">FAILURE REPLAY</span>
+        <img src="assets/kestrel.svg" alt="">
+        <div class="visual-caption"><b>97%</b><span>failures replayed</span></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>DISTRIBUTED SYSTEMS</small><h3>Kestrel</h3></div><span>2026</span></div>
+        <p>A Linux flight recorder for distributed failures, joining application traces with low-level runtime/network evidence and deterministic replay.</p>
+        <div class="project-metrics"><span><b>97%</b> injected failures replayed</span><span><b>25k+</b> req/s</span><span><b>&lt;4.2%</b> p95 overhead</span><span><b>−85%</b> root-cause time</span></div>
+        <div class="project-footer"><div>Go · Rust/eBPF · gRPC · OpenTelemetry · Docker/K8s</div><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">GITHUB ↗</a></div>
+      </div>
+    </article>
+
+    <article class="project-row reverse reveal" data-tags="ml backend research">
+      <div class="project-visual visual-aster">
+        <span class="project-number">P04</span><span class="project-signal">LEARNED DATABASE</span>
+        <img src="assets/aster.svg" alt="">
+        <div class="visual-caption"><b>2.34×</b><span>geo-mean execution</span></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>DATABASES / ML</small><h3>Aster</h3></div><span>2026</span></div>
+        <p>A learned PostgreSQL query-plan ranker trained over 180k+ plans, with uncertainty-aware fallback designed to improve execution without making selection overhead the new bottleneck.</p>
+        <div class="project-metrics"><span><b>180k+</b> plans</span><span><b>2.34×</b> geo-mean</span><span><b>−41%</b> p95 latency</span><span><b>&lt;7 ms</b> selection</span></div>
+        <div class="project-footer"><div>PostgreSQL · Graph ML · PyTorch · Evaluation</div><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">GITHUB ↗</a></div>
+      </div>
+    </article>
+
+    <article class="project-row reveal" data-tags="product backend systems">
+      <div class="project-visual visual-stinger">
+        <span class="project-number">P05</span><span class="project-signal">REAL-TIME ROUTING</span>
+        <img src="assets/stinger.svg" alt="">
+        <div class="visual-caption"><b>184 ms</b><span>median recompute</span></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>ROUTING / MOBILE PRODUCT</small><h3>GTStinger</h3></div><span>2026 —</span></div>
+        <p>A multimodal Georgia Tech navigator built around useful arrival estimates instead of static directions: GTFS-Realtime, calibration, personalized walking speeds, transfer buffers, provider failover, and offline caching.</p>
+        <div class="project-metrics"><span><b>−72%</b> ETA MAE</span><span><b>99%</b> valid-route rate</span><span><b>300</b> campus routes</span><span><b>184 ms</b> recompute</span></div>
+        <div class="project-footer"><div>GTFS-RT · Routing graphs · Offline cache · Failover</div><button data-case="stinger">OPEN CASE FILE ↗</button></div>
+      </div>
+    </article>
+
+    <article class="project-row reverse reveal" data-tags="product">
+      <div class="project-visual visual-lastride">
+        <span class="project-number">P06</span><span class="project-signal gold">🏆 1ST / 52</span>
+        <img src="assets/lastride.svg" alt="">
+        <div class="visual-caption"><b>SHIPATON</b><span>grand prize</span></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>MOBILE PRODUCT / HACKATHON</small><h3>LastRide</h3></div><span>2026</span></div>
+        <p>A Japan-focused night-out companion that works backward from the last useful train, then pivots into practical recovery choices when the original plan fails.</p>
+        <div class="project-metrics"><span><b>1st / 52</b> Shipaton</span><span><b>location</b> aware</span><span><b>leave-by</b> reminders</span></div>
+        <div class="project-footer"><div>TypeScript · Expo · Mapbox · Location · Notifications</div><button data-case="lastride">OPEN CASE FILE ↗</button></div>
+      </div>
+    </article>
+
+    <article class="project-row reveal" data-tags="product backend">
+      <div class="project-visual visual-studyhub">
+        <span class="project-number">P07</span><span class="project-signal">CAMPUS SOCIAL</span>
+        <div class="study-art"><span></span><span></span><span></span><span></span><b>W</b></div>
+        <div class="visual-caption"><b>3,500+</b><span>study connections</span></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>COLLABORATIVE PRODUCT</small><h3>Waseda Study Hub</h3></div><span>2026 —</span></div>
+        <p>A student matching and study-discovery product spanning profiles, course/topic search, study-buddy discovery, study spots, onboarding, responsive UI, and FastAPI/Firebase integration.</p>
+        <div class="project-metrics"><span><b>1,200+</b> students</span><span><b>3,500+</b> connections</span><span><b>48%</b> 8-week retention</span><span><b>−42%</b> onboarding drop-off</span></div>
+        <div class="project-footer"><div>Next.js · TypeScript · FastAPI · Firebase</div><button data-case="studyhub">OPEN CASE FILE ↗</button></div>
+      </div>
+    </article>
+
+    <div class="research-divider reveal">
+      <span>RESEARCH / ENGINEERING EXPERIMENTS</span><i></i><b>ARCHIVE 08—10</b>
+    </div>
+
+    <article class="project-row compact reverse reveal" data-tags="ml research systems">
+      <div class="project-visual visual-edge">
+        <span class="project-number">P08</span><span class="project-signal">EDGE ML</span>
+        <div class="edge-art"><div>FP32</div><i>→</i><div>INT8</div></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>MODEL COMPRESSION / SYSTEMS</small><h3>Edge Inference Compression Study</h3></div><span>2026</span></div>
+        <p>Benchmarked 50% magnitude pruning and INT8 quantization with repeated CPU latency measurements, testing the important failure mode where smaller models do not automatically become faster without execution-path optimization.</p>
+        <div class="project-footer"><div>PyTorch · INT8 · Pruning · CPU benchmarking</div></div>
+      </div>
+    </article>
+
+    <article class="project-row compact reveal" data-tags="ml research">
+      <div class="project-visual visual-change">
+        <span class="project-number">P09</span><span class="project-signal">BENCHMARKING</span>
+        <div class="change-art"><i></i><i></i><i></i><i></i><i></i><b></b></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>STATISTICAL ML</small><h3>Change-Point Detection Benchmark</h3></div><span>2026</span></div>
+        <p>A benchmarking project that compares change-point detection behavior under varied data conditions instead of judging methods on one clean synthetic setting.</p>
+        <div class="project-footer"><div>Python · Statistical testing · Evaluation design</div></div>
+      </div>
+    </article>
+
+    <article class="project-row compact reverse reveal" data-tags="research backend">
+      <div class="project-visual visual-chrono">
+        <span class="project-number">P10</span><span class="project-signal">TEMPORAL VALIDITY</span>
+        <div class="chrono-art"><span>T₀</span><i></i><span>T₁</span><i></i><span>T₂</span></div>
+      </div>
+      <div class="project-copy">
+        <div class="project-head"><div><small>FINANCIAL RESEARCH TOOLING</small><h3>Chronology-Safe Investment Research</h3></div><span>2026</span></div>
+        <p>An investment-research system that tracks when information became available so backtests and analysis can explicitly defend against look-ahead bias.</p>
+        <div class="project-footer"><div>Data provenance · Temporal validation · Research tooling</div></div>
+      </div>
+    </article>
+  </div>
+</section>
