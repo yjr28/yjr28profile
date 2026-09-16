@@ -1,1 +1,333 @@
-const fragments=[['experienceSlot','experience.html'],['projectsSlot','projects.html'],['skillsSlot','skills.html'],['aboutSlot','about.html'],['contactSlot','contact.html']];const cases={northstar:{kicker:'HYBRID CLOUD / SERVER SYSTEMS',title:'Northstar',text:'A hybrid-cloud server management platform built around a reusable control plane and host-side telemetry. It combines C firmware telemetry, C++ Linux agents, a Java server application, REST/JSON Web Services over HTTP/TCP, PostgreSQL, containerized deployment, and CI/CD across local virtualization and AWS.',list:['100 simulated hosts across the management plane','12 documented REST/JSON endpoints','C/C++ host and firmware components with a Java server','Docker + KVM/Linux + AWS deployment with Jenkins CI/CD']},stinger:{kicker:'ROUTING / REAL-TIME TRANSIT',title:'GTStinger',text:'A multimodal Georgia Tech navigator built around useful arrival-time estimates rather than static directions. It combines GTFS-Realtime, arrival calibration, personalized walking speeds, transfer buffers, provider failover, and offline caching.',list:['72% lower ETA MAE: 6.8 → 1.9 min across 300 campus routes','99% valid-route rate','184 ms median route recomputation','Hardening toward a planned public beta / App Store release']},lastride:{kicker:'MOBILE PRODUCT / SHIPATON GRAND PRIZE',title:'LastRide',text:'A Japan-focused night-out companion that answers one time-sensitive question: when do I need to leave to catch the last useful train? If that plan fails, the product pivots into practical recovery options.',list:['Location-aware nearby station discovery','Walking-time estimation and leave-by reminders','Missed-train rescue alternatives','Original “Midnight Ticket” product identity']}};async function loadFragments(){await Promise.all(fragments.map(async([id,file])=>{const el=document.getElementById(id),r=await fetch(file,{cache:'no-cache'});if(!r.ok)throw new Error(`${file}: ${r.status}`);el.innerHTML=await r.text()}))}function theme(){const root=document.documentElement,saved=localStorage.getItem('yj-theme');root.dataset.theme=saved||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.getElementById('theme').addEventListener('click',()=>{root.dataset.theme=root.dataset.theme==='light'?'dark':'light';localStorage.setItem('yj-theme',root.dataset.theme)})}function boot(){setTimeout(()=>document.body.classList.add('loaded'),450);setTimeout(()=>document.querySelector('.boot')?.remove(),1100)}function reveals(){const els=[...document.querySelectorAll('.reveal')];if(matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver'in window)){els.forEach(e=>e.classList.add('visible'));return}const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');io.unobserve(x.target)}}),{threshold:.1});els.forEach(e=>io.observe(e))}function roleRotator(){const el=document.getElementById('role'),roles=['SOFTWARE ENGINEER','SYSTEMS BUILDER','AI / ML ENGINEER','PRODUCT ENGINEER'];let i=0;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;setInterval(()=>{i=(i+1)%roles.length;el.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-7px)'}],{duration:160,fill:'forwards'}).finished.then(()=>{el.textContent=roles[i];el.animate([{opacity:0,transform:'translateY(7px)'},{opacity:1,transform:'translateY(0)'}],{duration:220,fill:'forwards'})})},2600)}function palette(){const p=document.getElementById('palette'),shade=document.getElementById('shade'),open=()=>{shade.hidden=false;p.showModal()},close=()=>{if(p.open)p.close();shade.hidden=true};document.getElementById('cmd').addEventListener('click',open);document.getElementById('close').addEventListener('click',close);shade.addEventListener('click',close);p.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));addEventListener('keydown',e=>{if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){e.preventDefault();open()}if(e.key==='Escape')close()})}function caseStudy(){const modal=document.getElementById('case'),hide=()=>modal.open&&modal.close();modal.querySelector('.case-close').addEventListener('click',hide);document.addEventListener('click',e=>{const b=e.target.closest('[data-case]');if(!b)return;const x=cases[b.dataset.case];if(!x)return;document.getElementById('case-kicker').textContent=x.kicker;document.getElementById('case-title').textContent=x.title;document.getElementById('case-text').textContent=x.text;document.getElementById('case-list').innerHTML=x.list.map(v=>`<div>${v}</div>`).join('');modal.showModal()})}function berry(){const b=document.getElementById('berry'),tip=document.getElementById('tip'),lines=['Press / for recruiter mode.','Benchmarks > vibes.','Failure modes matter.','Shipping > talking.','Hi — I’m Byteberry.'];let i=0;b.addEventListener('click',()=>{i=(i+1)%lines.length;tip.querySelector('span').textContent=lines[i];tip.classList.add('show');clearTimeout(berry.timer);berry.timer=setTimeout(()=>tip.classList.remove('show'),2200)})}function smoothLinks(){document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const href=a.getAttribute('href');if(href==='#')return;const target=document.querySelector(href);if(!target)return;e.preventDefault();target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})})}function pointerGlow(){addEventListener('pointermove',e=>{document.documentElement.style.setProperty('--mx',`${e.clientX}px`);document.documentElement.style.setProperty('--my',`${e.clientY}px`)},{passive:true})}function network(){const c=document.getElementById('net');if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const x=c.getContext('2d');let pts=[];function resize(){const d=Math.min(devicePixelRatio||1,2);c.width=innerWidth*d;c.height=innerHeight*d;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';x.setTransform(d,0,0,d,0,0);const n=Math.max(26,Math.min(62,Math.floor(innerWidth/28)));pts=Array.from({length:n},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18}))}function frame(){x.clearRect(0,0,innerWidth,innerHeight);const light=document.documentElement.dataset.theme==='light';pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>innerWidth)p.vx*=-1;if(p.y<0||p.y>innerHeight)p.vy*=-1});for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const a=pts[i],b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y);if(d<135){x.strokeStyle=light?`rgba(45,110,210,${(1-d/135)*.10})`:`rgba(105,165,255,${(1-d/135)*.12})`;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke()}}x.fillStyle=light?'rgba(47,120,220,.22)':'rgba(108,169,255,.26)';pts.forEach(p=>{x.beginPath();x.arc(p.x,p.y,1.1,0,Math.PI*2);x.fill()});requestAnimationFrame(frame)}resize();addEventListener('resize',resize,{passive:true});requestAnimationFrame(frame)}function cardMotion(){if(matchMedia('(pointer: coarse)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches)return;document.addEventListener('pointermove',e=>{const card=e.target.closest('.project.card,.experience.card');if(!card)return;const r=card.getBoundingClientRect(),dx=(e.clientX-r.left)/r.width-.5,dy=(e.clientY-r.top)/r.height-.5;card.style.transform=`perspective(900px) rotateX(${(-dy*1.8).toFixed(2)}deg) rotateY(${(dx*2.2).toFixed(2)}deg) translateY(-3px)`});document.addEventListener('pointerout',e=>{const card=e.target.closest('.project.card,.experience.card');if(card&&!card.contains(e.relatedTarget))card.style.transform=''})}(async()=>{theme();boot();pointerGlow();network();roleRotator();palette();berry();smoothLinks();try{await loadFragments()}catch(err){console.error(err)}reveals();caseStudy();cardMotion();if(location.hash)requestAnimationFrame(()=>document.querySelector(location.hash)?.scrollIntoView())})();
+const fragments = [
+  ['experienceSlot','experience.html'],
+  ['projectsSlot','projects.html'],
+  ['skillsSlot','skills.html'],
+  ['aboutSlot','about.html'],
+  ['contactSlot','contact.html']
+];
+
+const cases = {
+  northstar: {
+    kicker:'SYSTEMS / HYBRID CLOUD',
+    title:'Northstar',
+    text:'A hybrid-cloud server management platform built as a reusable control plane rather than a one-off dashboard. Host-side telemetry, server APIs, persistence, virtualization, cloud deployment, integration tests, and delivery all live in one measurable system.',
+    list:[
+      '100 simulated hosts managed through a C firmware telemetry module and C++ Linux agent',
+      'Java server application with 12 documented REST/JSON endpoints over HTTP/TCP',
+      'PostgreSQL persistence with Dockerized services and Python integration tests',
+      'Deployment paths across KVM/Linux and AWS EC2, Elastic Beanstalk, and RDS with Git/Jenkins CI/CD'
+    ]
+  },
+  relay: {
+    kicker:'BACKEND / DISTRIBUTED DATA',
+    title:'Relay',
+    text:'A production-style event and analytics pipeline built to make failure handling part of the architecture instead of an afterthought.',
+    list:[
+      'Django API with a React/TypeScript client',
+      'Kafka event backbone with Go workers and explicit backpressure',
+      'MySQL for transactional state, ClickHouse for analytics, and Redis for low-latency access',
+      'Retries, dead-letter handling, tracing, and Terraform/AWS infrastructure'
+    ]
+  },
+  stinger: {
+    kicker:'ROUTING / REAL-TIME TRANSIT',
+    title:'GTStinger',
+    text:'A multimodal Georgia Tech navigator built around arrival-time usefulness rather than static directions. It combines live transit data, calibration, personalized walking speeds, transfer buffers, failover, and offline behavior.',
+    list:[
+      'ETA mean absolute error reduced from 6.8 to 1.9 minutes across 300 campus routes',
+      '99% valid-route rate with provider failover',
+      '184 ms median route recomputation',
+      'Offline caching and optimized routing graphs for graceful degradation'
+    ]
+  },
+  lastride: {
+    kicker:'PRODUCT / SHIPATON GRAND PRIZE',
+    title:'LastRide',
+    text:'A Japan-focused night-out companion that works backward from the last useful train. The product is designed around the moment a normal navigation app becomes least helpful: when the plan is about to fail.',
+    list:[
+      'Location-aware nearby station and route context',
+      'Walking-time estimation and leave-by reminders',
+      'Missed-train recovery alternatives instead of a dead-end warning',
+      'Built with TypeScript, Expo, Mapbox, location services, and notifications; Shipaton Grand Prize, 1st of 52'
+    ]
+  },
+  studyhub: {
+    kicker:'LEADERSHIP / COLLABORATIVE PRODUCT',
+    title:'Waseda Study Hub',
+    text:'A student matching and study-discovery product developed in a five-person GDGoC Waseda team, spanning product flows, frontend implementation, backend integration, review, and release coordination.',
+    list:[
+      '1,200+ students and 3,500+ study connections',
+      'Profiles, course/topic search, study-buddy discovery, study spots, and onboarding flows',
+      'React/Next.js/TypeScript frontend with FastAPI/Firebase integration',
+      'Reported 48% 8-week retention, 42% lower onboarding drop-off, and 99.9% uptime'
+    ]
+  }
+};
+
+async function loadFragments(){
+  await Promise.all(fragments.map(async ([id,file]) => {
+    const target = document.getElementById(id);
+    const response = await fetch(file,{cache:'no-cache'});
+    if(!response.ok) throw new Error(`${file}: ${response.status}`);
+    target.innerHTML = await response.text();
+  }));
+}
+
+function boot(){
+  requestAnimationFrame(() => document.body.classList.add('loaded'));
+  setTimeout(() => document.querySelector('.boot')?.remove(), 900);
+}
+
+function smoothLinks(){
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('a[href^="#"]');
+    if(!a) return;
+    const href=a.getAttribute('href');
+    if(!href || href==='#') return;
+    const target=document.querySelector(href);
+    if(!target) return;
+    e.preventDefault();
+    target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  });
+}
+
+function reveals(){
+  const nodes=[...document.querySelectorAll('.reveal')];
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)){
+    nodes.forEach(n=>n.classList.add('visible'));
+    return;
+  }
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  },{threshold:.08,rootMargin:'0px 0px -4% 0px'});
+  nodes.forEach(n=>io.observe(n));
+}
+
+function activeNav(){
+  const links=[...document.querySelectorAll('.nav a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const sections=[...map.keys()].map(id=>document.getElementById(id)).filter(Boolean);
+  if(!sections.length || !('IntersectionObserver' in window)) return;
+  const io=new IntersectionObserver(entries=>{
+    const visible=entries.filter(x=>x.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+    if(!visible) return;
+    links.forEach(a=>a.classList.toggle('active',a===map.get(visible.target.id)));
+  },{rootMargin:'-22% 0px -62% 0px',threshold:[0,.1,.3,.6]});
+  sections.forEach(s=>io.observe(s));
+}
+
+function pointerAtmosphere(){
+  if(matchMedia('(pointer: coarse)').matches) return;
+  addEventListener('pointermove',e=>{
+    document.documentElement.style.setProperty('--mx',`${e.clientX}px`);
+    document.documentElement.style.setProperty('--my',`${e.clientY}px`);
+  },{passive:true});
+}
+
+function scrollProgress(){
+  const update=()=>{
+    const max=Math.max(1,document.documentElement.scrollHeight-innerHeight);
+    document.documentElement.style.setProperty('--scroll',Math.min(1,scrollY/max));
+  };
+  update();
+  addEventListener('scroll',update,{passive:true});
+  addEventListener('resize',update,{passive:true});
+}
+
+function sceneParallax(){
+  const scene=document.getElementById('heroScene');
+  if(!scene || matchMedia('(pointer: coarse)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const parts=[
+    ['.scene-sign',.22],['.scene-terminal',.32],['.rack-a',.12],['.rack-b',.15],
+    ['.rack-c',.08],['.lamp-a',.18],['.lamp-b',.11],['.label-a',.25],['.label-b',.2],['.label-c',.17]
+  ].map(([selector,factor])=>[scene.querySelector(selector),factor]).filter(([node])=>node);
+  scene.addEventListener('pointermove',e=>{
+    const r=scene.getBoundingClientRect();
+    const dx=(e.clientX-(r.left+r.width/2))/r.width*30;
+    const dy=(e.clientY-(r.top+r.height/2))/r.height*24;
+    parts.forEach(([node,f])=>node.style.translate=`${(dx*f).toFixed(2)}px ${(dy*f).toFixed(2)}px`);
+  });
+  scene.addEventListener('pointerleave',()=>parts.forEach(([node])=>node.style.translate='0 0'));
+}
+
+function magnetic(){
+  if(matchMedia('(pointer: coarse)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('.magnetic').forEach(el=>{
+    el.addEventListener('pointermove',e=>{
+      const r=el.getBoundingClientRect();
+      const x=(e.clientX-r.left-r.width/2)*.08;
+      const y=(e.clientY-r.top-r.height/2)*.12;
+      el.style.translate=`${x}px ${y}px`;
+    });
+    el.addEventListener('pointerleave',()=>el.style.translate='0 0');
+  });
+}
+
+function palette(){
+  const modal=document.getElementById('palette');
+  const shade=document.getElementById('shade');
+  const open=()=>{
+    shade.hidden=false;
+    document.body.classList.add('modal-open');
+    if(!modal.open) modal.showModal();
+  };
+  const close=()=>{
+    if(modal.open) modal.close();
+    shade.hidden=true;
+    document.body.classList.remove('modal-open');
+  };
+  document.getElementById('cmd')?.addEventListener('click',open);
+  document.getElementById('close')?.addEventListener('click',close);
+  shade?.addEventListener('click',close);
+  modal.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
+  addEventListener('keydown',e=>{
+    const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
+    if(e.key==='/' && !typing){
+      e.preventDefault();
+      open();
+    }
+    if(e.key==='Escape') close();
+    if(modal.open && ['1','2','3','4'].includes(e.key)){
+      const targets=['#experience','#projects','#skills','#about'];
+      close();
+      document.querySelector(targets[Number(e.key)-1])?.scrollIntoView({behavior:'smooth'});
+    }
+  });
+}
+
+function caseStudy(){
+  const modal=document.getElementById('case');
+  if(!modal) return;
+  const close=()=>{if(modal.open) modal.close();document.body.classList.remove('modal-open')};
+  modal.querySelector('.case-close')?.addEventListener('click',close);
+  modal.addEventListener('click',e=>{if(e.target===modal) close()});
+  document.addEventListener('click',e=>{
+    const button=e.target.closest('[data-case]');
+    if(!button) return;
+    const item=cases[button.dataset.case];
+    if(!item) return;
+    document.getElementById('case-kicker').textContent=item.kicker;
+    document.getElementById('case-title').textContent=item.title;
+    document.getElementById('case-text').textContent=item.text;
+    document.getElementById('case-list').innerHTML=item.list.map(v=>`<div><span>${v}</span></div>`).join('');
+    document.body.classList.add('modal-open');
+    modal.showModal();
+  });
+}
+
+function projectFilters(){
+  const controls=[...document.querySelectorAll('[data-filter]')];
+  const projects=[...document.querySelectorAll('.project-row')];
+  if(!controls.length) return;
+  controls.forEach(button=>button.addEventListener('click',()=>{
+    const filter=button.dataset.filter;
+    controls.forEach(b=>b.classList.toggle('active',b===button));
+    projects.forEach(project=>{
+      const show=filter==='all' || project.dataset.tags?.split(/\s+/).includes(filter);
+      if(show){
+        project.hidden=false;
+        requestAnimationFrame(()=>{project.style.opacity='1';project.style.transform='none'});
+      }else{
+        project.style.opacity='0';
+        project.style.transform='translateY(8px)';
+        setTimeout(()=>{if(button.classList.contains('active')) project.hidden=true},220);
+      }
+    });
+  }));
+}
+
+function signalNode(){
+  const node=document.getElementById('berry');
+  const tip=document.getElementById('tip');
+  if(!node || !tip) return;
+  const lines=['Press / to jump anywhere.','Systems > screenshots.','Benchmark the failure mode.','Tokyo ⇄ Atlanta.','Make behavior measurable.'];
+  let i=0,timer;
+  node.addEventListener('click',()=>{
+    i=(i+1)%lines.length;
+    tip.querySelector('span').textContent=lines[i];
+    tip.classList.add('show');
+    clearTimeout(timer);
+    timer=setTimeout(()=>tip.classList.remove('show'),2300);
+  });
+}
+
+function network(){
+  const canvas=document.getElementById('net');
+  if(!canvas || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ctx=canvas.getContext('2d');
+  let pts=[];
+  let dpr=1;
+  const resize=()=>{
+    dpr=Math.min(devicePixelRatio||1,2);
+    canvas.width=innerWidth*dpr;
+    canvas.height=innerHeight*dpr;
+    canvas.style.width=`${innerWidth}px`;
+    canvas.style.height=`${innerHeight}px`;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const count=Math.max(18,Math.min(42,Math.floor(innerWidth/42)));
+    pts=Array.from({length:count},()=>({
+      x:Math.random()*innerWidth,
+      y:Math.random()*innerHeight,
+      vx:(Math.random()-.5)*.12,
+      vy:(Math.random()-.5)*.12
+    }));
+  };
+  const frame=()=>{
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    for(const p of pts){
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>innerWidth)p.vx*=-1;
+      if(p.y<0||p.y>innerHeight)p.vy*=-1;
+    }
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const a=pts[i],b=pts[j],dist=Math.hypot(a.x-b.x,a.y-b.y);
+        if(dist<145){
+          const alpha=(1-dist/145)*.12;
+          ctx.strokeStyle=`rgba(139,92,255,${alpha})`;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        }
+      }
+    }
+    for(const p of pts){
+      ctx.fillStyle='rgba(88,232,255,.16)';
+      ctx.beginPath();ctx.arc(p.x,p.y,1.1,0,Math.PI*2);ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  };
+  resize();
+  addEventListener('resize',resize,{passive:true});
+  requestAnimationFrame(frame);
+}
+
+(async function init(){
+  boot();
+  pointerAtmosphere();
+  scrollProgress();
+  network();
+  smoothLinks();
+  palette();
+  signalNode();
+  sceneParallax();
+
+  try{
+    await loadFragments();
+  }catch(error){
+    console.error('Portfolio fragments failed to load:',error);
+  }
+
+  reveals();
+  activeNav();
+  caseStudy();
+  projectFilters();
+  magnetic();
+
+  if(location.hash){
+    requestAnimationFrame(()=>document.querySelector(location.hash)?.scrollIntoView({block:'start'}));
+  }
+})();
