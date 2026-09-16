@@ -1,1 +1,0 @@
-Interactive 3D portfolio branch. Primary navigation is embedded in the Three.js world via clickable neon signs; readable content opens in a dedicated drawer.
