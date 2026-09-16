@@ -1,4 +1,92 @@
-@media(max-width:1040px){nav{display:none}.hero{grid-template-columns:1fr;gap:40px;padding-top:125px}.console{min-height:420px}.projects{grid-template-columns:repeat(2,1fr)}.project.wide{grid-column:span 2}.about{grid-template-columns:1fr}.heading{grid-template-columns:130px 1fr}.experience{grid-template-columns:140px 1fr}}
-@media(max-width:720px){.shell{width:min(100% - 30px,var(--max))}header{height:64px;padding:0 15px}.brand span{display:none}.head-actions #cmd{display:none}.hero{padding-top:105px;min-height:auto;padding-bottom:60px}.hero h1{font-size:clamp(58px,18vw,82px)}.lede{font-size:15px}.console{min-height:385px}.console pre{font-size:9px;padding:27px 15px}.console-stats{left:10px;right:10px;bottom:10px}.console-stats div{padding:10px 8px}.console-stats strong{font-size:12px}.proof{grid-template-columns:repeat(2,1fr)}.proof div:nth-child(3){border-left:0}.proof div:nth-child(n+3){border-top:1px solid var(--line)}.section{padding:84px 0}.heading{grid-template-columns:1fr;gap:9px}.heading h2,.contact h2{font-size:40px}.experience{grid-template-columns:1fr;padding:19px}.side{flex-direction:row;align-items:center}.company{width:55px;height:55px;border-radius:15px}.title{display:block}.title h3{font-size:25px}.live{display:inline-block;margin-top:8px}.projects{grid-template-columns:1fr}.project.wide{grid-column:auto}.art{height:175px}.project-title h3{font-size:25px}.skills{grid-template-columns:1fr}.languages{flex-wrap:wrap;gap:12px}.languages>small{width:100%;margin:0}.about-copy .big{font-size:18px}.contact{padding:84px 0}footer{flex-direction:column;gap:6px}.berry{right:14px;bottom:14px;width:56px;height:56px}.berry-tip{right:76px;bottom:24px}}
-@media(max-width:460px){.proof{grid-template-columns:1fr}.proof div+div{border-left:0;border-top:1px solid var(--line)}.project-foot{align-items:flex-start;flex-direction:column}.hero .buttons a{flex:1 1 42%;text-align:center}.hero .buttons .primary{flex-basis:100%}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.reveal{opacity:1;transform:none}.glow,#net{display:none}}
+@media(max-width:1120px){
+  .nav{gap:20px}
+  .hero{grid-template-columns:1fr 470px;gap:32px}
+  .hero-scene{min-height:560px}
+  .leadership-grid{grid-template-columns:repeat(3,1fr)}
+  .leadership-grid div:nth-child(4){border-left:0}
+  .project-row,.project-row.reverse{grid-template-columns:42% 58%}
+  .project-copy{padding:34px 30px}
+  .about-layout{gap:45px}
+}
+@media(max-width:900px){
+  .shell{width:min(var(--max),calc(100% - 42px))}
+  .nav{display:none}
+  .hero{grid-template-columns:1fr;min-height:auto;padding-top:126px;gap:42px}
+  .hero-copy{max-width:760px}
+  .hero-scene{width:min(640px,100%);justify-self:center;min-height:520px}
+  .section-heading{grid-template-columns:76px 1fr}
+  .role{grid-template-columns:110px 1fr;gap:18px}
+  .project-row,.project-row.reverse{grid-template-columns:1fr;min-height:0}
+  .project-row.reverse .project-visual,.project-row.reverse .project-copy{order:initial}
+  .project-visual{min-height:330px}
+  .project-copy{min-height:330px}
+  .about-layout{grid-template-columns:1fr;gap:54px}
+  .contact-grid{grid-template-columns:1fr;gap:45px}
+}
+@media(max-width:650px){
+  .shell{width:min(var(--max),calc(100% - 28px))}
+  .topbar{height:66px;padding-inline:14px}
+  .brand-copy{display:none}
+  .cmd-button span{display:none}
+  .hero{padding-top:104px;padding-bottom:48px}
+  .signal-status{max-width:100%;font-size:7px;line-height:1.4}
+  h1 span{font-size:clamp(47px,15vw,68px)}
+  h1 strong{font-size:clamp(86px,27vw,118px)}
+  .lede{font-size:14px}
+  .hero-actions{align-items:stretch}
+  .action{flex:1 1 46%;min-width:0}
+  .text-link{width:100%;margin:7px 0 0}
+  .hero-scene{min-height:430px;transform:scale(.94)}
+  .scene-sign{left:14%;width:68%;top:27%;padding:20px}
+  .scene-sign strong{font-size:30px}
+  .scene-rack{transform:scale(.78)}
+  .scene-terminal{left:25%;width:54%}
+  .section{padding:88px 0}
+  .section-heading{grid-template-columns:1fr;gap:10px;margin-bottom:42px}
+  .section-index{width:80px}
+  .section-heading h2{font-size:42px}
+  .timeline:before{left:7px}
+  .role{grid-template-columns:1fr;padding-left:28px}
+  .role-rail{padding-left:0;display:flex;flex-direction:row;align-items:center}
+  .rail-node{left:-28px;top:1px}
+  .role-head{display:block}
+  .role-head>a,.role-badge{display:inline-block;margin-top:14px}
+  .workstream{grid-template-columns:28px 1fr}
+  .workstream strong{display:none}
+  .leadership-grid{grid-template-columns:repeat(2,1fr)}
+  .leadership-grid div:nth-child(3),.leadership-grid div:nth-child(5){border-left:0}
+  .project-switchboard{width:100%}
+  .project-visual{min-height:270px}
+  .project-copy{padding:28px 20px;min-height:0}
+  .project-head h3{font-size:39px}
+  .project-metrics{margin-bottom:18px}
+  .project-footer{align-items:flex-start;flex-direction:column}
+  .stack-row{grid-template-columns:1fr}
+  .stack-label{border-right:0;border-bottom:1px solid rgba(143,91,255,.10);padding:14px 0}
+  .stack-items{padding:5px 0 10px}
+  .stack-items i{padding:9px 11px}
+  .language-line{align-items:flex-start;flex-wrap:wrap;gap:11px 20px}
+  .language-line>span{width:100%}
+  .route{grid-template-columns:1fr;gap:55px;padding-left:24px;padding-top:10px}
+  .route-line{left:7px;right:auto;top:4px;bottom:4px;width:1px;height:auto;background:linear-gradient(var(--pink),var(--violet),var(--cyan))}
+  .route-line:after{display:none}
+  .station-dot{left:-25px;top:27px}
+  .honor{grid-template-columns:55px 1fr}
+  .honor em{grid-column:2}
+  .contact-grid h2{font-size:clamp(55px,18vw,82px)}
+  .footer{flex-direction:column;gap:7px}
+  .floating-node{right:12px;bottom:12px}
+  .node-tip{right:76px;bottom:19px}
+}
+@media(max-width:420px){
+  .hero-actions .action{flex-basis:100%}
+  .hero-scene{min-height:390px;transform:scale(.9);transform-origin:center top}
+  .scene-sign{width:74%;left:11%}
+  .scene-terminal{width:59%;left:22%}
+  .leadership-grid{grid-template-columns:1fr}
+  .leadership-grid div+div{border-left:0}
+  .project-visual{min-height:235px}
+  .project-copy>p{font-size:12px}
+  .project-metrics span{margin-right:11px}
+  .contact-email{font-size:9px}
+}
