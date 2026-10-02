@@ -7,6 +7,12 @@
   <meta name="theme-color" content="#0b0b0c">
   <meta property="og:title" content="YoungJun Ryu — Software Engineer">
   <meta property="og:description" content="Backend systems, distributed software, infrastructure, and ML systems.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yjr28.github.io/yjr28profile/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="YoungJun Ryu — Software Engineer">
+  <meta name="twitter:description" content="Backend systems, distributed software, infrastructure, and ML systems.">
+  <link rel="canonical" href="https://yjr28.github.io/yjr28profile/">
   <title>YoungJun Ryu — Software Engineer</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="base.css">
@@ -76,7 +82,7 @@
           <p class="eyebrow">01 / Selected work</p>
           <h2>Projects with a reason to exist.</h2>
         </div>
-        <p class="section-note">A smaller set, shown with the constraint, system, and result—not a wall of tech logos.</p>
+        <p class="section-note">Selected builds where the constraint, system, and result are all visible.</p>
       </div>
 
       <div class="shell project-list">
@@ -96,7 +102,18 @@
             </div>
           </div>
           <div class="project-visual project-visual-kestrel" aria-hidden="true">
-            <img src="assets/kestrel.svg" alt="">
+            <div class="system-art kestrel-art">
+              <div class="art-head"><span>FAILURE TRACE / REPLAY</span><b>97%</b></div>
+              <div class="kestrel-services">
+                <span class="service-node">API</span>
+                <span class="service-node fault-node">WORKER<i>FAULT</i></span>
+                <span class="service-node">DB</span>
+              </div>
+              <div class="trace-track">
+                <span></span><span></span><span class="trace-fault"></span><span></span><span></span><span></span>
+              </div>
+              <div class="art-foot"><span>TRACE</span><span>eBPF</span><span>REPLAY</span></div>
+            </div>
             <div class="visual-index">01</div>
           </div>
         </article>
@@ -117,7 +134,19 @@
             </div>
           </div>
           <div class="project-visual project-visual-aster" aria-hidden="true">
-            <img src="assets/aster.svg" alt="">
+            <div class="system-art aster-art">
+              <div class="art-head"><span>QUERY PLAN RANKING</span><b>&lt;7 ms</b></div>
+              <div class="plan-tree">
+                <div class="plan-node plan-root">HASH JOIN</div>
+                <div class="plan-branch left"></div><div class="plan-branch right"></div>
+                <div class="plan-node plan-left">SEQ SCAN</div>
+                <div class="plan-node plan-right">INDEX SCAN</div>
+              </div>
+              <div class="speed-compare">
+                <div><span>POSTGRES</span><i style="--w:43%"></i><b>1.00×</b></div>
+                <div><span>ASTER</span><i style="--w:100%"></i><b>2.34×</b></div>
+              </div>
+            </div>
             <div class="visual-index">02</div>
           </div>
         </article>
@@ -138,7 +167,16 @@
             </div>
           </div>
           <div class="project-visual project-visual-lastride" aria-hidden="true">
-            <img src="assets/lastride.svg" alt="">
+            <div class="system-art lastride-art">
+              <div class="art-head"><span>LATEST SAFE DEPARTURE</span><b>LIVE</b></div>
+              <div class="route-clock">23:48</div>
+              <svg class="route-map-art" viewBox="0 0 460 210" role="presentation">
+                <path d="M35 165 C95 160, 105 70, 177 78 S282 154, 330 105 S395 48, 430 52" fill="none" stroke="currentColor" stroke-width="4"/>
+                <circle cx="35" cy="165" r="9"/><circle cx="177" cy="78" r="9"/><circle cx="330" cy="105" r="9"/><circle cx="430" cy="52" r="9"/>
+                <circle class="route-pulse" cx="177" cy="78" r="18" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              <div class="route-labels"><span>YOU</span><span>TRANSFER</span><span>HOME</span></div>
+            </div>
             <div class="visual-index">03</div>
           </div>
         </article>
@@ -159,7 +197,20 @@
             </div>
           </div>
           <div class="project-visual project-visual-northstar" aria-hidden="true">
-            <img src="assets/northstar.svg" alt="">
+            <div class="system-art northstar-art">
+              <div class="art-head"><span>HYBRID CONTROL PLANE</span><b>100 HOSTS</b></div>
+              <div class="fleet-grid">
+                <div class="fleet">
+                  <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                  <small>HOST FLEET</small>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="control-box"><b>AGENT</b><span>C++ / Linux</span></div>
+                <div class="flow-arrow">→</div>
+                <div class="cloud-box"><b>CONTROL</b><span>Java / AWS</span></div>
+              </div>
+              <div class="art-foot"><span>TELEMETRY</span><span>REST</span><span>POSTGRESQL</span></div>
+            </div>
             <div class="visual-index">04</div>
           </div>
         </article>
@@ -223,7 +274,7 @@
           <p class="eyebrow">03 / More projects</p>
           <h2>Archive.</h2>
         </div>
-        <p class="section-note">The projects below are intentionally compact. The homepage should make the strongest work easy to understand, not force a recruiter through fourteen equally weighted cards.</p>
+        <p class="section-note">Additional systems, research, and product work across routing, scientific ML, data infrastructure, and automation.</p>
       </div>
 
       <div class="shell archive-list">
@@ -310,7 +361,7 @@
 
   <footer class="site-footer shell">
     <span>© 2026 YoungJun Ryu</span>
-    <span>Designed around the work, not around effects.</span>
+    <span>Software engineer · Tokyo ⇄ Atlanta</span>
     <a href="#top">Back to top ↑</a>
   </footer>
 
