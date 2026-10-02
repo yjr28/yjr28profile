@@ -3,91 +3,317 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="description" content="YoungJun Ryu — software engineer building backend systems, distributed software, cloud infrastructure, ML systems, and products.">
-  <meta name="theme-color" content="#05020b">
-  <title>YoungJun Ryu — Night Lab</title>
+  <meta name="description" content="YoungJun Ryu — software engineer building backend systems, distributed software, infrastructure, and ML systems.">
+  <meta name="theme-color" content="#0b0b0c">
+  <meta property="og:title" content="YoungJun Ryu — Software Engineer">
+  <meta property="og:description" content="Backend systems, distributed software, infrastructure, and ML systems.">
+  <title>YoungJun Ryu — Software Engineer</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="base.css">
   <link rel="stylesheet" href="components.css">
   <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
-  <div id="boot" class="boot" aria-live="polite">
-    <div class="boot-mark">YJ</div>
-    <div class="boot-copy">
-      <b>INITIALIZING NIGHT LAB</b>
-      <span id="bootStatus">loading environment…</span>
-    </div>
-  </div>
+  <header class="site-header">
+    <a class="wordmark" href="#top" aria-label="YoungJun Ryu home">
+      <span class="wordmark-mark">YJ</span>
+      <span class="wordmark-text">YoungJun Ryu</span>
+    </a>
 
-  <main class="world-shell" aria-label="YoungJun Ryu interactive portfolio">
-    <canvas id="world" aria-label="Interactive 3D cyberpunk systems workshop"></canvas>
+    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
+      <span></span><span></span>
+    </button>
 
-    <div class="hud hud-top">
-      <a class="identity" href="#" data-open="home" aria-label="YoungJun Ryu home">
-        <span class="identity-mark">YJ</span>
-        <span><b>YOUNGJUN RYU</b><small>SOFTWARE ENGINEER / TOKYO ⇄ ATLANTA</small></span>
-      </a>
-      <div class="hud-links">
-        <a href="resume.html" target="_blank" rel="noreferrer">RESUME ↗</a>
-        <a href="https://github.com/yjr28" target="_blank" rel="noreferrer">GITHUB ↗</a>
-        <a href="https://www.linkedin.com/in/youngjun-ryu-845618256/" target="_blank" rel="noreferrer">LINKEDIN ↗</a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="#work">Work</a>
+      <a href="#experience">Experience</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a class="nav-resume" href="resume.html" target="_blank" rel="noreferrer">Resume ↗</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-kicker reveal">
+        <span class="status-dot"></span>
+        <span>Atlanta · Tokyo</span>
+        <span class="hero-rule"></span>
+        <span>Open to Summer 2027 SWE</span>
       </div>
-    </div>
 
-    <div class="intro-copy" id="introCopy">
-      <p class="eyebrow">WELCOME TO THE NIGHT LAB</p>
-      <h1>YOUNGJUN<br><span>RYU</span></h1>
-      <p class="intro-lede">Backend systems, distributed software, infrastructure, ML systems, and products — explored as one engineering world.</p>
-      <div class="intro-meta">
-        <span><i></i> OPEN TO SUMMER 2027</span>
-        <span>WASEDA / GEORGIA TECH</span>
+      <div class="hero-grid">
+        <div class="hero-title-wrap reveal">
+          <h1>
+            I build software
+            <span>that holds up.</span>
+          </h1>
+        </div>
+
+        <div class="hero-side reveal">
+          <p class="hero-lede">
+            I’m YoungJun, a computer science student at Waseda University currently studying at Georgia Tech. I work on backend systems, distributed software, infrastructure, and ML systems where performance and reliability are measurable.
+          </p>
+
+          <div class="hero-actions">
+            <a class="button button-primary" href="#work">View selected work <span>↓</span></a>
+            <a class="button button-quiet" href="https://github.com/yjr28" target="_blank" rel="noreferrer">GitHub ↗</a>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="interaction-hint" id="interactionHint">
-      <span class="mouse-icon"><i></i></span>
-      <div><b>DRAG TO LOOK AROUND</b><small>click the neon signs to explore</small></div>
-    </div>
-
-    <div class="hover-label" id="hoverLabel" hidden></div>
-
-    <div class="hud hud-bottom">
-      <div class="world-nav" aria-label="Portfolio sections">
-        <button data-open="projects"><span>01</span>PROJECTS</button>
-        <button data-open="experience"><span>02</span>EXPERIENCE</button>
-        <button data-open="stack"><span>03</span>STACK</button>
-        <button data-open="about"><span>04</span>ABOUT</button>
-        <button data-open="contact"><span>05</span>CONTACT</button>
+      <div class="proof-grid reveal" aria-label="Selected engineering metrics">
+        <div class="proof"><strong>250k+</strong><span>records / day in production</span></div>
+        <div class="proof"><strong>25k+</strong><span>req / s in Kestrel</span></div>
+        <div class="proof"><strong>2.34×</strong><span>geo-mean query execution</span></div>
+        <div class="proof"><strong>3</strong><span>languages spoken</span></div>
       </div>
-      <div class="camera-status"><span id="zoneName">ENTRY PLATFORM</span><b id="fpsHint">LIVE 3D</b></div>
-    </div>
+    </section>
 
-    <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Portfolio content">
-      <div class="drawer-chrome">
-        <div><span id="drawerIndex">01</span><b id="drawerKicker">PROJECT ARCHIVE</b></div>
-        <button id="drawerClose" type="button" aria-label="Close panel">×</button>
+    <section id="work" class="section section-work">
+      <div class="shell section-head reveal">
+        <div>
+          <p class="eyebrow">01 / Selected work</p>
+          <h2>Projects with a reason to exist.</h2>
+        </div>
+        <p class="section-note">A smaller set, shown with the constraint, system, and result—not a wall of tech logos.</p>
       </div>
-      <div class="drawer-scroll" id="drawerContent"></div>
-    </aside>
 
-    <div class="mobile-fallback" id="mobileFallback" hidden>
-      <button data-open="projects">Projects</button>
-      <button data-open="experience">Experience</button>
-      <button data-open="stack">Stack</button>
-      <button data-open="about">About</button>
-      <button data-open="contact">Contact</button>
-    </div>
+      <div class="shell project-list">
+        <article class="project reveal">
+          <div class="project-copy">
+            <div class="project-meta"><span>Distributed systems</span><span>2026</span></div>
+            <h3>Kestrel</h3>
+            <p>A Linux flight recorder for distributed failures that joins application traces with low-level runtime and network evidence, then deterministically replays incidents.</p>
+            <div class="project-results">
+              <span><b>97%</b> injected failures replayed</span>
+              <span><b>25k+</b> req/s</span>
+              <span><b>&lt;4.2%</b> p95 overhead</span>
+            </div>
+            <div class="project-bottom">
+              <span>Go · Rust/eBPF · gRPC · OpenTelemetry</span>
+              <a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">View repository ↗</a>
+            </div>
+          </div>
+          <div class="project-visual project-visual-kestrel" aria-hidden="true">
+            <img src="assets/kestrel.svg" alt="">
+            <div class="visual-index">01</div>
+          </div>
+        </article>
+
+        <article class="project project-reverse reveal">
+          <div class="project-copy">
+            <div class="project-meta"><span>Databases / ML</span><span>2026</span></div>
+            <h3>Aster</h3>
+            <p>A learned PostgreSQL query-plan ranker trained over 180k+ plans, with uncertainty-aware fallback designed to improve execution without moving the bottleneck into plan selection.</p>
+            <div class="project-results">
+              <span><b>180k+</b> plans</span>
+              <span><b>2.34×</b> geo-mean speedup</span>
+              <span><b>&lt;7 ms</b> selection</span>
+            </div>
+            <div class="project-bottom">
+              <span>PostgreSQL · PyTorch · Graph ML · Evaluation</span>
+              <a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">View repository ↗</a>
+            </div>
+          </div>
+          <div class="project-visual project-visual-aster" aria-hidden="true">
+            <img src="assets/aster.svg" alt="">
+            <div class="visual-index">02</div>
+          </div>
+        </article>
+
+        <article class="project reveal">
+          <div class="project-copy">
+            <div class="project-meta"><span>Routing / mobile systems</span><span>2026</span></div>
+            <h3>LastRide</h3>
+            <p>A deadline-constrained routing system that answers a practical question: what is the latest safe departure home? It continuously replans around walking, transit, disruptions, and recovery options.</p>
+            <div class="project-results">
+              <span><b>1st / 52</b> Shipaton</span>
+              <span><b>Kafka</b> replanning</span>
+              <span><b>PostGIS</b> geospatial state</span>
+            </div>
+            <div class="project-bottom">
+              <span>React Native · Go · PostGIS · Redis · Kafka · gRPC</span>
+              <span class="project-private">Team project</span>
+            </div>
+          </div>
+          <div class="project-visual project-visual-lastride" aria-hidden="true">
+            <img src="assets/lastride.svg" alt="">
+            <div class="visual-index">03</div>
+          </div>
+        </article>
+
+        <article class="project project-reverse reveal">
+          <div class="project-copy">
+            <div class="project-meta"><span>Hybrid cloud / systems</span><span>2026</span></div>
+            <h3>Northstar</h3>
+            <p>A reusable hybrid-cloud server management platform spanning device telemetry, a Linux host agent, a Java control plane, PostgreSQL state, containerized deployment, and AWS.</p>
+            <div class="project-results">
+              <span><b>100</b> simulated hosts</span>
+              <span><b>12</b> documented endpoints</span>
+              <span><b>2</b> deploy targets</span>
+            </div>
+            <div class="project-bottom">
+              <span>C/C++ · Java · PostgreSQL · Docker · AWS · Jenkins</span>
+              <span class="project-private">Private build</span>
+            </div>
+          </div>
+          <div class="project-visual project-visual-northstar" aria-hidden="true">
+            <img src="assets/northstar.svg" alt="">
+            <div class="visual-index">04</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="experience" class="section shell">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow">02 / Experience</p>
+          <h2>Production changed how I build.</h2>
+        </div>
+        <p class="section-note">I care about the full path from architecture to rollout: interfaces, data correctness, deployment, observability, and the people depending on the system.</p>
+      </div>
+
+      <div class="experience-list">
+        <article class="experience reveal">
+          <div class="experience-date">May 2026 — Present</div>
+          <div class="experience-main">
+            <div class="experience-title">
+              <div>
+                <p>Software Engineering Intern</p>
+                <h3>Green Carbon, Inc.</h3>
+              </div>
+              <span>Tokyo, Japan</span>
+            </div>
+            <p class="experience-summary">Backend systems, cloud migration, internal tooling, and operational workflows for data-heavy carbon-project work.</p>
+            <div class="experience-bullets">
+              <p>Led a four-person Apps Script → containerized AWS migration across five countries and 50+ users, cutting monthly report preparation by 81%.</p>
+              <p>Refactored ingestion and reconciliation services processing 250k+ records/day, with tracing, parity gates, CI/CD, and 1,200+ automated tests.</p>
+              <p>Built permission-scoped service interfaces across backend modules with project-level RBAC, PII-safe handling, and consistent error contracts.</p>
+            </div>
+            <div class="tag-row"><span>AWS</span><span>Docker</span><span>Python</span><span>PostgreSQL</span><span>RBAC</span><span>MCP</span></div>
+          </div>
+        </article>
+
+        <article class="experience reveal">
+          <div class="experience-date">2026 — Present</div>
+          <div class="experience-main">
+            <div class="experience-title">
+              <div>
+                <p>Fullstack Engineer</p>
+                <h3>GDG on Campus, Waseda</h3>
+              </div>
+              <span>Tokyo, Japan</span>
+            </div>
+            <p class="experience-summary">Engineering and team contribution on Waseda Study Hub, a student matching and study-discovery product.</p>
+            <div class="experience-bullets">
+              <p>Worked across Git reviews, API-contract discussions, frontend implementation, FastAPI/Firebase integration, and release handoffs.</p>
+              <p>Contributed to a product serving 1,200+ students and 3,500+ study connections, with reported 48% 8-week retention.</p>
+            </div>
+            <div class="tag-row"><span>Next.js</span><span>TypeScript</span><span>React</span><span>FastAPI</span><span>Firebase</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section archive-section">
+      <div class="shell section-head reveal">
+        <div>
+          <p class="eyebrow">03 / More projects</p>
+          <h2>Archive.</h2>
+        </div>
+        <p class="section-note">The projects below are intentionally compact. The homepage should make the strongest work easy to understand, not force a recruiter through fourteen equally weighted cards.</p>
+      </div>
+
+      <div class="shell archive-list">
+        <a class="archive-row reveal" href="https://github.com/yjr28/biohub" target="_blank" rel="noreferrer">
+          <span>05</span><strong>BioHub Cell Tracking</strong><em>Scientific ML / evaluation</em><i>Python · LOEO · provenance</i><b>↗</b>
+        </a>
+        <div class="archive-row reveal">
+          <span>06</span><strong>GTStinger</strong><em>Real-time campus routing</em><i>GTFS-RT · routing graphs · offline cache</i><b>—</b>
+        </div>
+        <div class="archive-row reveal">
+          <span>07</span><strong>Relay</strong><em>Event + analytics pipeline</em><i>Django · Kafka · Go · ClickHouse</i><b>—</b>
+        </div>
+        <div class="archive-row reveal">
+          <span>08</span><strong>ScholarshipOS</strong><em>Local-first automation</em><i>Python · SQLite · rule engine</i><b>—</b>
+        </div>
+        <div class="archive-row reveal">
+          <span>09</span><strong>PaddyProof</strong><em>Geospatial evidence QA</em><i>Remote sensing · uncertainty · provenance</i><b>—</b>
+        </div>
+        <div class="archive-row reveal">
+          <span>10</span><strong>Hackathon Factory</strong><em>Agent control plane</em><i>State machines · GitHub Actions · compliance</i><b>—</b>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section shell">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow">04 / About</p>
+          <h2>Tokyo foundation.<br>Atlanta year.</h2>
+        </div>
+        <p class="section-note">I’m most interested in engineering where software architecture, performance, and real user constraints collide.</p>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-copy reveal">
+          <p class="about-lede">I like problems where a system can be measured, broken deliberately, and improved from evidence.</p>
+          <p>My default loop is simple: understand the failure mode, build the smallest reliable mechanism, then benchmark what changed. That has pulled me toward backend systems, distributed software, infrastructure, and ML systems rather than one narrow application layer.</p>
+          <div class="principle"><span>Operating principle</span><strong>Measure → Build → Verify</strong></div>
+        </div>
+
+        <div class="about-facts reveal">
+          <div class="fact">
+            <span>Education</span>
+            <strong>Waseda University</strong>
+            <p>B.Eng. Computer Science & Communications Engineering · Sep 2028</p>
+          </div>
+          <div class="fact">
+            <span>Exchange</span>
+            <strong>Georgia Institute of Technology</strong>
+            <p>Computer Science · Aug 2026 — May 2027</p>
+          </div>
+          <div class="fact">
+            <span>Selected recognition</span>
+            <strong>Shipaton Grand Prize</strong>
+            <p>1st / 52 · 2026</p>
+          </div>
+          <div class="fact">
+            <span>Languages</span>
+            <strong>English · Japanese · Korean</strong>
+            <p>Native · Native · Fluent</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+      <div class="shell contact-grid">
+        <div class="reveal">
+          <p class="eyebrow">05 / Contact</p>
+          <h2>Build something<br>that holds up.</h2>
+        </div>
+        <div class="contact-side reveal">
+          <p>I’m looking for Summer 2027 software engineering opportunities across backend systems, infrastructure, distributed software, and ML engineering.</p>
+          <div class="contact-links">
+            <a href="mailto:yryu43@gatech.edu">yryu43@gatech.edu <span>↗</span></a>
+            <a href="https://github.com/yjr28" target="_blank" rel="noreferrer">GitHub <span>↗</span></a>
+            <a href="https://www.linkedin.com/in/youngjun-ryu-845618256/" target="_blank" rel="noreferrer">LinkedIn <span>↗</span></a>
+            <a href="resume.html" target="_blank" rel="noreferrer">Resume <span>↗</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <noscript>
-    <section class="noscript">
-      <h1>YoungJun Ryu</h1>
-      <p>Software engineer focused on backend systems, infrastructure, distributed software, ML systems, and product engineering.</p>
-      <p><a href="resume.html">View resume</a> · <a href="https://github.com/yjr28">GitHub</a> · <a href="mailto:yryu43@gatech.edu">Email</a></p>
-    </section>
-  </noscript>
+  <footer class="site-footer shell">
+    <span>© 2026 YoungJun Ryu</span>
+    <span>Designed around the work, not around effects.</span>
+    <a href="#top">Back to top ↑</a>
+  </footer>
 
-  <script type="module" src="app.js"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
