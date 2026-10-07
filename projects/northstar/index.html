@@ -3,203 +3,241 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="NorthStar server management control plane demo by YoungJun Ryu.">
-<title>NorthStar · Control Plane</title>
+<meta name="description" content="Operate a live NorthStar fleet console in the browser: telemetry, host status, command leasing, acknowledgement, and API audit.">
+<title>NorthStar · Fleet Console</title>
 <link rel="stylesheet" href="../demo.css">
+<link rel="stylesheet" href="../app-demo.css">
 </head>
 <body class="theme-northstar">
 <header class="shell site-bar">
-  <a class="identity" href="../../" aria-label="Back to YoungJun Ryu portfolio">
-    <span class="identity-mark">YJ</span>
-    <span>YoungJun Ryu</span>
-    <span class="identity-project">/ NorthStar</span>
-  </a>
-  <nav class="site-nav" aria-label="Project navigation">
-    <a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Source</a>
-    <a href="../../#work">Portfolio</a>
-  </nav>
+  <a class="identity" href="../../"><span class="identity-mark">YJ</span><span>YoungJun Ryu</span><span class="identity-project">/ NorthStar</span></a>
+  <nav class="site-nav"><a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Source</a><a href="../../#work">Portfolio</a></nav>
 </header>
 
 <main>
-  <section class="shell hero">
+  <section class="shell demo-intro">
     <h1>NorthStar</h1>
-    <div class="hero-copy">
-      <p>A control plane for Linux hosts where command delivery is a state machine, not a fire-and-forget POST. Register a host, emit telemetry, queue work, lease it to an agent, then acknowledge it with the active lease token.</p>
-      <div class="hero-links">
-        <a href="#demo">Operate the state machine</a>
-        <a href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/api/HostController.java" target="_blank" rel="noreferrer">Read HostController</a>
-      </div>
-    </div>
-
-    <div class="facts" aria-label="NorthStar implementation facts">
-      <div class="fact"><strong>14</strong><span>control-plane routes</span></div>
-      <div class="fact"><strong>90 s</strong><span>online window</span></div>
-      <div class="fact"><strong>30 s</strong><span>command lease</span></div>
-      <div class="fact"><strong>100</strong><span>simulated hosts</span></div>
+    <p>Manage a small Linux fleet. Watch telemetry move, take a host offline, queue a command, and see an agent lease and acknowledge it using the same public lifecycle as the Spring control plane.</p>
+    <div class="demo-intro-meta">
+      <span class="runtime-chip ready"><i class="runtime-led"></i><strong>Fleet lab</strong><span>running locally in this tab</span></span>
+      <span class="runtime-chip"><strong>API contract</strong><span>14 Spring routes</span></span>
+      <span class="runtime-chip"><strong>Command lease</strong><span>30 seconds · token bound</span></span>
+      <span class="runtime-chip"><strong>Online window</strong><span>90 seconds</span></span>
     </div>
   </section>
 
-  <section id="demo" class="workbench">
-    <div class="shell">
-      <div class="workbench-head">
-        <div class="workbench-title">
-          <h2>Drive one host through the control plane.</h2>
-          <p>The browser keeps the same host, command, lease, and status transitions exposed by the Java API.</p>
-        </div>
-        <div class="status-line"><span class="status-dot"></span><span id="runStatus">no host registered</span></div>
-      </div>
+  <section class="product-frame" aria-label="NorthStar interactive fleet console">
+    <div class="product-chrome">
+      <strong>NorthStar / Fleet Console</strong>
+      <span class="product-chrome-center">browser lab · mirrors HostController contract</span>
+      <div class="product-chrome-actions"><a href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/api/HostController.java" target="_blank" rel="noreferrer">HostController</a></div>
+    </div>
 
-      <div class="control-strip">
-        <div class="field">
-          <label for="host">Hostname</label>
-          <input id="host" value="edge-atl-01">
-        </div>
-        <div class="field">
-          <label for="cmd">Command</label>
-          <select id="cmd">
-            <option>restart_service</option>
-            <option>collect_diagnostics</option>
-            <option>rotate_logs</option>
-          </select>
-        </div>
-        <div class="control-actions">
-          <button class="action" data-act="register">Register host</button>
-        </div>
-      </div>
+    <div class="northstar-app">
+      <aside class="ns-fleet">
+        <div class="ns-pane-head"><b>Fleet</b><span id="fleetCount">4 hosts</span></div>
+        <div id="hostList"></div>
+      </aside>
 
-      <div class="instrument">
-        <div class="instrument-main">
-          <div class="instrument-label"><b>Host state</b><span id="hostIdLabel">unassigned</span></div>
-
-          <div class="state-board" aria-label="Current simulated state">
-            <div class="state-cell"><strong id="status">—</strong><span>host status</span></div>
-            <div class="state-cell"><strong id="telemetryCount">0</strong><span>telemetry samples</span></div>
-            <div class="state-cell"><strong id="commandState">NONE</strong><span>command state</span></div>
-          </div>
-
-          <div class="lifecycle">
-            <div class="instrument-label"><b>Command lifecycle</b><span>queue → lease → acknowledge</span></div>
-            <div class="lifecycle-path" id="lifecycle">
-              <div class="life-step" data-state="REGISTERED">Registered<small>host exists</small></div>
-              <div class="life-step" data-state="QUEUED">Queued<small>operator creates work</small></div>
-              <div class="life-step" data-state="LEASED">Leased<small>30 s agent ownership</small></div>
-              <div class="life-step" data-state="ACKNOWLEDGED">Acknowledged<small>token matches lease</small></div>
+      <section class="ns-main">
+        <div class="ns-overview">
+          <div class="ns-host-title">
+            <div><h2 id="selectedHostName">edge-atl-01</h2><p id="selectedHostMeta">linux · amd64 · agent 0.3.0</p></div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">
+              <button class="app-button secondary compact" id="heartbeatButton">Heartbeat</button>
+              <button class="app-button secondary compact" id="offlineButton">Miss 100 s</button>
             </div>
           </div>
 
-          <div class="command-rail" aria-label="NorthStar actions">
-            <button data-act="telemetry">Ingest telemetry</button>
-            <button data-act="queue">Queue command</button>
-            <button data-act="lease">Lease to agent</button>
-            <button data-act="ack">Acknowledge</button>
-            <button data-act="age">Advance +100 s</button>
+          <div class="ns-metric-grid">
+            <div class="ns-metric"><b id="cpuMetric">—</b><span>CPU</span></div>
+            <div class="ns-metric"><b id="memMetric">—</b><span>Memory</span></div>
+            <div class="ns-metric"><b id="loadMetric">—</b><span>Load 1m</span></div>
+            <div class="ns-metric"><b id="statusMetric">—</b><span>Status</span></div>
           </div>
 
-          <div class="console" id="console">Register a host to begin. Each action prints the equivalent API transition and response.</div>
-          <p class="note">This is a public state-machine mirror, not an exposed production control plane. The repository contains the Spring controller, PostgreSQL repository, signed agent requests, integration tests, and local observability stack.</p>
+          <div class="ns-chart" aria-label="Live CPU telemetry chart">
+            <svg viewBox="0 0 700 120" preserveAspectRatio="none" role="img" aria-label="CPU percent over recent samples">
+              <path class="area" id="cpuArea" d=""></path>
+              <path id="cpuLine" d=""></path>
+            </svg>
+          </div>
         </div>
 
-        <aside class="instrument-side" aria-label="Implementation evidence">
-          <div class="instrument-label"><b>Evidence in source</b><span>open any file</span></div>
-          <div class="source-list">
-            <a class="source-link" href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/api/HostController.java" target="_blank" rel="noreferrer"><b>HostController</b><span>Registration, heartbeat, telemetry, status, idempotent queueing, leasing, acknowledgement, and audit.</span></a>
-            <a class="source-link" href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/repository/ControlPlaneRepository.java" target="_blank" rel="noreferrer"><b>PostgreSQL repository</b><span>Transactional host and command persistence, lease ownership, telemetry history, and audit records.</span></a>
-            <a class="source-link" href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/test/java/dev/northstar/NorthStarApiIntegrationTest.java" target="_blank" rel="noreferrer"><b>API integration tests</b><span>Executable coverage for the public control-plane contract.</span></a>
-            <a class="source-link" href="https://github.com/yjr28/NorthStar/blob/main/native/agent.cpp" target="_blank" rel="noreferrer"><b>C++ host agent</b><span>Registration, telemetry delivery, signed requests, retry/backoff, and local spooling.</span></a>
-            <a class="source-link" href="https://github.com/yjr28/NorthStar/blob/main/docker-compose.yml" target="_blank" rel="noreferrer"><b>Local stack</b><span>Control plane, PostgreSQL, Prometheus, Grafana, and OpenTelemetry collector.</span></a>
+        <div class="ns-command-zone">
+          <div class="app-section-title"><h2>Send a command</h2><span>queue → lease → acknowledge</span></div>
+          <div class="ns-command-form">
+            <div class="app-field"><label for="commandType">Command</label><select id="commandType"><option>restart_service</option><option>collect_diagnostics</option><option>rotate_logs</option></select></div>
+            <div class="app-field"><label for="commandPayload">Payload</label><input id="commandPayload" value='{"service":"api"}'></div>
+            <button class="app-button" id="queueButton">Queue command</button>
           </div>
-        </aside>
-      </div>
+
+          <div class="ns-command-list" id="commandList">
+            <div class="empty-copy" style="padding:16px 0">No commands for this host yet. Queue one and leave the agent running to watch the full lifecycle.</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="ns-inspector">
+        <div class="ns-agent">
+          <div class="ns-agent-toggle">
+            <div><b style="font-size:12px">Host agent</b><div style="margin-top:3px;color:var(--faint);font:500 8px/1 var(--mono)" id="agentLabel">polling every 1.5 s</div></div>
+            <button class="ns-switch on" id="agentToggle" aria-label="Toggle host agent" aria-pressed="true"></button>
+          </div>
+          <p>With the agent on, queued commands are leased and acknowledged automatically. Turn it off to leave work waiting in the control plane.</p>
+        </div>
+        <div class="ns-pane-head"><b>API activity</b><span>latest first</span></div>
+        <div class="ns-api-log" id="apiLog"></div>
+      </aside>
     </div>
   </section>
 </main>
 
-<footer class="shell site-footer">
-  <span>Public state transitions. Private credentials stay private.</span>
-  <a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">github.com/yjr28/NorthStar</a>
-</footer>
+<footer class="shell site-footer"><span>The browser lab is intentionally credential-free; the repository contains the Java/PostgreSQL implementation.</span><a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Repository</a></footer>
 
 <script>
-const state={host:null,age:0,telemetry:[],command:null,audit:[],lease:null};
-const con=document.getElementById("console");
-const sEl=document.getElementById("status");
-const tEl=document.getElementById("telemetryCount");
-const cEl=document.getElementById("commandState");
-const runStatus=document.getElementById("runStatus");
-const hostIdLabel=document.getElementById("hostIdLabel");
-const uid=()=>crypto.randomUUID?crypto.randomUUID():Math.random().toString(16).slice(2)+"-"+Date.now();
-function log(method,path,status,body){
-  con.innerHTML='<span class="'+(status<400?'ok':'bad')+'">'+method+' '+path+' → '+status+'</span>\n'+(body?JSON.stringify(body,null,2):'')+'\n\n'+con.innerHTML;
+const now=()=>Date.now();
+let idSeq=100;
+const makeId=(prefix)=>prefix+"-"+(++idSeq).toString(16).padStart(4,"0");
+const hosts=[
+  {id:"h-atl-01",name:"edge-atl-01",region:"ATL",os:"linux",arch:"amd64",agent:"0.3.0",cpu:37,mem:56,load:1.2,lastSeen:now(),offline:false,phase:.2,telemetry:[]},
+  {id:"h-iad-02",name:"api-iad-02",region:"IAD",os:"linux",arch:"amd64",agent:"0.3.0",cpu:62,mem:71,load:2.4,lastSeen:now(),offline:false,phase:1.4,telemetry:[]},
+  {id:"h-nrt-01",name:"worker-nrt-01",region:"NRT",os:"linux",arch:"arm64",agent:"0.3.0",cpu:24,mem:48,load:.8,lastSeen:now(),offline:false,phase:2.8,telemetry:[]},
+  {id:"h-fra-03",name:"batch-fra-03",region:"FRA",os:"linux",arch:"amd64",agent:"0.2.8",cpu:79,mem:66,load:3.1,lastSeen:now(),offline:false,phase:4.1,telemetry:[]}
+];
+const commands=[];
+let selectedHostId=hosts[0].id;
+let agentOn=true;
+let tick=0;
+
+const hostList=document.getElementById("hostList");
+const apiLog=document.getElementById("apiLog");
+const commandList=document.getElementById("commandList");
+const agentToggle=document.getElementById("agentToggle");
+
+function hostOnline(h){return !h.offline && now()-h.lastSeen<=90000}
+function selectedHost(){return hosts.find(h=>h.id===selectedHostId)}
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function logAPI(method,path,status,detail){
+  const node=document.createElement("div");
+  node.className="ns-log";
+  node.innerHTML="<strong>"+esc(method+" "+path)+" <span class='"+(status<400?"status-ok":"status-warn")+"'>"+status+"</span></strong><span>"+esc(detail||"")+"</span>";
+  apiLog.prepend(node);
+  while(apiLog.children.length>14)apiLog.lastChild.remove();
 }
-function lifecycleState(){
-  if(!state.host)return null;
-  if(!state.command)return "REGISTERED";
-  return state.command.state;
+function renderFleet(){
+  hostList.innerHTML=hosts.map(h=>`
+    <button class="ns-host ${h.id===selectedHostId?"active":""} ${hostOnline(h)?"":"offline"}" data-host="${h.id}">
+      <div class="ns-host-top"><span class="ns-host-name">${esc(h.name)}</span><span class="ns-host-state"><i class="ns-status-dot"></i>${hostOnline(h)?"online":"offline"}</span></div>
+      <div class="ns-host-metrics"><span>CPU ${h.cpu.toFixed(0)}%</span><span>MEM ${h.mem.toFixed(0)}%</span><span>${h.region}</span></div>
+    </button>`).join("");
+  hostList.querySelectorAll("[data-host]").forEach(btn=>btn.addEventListener("click",()=>{selectedHostId=btn.dataset.host;renderAll()}));
 }
-function draw(){
-  sEl.textContent=!state.host?"—":state.age<=90?"ONLINE":"OFFLINE";
-  sEl.className=state.host&&state.age<=90?"ok":state.host?"bad":"";
-  tEl.textContent=state.telemetry.length;
-  cEl.textContent=state.command?state.command.state:"NONE";
-  hostIdLabel.textContent=state.host?state.host.id.slice(0,8):"unassigned";
-  runStatus.textContent=!state.host?"no host registered":state.age>90?"host offline":state.command?"command "+state.command.state.toLowerCase():"host online";
-  const current=lifecycleState();
-  const order=["REGISTERED","QUEUED","LEASED","ACKNOWLEDGED"];
-  const idx=current?order.indexOf(current):-1;
-  document.querySelectorAll(".life-step").forEach((el,i)=>el.classList.toggle("active",i<=idx));
-  document.getElementById("lifecycle").classList.remove("just-resolved");
-  requestAnimationFrame(()=>document.getElementById("lifecycle").classList.add("just-resolved"));
+function chartPath(samples,key){
+  if(samples.length<2)return "";
+  const pts=samples.slice(-36);
+  return pts.map((s,i)=>((i===0?"M":"L")+" "+(i/(pts.length-1)*700).toFixed(1)+" "+(115-(s[key]/100)*105).toFixed(1))).join(" ");
 }
-function ensureHost(){
-  if(!state.host){log("ERROR","host required",400,{message:"Register a host first"});return false}
-  return true;
+function renderChart(h){
+  const samples=h.telemetry.length?h.telemetry:[{cpu:h.cpu},{cpu:h.cpu}];
+  const line=chartPath(samples,"cpu");
+  document.getElementById("cpuLine").setAttribute("d",line);
+  if(line){
+    const pts=samples.slice(-36);
+    const lastX=700;
+    const area=line+" L "+lastX+" 120 L 0 120 Z";
+    document.getElementById("cpuArea").setAttribute("d",area);
+  }
 }
-function register(){
-  const hostname=document.getElementById("host").value.trim()||"edge-atl-01";
-  state.host={id:uid(),hostname,agentVersion:"0.3-demo",osName:"linux",architecture:"amd64"};
-  state.age=0;state.telemetry=[];state.command=null;state.audit=[];state.lease=null;
-  log("POST","/api/v1/hosts",201,state.host);draw();
+function renderHost(){
+  const h=selectedHost();
+  document.getElementById("selectedHostName").textContent=h.name;
+  document.getElementById("selectedHostMeta").textContent=h.os+" · "+h.arch+" · agent "+h.agent+" · "+h.region;
+  document.getElementById("cpuMetric").textContent=h.cpu.toFixed(0)+"%";
+  document.getElementById("memMetric").textContent=h.mem.toFixed(0)+"%";
+  document.getElementById("loadMetric").textContent=h.load.toFixed(2);
+  document.getElementById("statusMetric").textContent=hostOnline(h)?"ONLINE":"OFFLINE";
+  document.getElementById("statusMetric").className=hostOnline(h)?"ok":"bad";
+  renderChart(h);
 }
-function telemetry(){
-  if(!ensureHost())return;
-  state.age=0;
-  const sample={id:uid(),hostId:state.host.id,cpuPercent:37.4,memoryUsedBytes:4831838208,memoryTotalBytes:8589934592,load1m:1.24,uptimeSeconds:18422,processCount:212};
-  state.telemetry.unshift(sample);
-  log("POST","/api/v1/hosts/"+state.host.id+"/telemetry",201,sample);draw();
+function renderCommands(){
+  const rows=commands.filter(c=>c.hostId===selectedHostId).slice().reverse();
+  if(!rows.length){commandList.innerHTML='<div class="empty-copy" style="padding:16px 0">No commands for this host yet. Queue one and leave the agent running to watch the full lifecycle.</div>';return}
+  commandList.innerHTML=rows.map(c=>`
+    <div class="ns-command-row">
+      <div><b>${esc(c.type)}</b><span style="display:block;margin-top:4px">${esc(c.id)} · attempt ${c.attempts}</span></div>
+      <span>${new Date(c.createdAt).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span>
+      <span class="ns-command-state ${c.state}">${c.state}</span>
+    </div>`).join("");
 }
-function queue(){
-  if(!ensureHost())return;
-  const type=document.getElementById("cmd").value;
-  if(state.command&&state.command.state!=="ACKNOWLEDGED"){log("POST","/api/v1/commands",200,state.command);return}
-  state.command={id:uid(),hostId:state.host.id,type,payload:"{}",state:"QUEUED",deliveryAttempts:0};
-  state.audit=[{event:"QUEUED",actor:"operator"}];
-  log("POST","/api/v1/commands",201,state.command);draw();
+function renderAll(){renderFleet();renderHost();renderCommands()}
+function sampleTelemetry(){
+  tick++;
+  hosts.forEach((h,i)=>{
+    if(h.offline)return;
+    const wave=Math.sin(tick*.34+h.phase)*8+Math.sin(tick*.11+h.phase*2)*4;
+    h.cpu=Math.max(4,Math.min(96,h.cpu*.84+(38+i*8+wave)*.16));
+    h.mem=Math.max(20,Math.min(94,h.mem+Math.sin(tick*.08+h.phase)*.35));
+    h.load=Math.max(.1,h.cpu/28+Math.sin(tick*.2+h.phase)*.18);
+    h.lastSeen=now();
+    h.telemetry.push({at:now(),cpu:h.cpu,mem:h.mem,load:h.load});
+    if(h.telemetry.length>48)h.telemetry.shift();
+  });
+  renderAll();
 }
-function lease(){
-  if(!ensureHost())return;
-  if(!state.command||state.command.state!=="QUEUED"){log("POST","/api/v1/hosts/"+state.host.id+"/commands/lease",200,[]);return}
-  state.lease=uid();
-  state.command.state="LEASED";
-  state.command.deliveryAttempts++;
-  state.command.leaseToken=state.lease;
-  state.command.leaseSeconds=30;
-  state.audit.push({event:"LEASED",actor:"agent",leaseSeconds:30});
-  log("POST","/api/v1/hosts/"+state.host.id+"/commands/lease",200,[state.command]);draw();
+function processAgent(){
+  if(!agentOn)return;
+  const t=now();
+  commands.forEach(c=>{
+    if(c.state==="QUEUED"&&t-c.updatedAt>900){
+      c.state="LEASED";c.updatedAt=t;c.leaseToken=makeId("lease");c.attempts++;
+      logAPI("POST","/api/v1/hosts/"+c.hostId+"/commands/lease",200,c.id+" leased for 30 s");
+    }else if(c.state==="LEASED"&&t-c.updatedAt>1100){
+      c.state="ACKNOWLEDGED";c.updatedAt=t;
+      logAPI("POST","/api/v1/commands/"+c.id+"/ack",200,"matching lease token acknowledged");
+    }
+  });
+  renderCommands();
 }
-function ack(){
-  if(!ensureHost())return;
-  if(!state.command||state.command.state!=="LEASED"||!state.lease){log("POST","/api/v1/commands/{id}/ack",409,{message:"No active token-bound lease"});return}
-  state.command.state="ACKNOWLEDGED";
-  state.audit.push({event:"ACKNOWLEDGED",actor:"agent"});
-  log("POST","/api/v1/commands/"+state.command.id+"/ack",200,{...state.command,audit:state.audit});draw();
-}
-function age(){
-  if(!ensureHost())return;
-  state.age+=100;
-  log("GET","/api/v1/hosts/"+state.host.id+"/status",200,{hostId:state.host.id,online:state.age<=90,ageSeconds:state.age});draw();
-}
-document.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>({register,telemetry,queue,lease,ack,age}[b.dataset.act]()));
-draw();
+
+document.getElementById("queueButton").addEventListener("click",()=>{
+  const h=selectedHost();
+  let payload=document.getElementById("commandPayload").value.trim()||"{}";
+  try{JSON.parse(payload)}catch{logAPI("POST","/api/v1/commands",400,"payload must be valid JSON");return}
+  const command={id:makeId("cmd"),hostId:h.id,type:document.getElementById("commandType").value,payload,state:"QUEUED",createdAt:now(),updatedAt:now(),attempts:0,leaseToken:null};
+  commands.push(command);
+  logAPI("POST","/api/v1/commands",201,command.id+" queued for "+h.name);
+  renderCommands();
+});
+document.getElementById("offlineButton").addEventListener("click",()=>{
+  const h=selectedHost();h.offline=true;h.lastSeen=now()-100000;
+  logAPI("GET","/api/v1/hosts/"+h.id+"/status",200,"online=false · ageSeconds=100");
+  renderAll();
+});
+document.getElementById("heartbeatButton").addEventListener("click",()=>{
+  const h=selectedHost();h.offline=false;h.lastSeen=now();
+  logAPI("POST","/api/v1/hosts/"+h.id+"/heartbeat",204,"agent heartbeat accepted");
+  renderAll();
+});
+agentToggle.addEventListener("click",()=>{
+  agentOn=!agentOn;
+  agentToggle.classList.toggle("on",agentOn);
+  agentToggle.setAttribute("aria-pressed",String(agentOn));
+  document.getElementById("agentLabel").textContent=agentOn?"polling every 1.5 s":"paused · commands stay queued";
+  logAPI("AGENT","poll loop",200,agentOn?"resumed":"paused");
+});
+
+hosts.forEach(h=>{
+  for(let i=0;i<26;i++){
+    const wave=Math.sin(i*.34+h.phase)*8;
+    h.telemetry.push({at:now()-(25-i)*1500,cpu:Math.max(4,Math.min(96,h.cpu+wave)),mem:h.mem,load:h.load});
+  }
+});
+logAPI("GET","/api/v1/hosts",200,"4 hosts returned");
+logAPI("GET","/api/v1/hosts/"+hosts[0].id+"/telemetry?limit=50",200,"26 samples returned");
+renderAll();
+setInterval(sampleTelemetry,1500);
+setInterval(processAgent,450);
 </script>
 </body>
 </html>
