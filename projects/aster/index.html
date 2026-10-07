@@ -3,186 +3,271 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Aster PostgreSQL query-plan ranking prototype by YoungJun Ryu.">
-<title>Aster · Plan Ranker</title>
+<meta name="description" content="Run the Aster PostgreSQL plan-ranking prototype in your browser using the real Python source.">
+<title>Aster · Query Plan Lab</title>
 <link rel="stylesheet" href="../demo.css">
+<link rel="stylesheet" href="../app-demo.css">
+<script src="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"></script>
 </head>
 <body class="theme-aster">
 <header class="shell site-bar">
-  <a class="identity" href="../../" aria-label="Back to YoungJun Ryu portfolio">
-    <span class="identity-mark">YJ</span>
-    <span>YoungJun Ryu</span>
-    <span class="identity-project">/ Aster</span>
-  </a>
-  <nav class="site-nav" aria-label="Project navigation">
-    <a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Source</a>
-    <a href="../../#work">Portfolio</a>
-  </nav>
+  <a class="identity" href="../../"><span class="identity-mark">YJ</span><span>YoungJun Ryu</span><span class="identity-project">/ Aster</span></a>
+  <nav class="site-nav"><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Source</a><a href="../../#work">Portfolio</a></nav>
 </header>
 
 <main>
-  <section class="shell hero">
+  <section class="shell demo-intro">
     <h1>Aster</h1>
-    <div class="hero-copy">
-      <p>A query-plan ranking prototype that can refuse its own answer. It scores candidate PostgreSQL plans, then hands control back to PostgreSQL when uncertainty is too high or the top two plans are too close to call.</p>
-      <div class="hero-links">
-        <a href="#demo">Rank the candidates</a>
-        <a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer">Read the ranker</a>
-      </div>
-    </div>
-
-    <div class="facts" aria-label="Aster prototype facts">
-      <div class="fact"><strong>5</strong><span>plan signals</span></div>
-      <div class="fact"><strong>0.35</strong><span>uncertainty ceiling</span></div>
-      <div class="fact"><strong>0.08</strong><span>minimum score margin</span></div>
-      <div class="fact"><strong>0</strong><span>third-party dependencies</span></div>
+    <p>Edit the plans. Change their uncertainty. Then run the real Python ranker from the repository and watch Aster either pick a plan or refuse to override PostgreSQL.</p>
+    <div class="demo-intro-meta">
+      <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Python runtime</strong><span id="runtimeText">loading repository source</span></span>
+      <span class="runtime-chip"><strong>Engine</strong><span>Pyodide · Python 3.14</span></span>
+      <span class="runtime-chip"><strong>Policy</strong><span>lower score wins · confidence gated</span></span>
     </div>
   </section>
 
-  <section id="demo" class="workbench">
-    <div class="shell">
-      <div class="workbench-head">
-        <div class="workbench-title">
-          <h2>Let the ranker make the call, or decline it.</h2>
-          <p>Lower score wins. Confidence gates decide whether Aster is allowed to override PostgreSQL's default.</p>
-        </div>
-        <div class="status-line"><span class="status-dot"></span><span id="runStatus">scenario loaded</span></div>
-      </div>
+  <section class="product-frame" aria-label="Aster interactive application">
+    <div class="product-chrome">
+      <strong>Aster / Plan Lab</strong>
+      <span class="product-chrome-center">actual aster_ranker.py · browser runtime</span>
+      <div class="product-chrome-actions"><a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer">Python source</a></div>
+    </div>
 
-      <div class="control-strip">
-        <div class="field">
-          <label for="scenario">Scenario</label>
+    <div class="aster-app">
+      <aside class="a-query">
+        <div class="app-section-title"><h2>Workload</h2><span>context</span></div>
+        <textarea class="a-query-code" id="queryText" spellcheck="false">SELECT o.id, o.total_cents
+FROM orders o
+JOIN accounts a ON a.id = o.account_id
+WHERE a.region = 'APAC'
+  AND o.created_at >= NOW() - INTERVAL '30 days';</textarea>
+
+        <div class="app-field">
+          <label for="scenario">Candidate set</label>
           <select id="scenario">
-            <option value="clear">Clear index-plan win</option>
-            <option value="uncertain">Cheap plan, high uncertainty</option>
-            <option value="close">Top plans too close</option>
+            <option value="clear">Index join should win</option>
+            <option value="uncertain">Fast-looking plan is uncertain</option>
+            <option value="close">Two plans are nearly tied</option>
           </select>
         </div>
-        <div class="field">
-          <label for="pg">PostgreSQL default</label>
-          <select id="pg">
+
+        <div class="app-field" style="margin-top:14px">
+          <label for="pgChoice">PostgreSQL default</label>
+          <select id="pgChoice">
             <option value="postgres_default">postgres_default</option>
             <option value="index_join">index_join</option>
             <option value="nested_loop">nested_loop</option>
           </select>
         </div>
-        <div class="control-actions">
-          <button class="action" id="rank">Rank plans</button>
-        </div>
-      </div>
 
-      <div class="instrument">
-        <div class="instrument-main">
-          <div class="instrument-label"><b>Candidate plans</b><span>normalized score · lower is better</span></div>
-          <div class="plan-table" id="plans"></div>
-
-          <div class="decision" id="decision">
-            <div class="decision-copy">
-              <strong id="decisionTitle">No decision yet.</strong>
-              <span id="decisionReason">Run the ranker to apply uncertainty and margin gates.</span>
-            </div>
-            <div class="decision-badge" id="decisionBadge">waiting</div>
-          </div>
-
-          <div class="console" id="console">The browser uses the same deterministic scoring equation and fallback rules as aster_ranker.py.</div>
-          <p class="note">This is deliberately a baseline, not a disguised benchmark. The repository does not claim a trained plan corpus or production speedup yet; those numbers stay off the page until the data and evaluation artifacts exist.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+          <div class="app-field"><label for="maxUncertainty">Max uncertainty</label><input id="maxUncertainty" type="number" min="0" max="1" step=".05" value=".35"></div>
+          <div class="app-field"><label for="minMargin">Min margin</label><input id="minMargin" type="number" min="0" step=".01" value=".08"></div>
         </div>
 
-        <aside class="instrument-side" aria-label="Implementation evidence">
-          <div class="instrument-label"><b>Evidence in source</b><span>open any file</span></div>
-          <div class="source-list">
-            <a class="source-link" href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer"><b>Ranking baseline</b><span>Validated plan schema, explicit score function, sorted candidates, uncertainty gate, margin gate, and PostgreSQL fallback.</span></a>
-            <a class="source-link" href="https://github.com/yjr28/aster-pg-optimizer/blob/main/test_aster_ranker.py" target="_blank" rel="noreferrer"><b>Unit tests</b><span>Clear win, high-uncertainty fallback, and low-margin fallback are all pinned in CI.</span></a>
-            <div class="source-item"><b>Current equation</b><span>0.46·log1p(cost) + 0.14·log1p(rows) + 0.13·seq scans + 0.11·nested loops + 0.16·uncertainty</span></div>
-            <div class="source-item"><b>Next engineering step</b><span>Ingest real EXPLAIN ANALYZE trees, build workload-safe splits, then benchmark a learned ranker against this contract.</span></div>
+        <button class="app-button" id="rankButton" style="width:100%;margin-top:18px" disabled>Loading Python…</button>
+        <div class="a-runtime-log" id="runtimeLog">Booting Pyodide and loading <b>aster_ranker.py</b> from the GitHub repository.</div>
+      </aside>
+
+      <div class="a-main">
+        <div class="app-section-title"><h2>Candidate plans</h2><span>edit any input</span></div>
+        <div class="a-candidates" id="candidateTable"></div>
+
+        <div class="a-rank-flow" aria-label="Aster decision pipeline">
+          <div class="a-rank-step" id="stepScore"><b>1 · Score</b><span>Evaluate the five explicit plan signals.</span></div>
+          <div class="a-rank-step" id="stepGate"><b>2 · Gate</b><span>Check uncertainty and top-two margin.</span></div>
+          <div class="a-rank-step" id="stepSelect"><b>3 · Select</b><span>Use Aster's choice or fall back to PostgreSQL.</span></div>
+        </div>
+
+        <div class="a-decision" aria-live="polite">
+          <div>
+            <h2 id="decisionTitle">Change a plan, then run Aster.</h2>
+            <p id="decisionReason">The first run executes the Python module loaded above, not a JavaScript copy of its scoring function.</p>
           </div>
-        </aside>
+          <div class="a-confidence">
+            <label><span>decision confidence</span><span id="confidenceLabel">—</span></label>
+            <div class="a-confidence-track"><div class="a-confidence-fill" id="confidenceFill"></div></div>
+          </div>
+        </div>
+
+        <div class="console" id="console" style="min-height:150px">Runtime output will appear here.</div>
       </div>
     </div>
   </section>
 </main>
 
-<footer class="shell site-footer">
-  <span>The model can abstain. That is part of the design.</span>
-  <a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">github.com/yjr28/aster-pg-optimizer</a>
-</footer>
+<footer class="shell site-footer"><span>Prototype policy is executable; benchmark claims wait for benchmark artifacts.</span><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Repository</a></footer>
 
 <script>
-const scenarios={
+const presets={
   clear:[
-    {name:"postgres_default",cost:1200,rows:50000,seq:2,nl:0,u:.10},
-    {name:"index_join",cost:180,rows:2500,seq:0,nl:0,u:.08},
-    {name:"nested_loop",cost:700,rows:12000,seq:0,nl:3,u:.12}
+    {name:"postgres_default",postgres_cost:1200,estimated_rows:50000,seq_scans:2,nested_loops:0,uncertainty:.10},
+    {name:"index_join",postgres_cost:180,estimated_rows:2500,seq_scans:0,nested_loops:0,uncertainty:.08},
+    {name:"nested_loop",postgres_cost:700,estimated_rows:12000,seq_scans:0,nested_loops:3,uncertainty:.12}
   ],
   uncertain:[
-    {name:"postgres_default",cost:600,rows:9000,seq:1,nl:0,u:.05},
-    {name:"index_join",cost:90,rows:1000,seq:0,nl:0,u:.90},
-    {name:"nested_loop",cost:760,rows:11000,seq:0,nl:2,u:.10}
+    {name:"postgres_default",postgres_cost:600,estimated_rows:9000,seq_scans:1,nested_loops:0,uncertainty:.05},
+    {name:"index_join",postgres_cost:90,estimated_rows:1000,seq_scans:0,nested_loops:0,uncertainty:.90},
+    {name:"nested_loop",postgres_cost:760,estimated_rows:11000,seq_scans:0,nested_loops:2,uncertainty:.10}
   ],
   close:[
-    {name:"postgres_default",cost:100,rows:1000,seq:0,nl:0,u:.10},
-    {name:"index_join",cost:101,rows:1000,seq:0,nl:0,u:.10},
-    {name:"nested_loop",cost:900,rows:12000,seq:0,nl:3,u:.15}
+    {name:"postgres_default",postgres_cost:100,estimated_rows:1000,seq_scans:0,nested_loops:0,uncertainty:.10},
+    {name:"index_join",postgres_cost:101,estimated_rows:1000,seq_scans:0,nested_loops:0,uncertainty:.10},
+    {name:"nested_loop",postgres_cost:900,estimated_rows:12000,seq_scans:0,nested_loops:3,uncertainty:.15}
   ]
 };
-const score=p=>.46*Math.log1p(p.cost)+.14*Math.log1p(p.rows)+.13*p.seq+.11*p.nl+.16*p.u;
-const plans=document.getElementById("plans");
-const out=document.getElementById("console");
-const scen=document.getElementById("scenario");
-const pg=document.getElementById("pg");
-const runStatus=document.getElementById("runStatus");
-const decision=document.getElementById("decision");
-const decisionTitle=document.getElementById("decisionTitle");
-const decisionReason=document.getElementById("decisionReason");
-const decisionBadge=document.getElementById("decisionBadge");
 
-function evaluated(){
-  return scenarios[scen.value].map(p=>({...p,score:score(p)})).sort((a,b)=>a.score-b.score);
-}
-function render(bestName=null){
-  const ranking=evaluated();
-  const max=Math.max(...ranking.map(p=>p.score));
-  const min=Math.min(...ranking.map(p=>p.score));
-  const span=Math.max(.001,max-min);
-  plans.innerHTML=ranking.map(p=>{
-    const normalized=28+((p.score-min)/span)*72;
-    const best=p.name===bestName?" best":"";
-    return '<div class="plan-row'+best+'">'+
-      '<div><b>'+p.name+'</b><small>cost '+p.cost.toLocaleString()+' · rows '+p.rows.toLocaleString()+' · uncertainty '+p.u.toFixed(2)+'</small></div>'+
-      '<div class="score-track"><div class="score-fill" style="--score:'+normalized.toFixed(1)+'%"></div></div>'+
-      '<div class="plan-score">'+p.score.toFixed(4)+'</div>'+
-    '</div>';
-  }).join("");
-}
-function rank(){
-  const ranking=evaluated();
-  const best=ranking[0], second=ranking[1], margin=second.score-best.score;
-  let fallback=false, reason="ranker confidence gate passed";
-  if(best.u>.35){fallback=true;reason="best candidate exceeds the 0.35 uncertainty ceiling"}
-  else if(margin<.08){fallback=true;reason="top-two score margin is below 0.08"}
-  const selected=fallback?pg.value:best.name;
+const table=document.getElementById("candidateTable");
+const scenario=document.getElementById("scenario");
+const rankButton=document.getElementById("rankButton");
+const runtimeChip=document.getElementById("runtimeChip");
+const runtimeText=document.getElementById("runtimeText");
+const runtimeLog=document.getElementById("runtimeLog");
+const consoleEl=document.getElementById("console");
+const steps=[document.getElementById("stepScore"),document.getElementById("stepGate"),document.getElementById("stepSelect")];
+let pyodide=null;
+let runtimeReady=false;
 
-  render(best.name);
-  runStatus.textContent=fallback?"fallback engaged":"ranker accepted";
-  decisionTitle.textContent=selected;
-  decisionReason.textContent=reason+" · model choice: "+best.name+" · margin: "+margin.toFixed(4);
-  decisionBadge.textContent=fallback?"postgres fallback":"ranker selected";
-  decisionBadge.className="decision-badge "+(fallback?"warn":"ok");
-  decision.classList.remove("just-resolved");
-  requestAnimationFrame(()=>decision.classList.add("just-resolved"));
-
-  out.innerHTML=
-    ranking.map((p,i)=>(i+1)+'. '+p.name.padEnd(18)+' score='+p.score.toFixed(4)+' uncertainty='+p.u.toFixed(2)).join("\n")+
-    '\n\nmodel_choice = '+best.name+
-    '\npostgres_choice = '+pg.value+
-    '\nmargin = '+margin.toFixed(4)+
-    '\nreason = '+reason+
-    '\n<span class="'+(fallback?'warn':'ok')+'">selected_plan = '+selected+(fallback?' (fallback)':'')+'</span>';
+function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function renderCandidates(rows){
+  table.innerHTML=rows.map((p,i)=>`
+    <div class="a-candidate" data-row="${i}">
+      <div class="a-candidate-name"><b>${escapeHTML(p.name)}</b><span>candidate ${i+1}</span></div>
+      <div class="a-mini"><label>PG cost</label><input data-key="postgres_cost" type="number" min="0" step="1" value="${p.postgres_cost}"></div>
+      <div class="a-mini"><label>Rows</label><input data-key="estimated_rows" type="number" min="0" step="1" value="${p.estimated_rows}"></div>
+      <div class="a-mini"><label>Seq scans</label><input data-key="seq_scans" type="number" min="0" step="1" value="${p.seq_scans}"></div>
+      <div class="a-mini"><label>Nested loops</label><input data-key="nested_loops" type="number" min="0" step="1" value="${p.nested_loops}"></div>
+      <div class="a-mini"><label>Uncertainty</label><input data-key="uncertainty" type="number" min="0" max="1" step=".01" value="${p.uncertainty}"></div>
+      <div class="a-score" data-score>—</div>
+    </div>`).join("");
 }
-scen.onchange=()=>{render();runStatus.textContent="scenario loaded";decisionTitle.textContent="No decision yet.";decisionReason.textContent="Run the ranker to apply uncertainty and margin gates.";decisionBadge.textContent="waiting";decisionBadge.className="decision-badge";};
-pg.onchange=()=>{if(decisionTitle.textContent!=="No decision yet.")rank()};
-document.getElementById("rank").onclick=rank;
-render();
+
+function readCandidates(){
+  return [...table.querySelectorAll(".a-candidate")].map((row,i)=>{
+    const base=presets[scenario.value][i];
+    const read=(key)=>Number(row.querySelector('[data-key="'+key+'"]').value);
+    const plan={name:base.name,postgres_cost:read("postgres_cost"),estimated_rows:Math.round(read("estimated_rows")),seq_scans:Math.round(read("seq_scans")),nested_loops:Math.round(read("nested_loops")),uncertainty:read("uncertainty")};
+    if(!Number.isFinite(plan.postgres_cost)||plan.postgres_cost<0||!Number.isFinite(plan.estimated_rows)||plan.estimated_rows<0||!Number.isFinite(plan.uncertainty)||plan.uncertainty<0||plan.uncertainty>1) throw new Error("Plan inputs must be valid non-negative numbers; uncertainty stays between 0 and 1.");
+    return plan;
+  });
+}
+
+function setStep(index){
+  steps.forEach((el,i)=>el.classList.toggle("active",i===index));
+}
+
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+
+async function executeRanker(payload){
+  pyodide.globals.set("aster_payload_json",JSON.stringify(payload));
+  try{
+    const raw=pyodide.runPython(`
+import json
+_payload = json.loads(aster_payload_json)
+_plans = [
+    CandidatePlan(
+        name=p["name"],
+        postgres_cost=float(p["postgres_cost"]),
+        estimated_rows=int(p["estimated_rows"]),
+        seq_scans=int(p["seq_scans"]),
+        nested_loops=int(p["nested_loops"]),
+        uncertainty=float(p["uncertainty"]),
+    )
+    for p in _payload["candidates"]
+]
+_decision = rank_plans(
+    _plans,
+    postgres_choice=_payload["postgres_choice"],
+    min_margin=float(_payload["min_margin"]),
+    max_uncertainty=float(_payload["max_uncertainty"]),
+)
+json.dumps({
+    "selected_plan": _decision.selected_plan,
+    "model_choice": _decision.model_choice,
+    "postgres_choice": _decision.postgres_choice,
+    "fallback": _decision.fallback,
+    "reason": _decision.reason,
+    "margin": _decision.margin,
+    "ranking": [
+        {"name": r.plan.name, "score": r.score, "uncertainty": r.plan.uncertainty}
+        for r in _decision.ranking
+    ],
+})
+`);
+    return JSON.parse(raw);
+  }finally{
+    pyodide.globals.delete("aster_payload_json");
+  }
+}
+
+async function runAster(){
+  if(!runtimeReady)return;
+  rankButton.disabled=true;
+  rankButton.textContent="Running Python…";
+  document.querySelectorAll(".a-candidate").forEach(r=>r.classList.remove("winner"));
+  try{
+    const payload={
+      candidates:readCandidates(),
+      postgres_choice:document.getElementById("pgChoice").value,
+      min_margin:Number(document.getElementById("minMargin").value),
+      max_uncertainty:Number(document.getElementById("maxUncertainty").value)
+    };
+    setStep(0); await sleep(220);
+    const result=await executeRanker(payload);
+    setStep(1); await sleep(260);
+    setStep(2);
+
+    result.ranking.forEach(item=>{
+      const row=[...table.querySelectorAll(".a-candidate")].find(r=>r.querySelector("b").textContent===item.name);
+      if(row){
+        row.querySelector("[data-score]").textContent=item.score.toFixed(4);
+        if(item.name===result.model_choice)row.classList.add("winner");
+      }
+    });
+
+    const confidence=Math.max(0,Math.min(1,result.margin/Math.max(payload.min_margin,.0001)));
+    document.getElementById("confidenceFill").style.width=(confidence*100).toFixed(0)+"%";
+    document.getElementById("confidenceLabel").textContent=(confidence*100).toFixed(0)+"%";
+    document.getElementById("decisionTitle").textContent=result.selected_plan+(result.fallback?" · PostgreSQL fallback":" · Aster selected");
+    document.getElementById("decisionReason").textContent=result.reason+" Model choice: "+result.model_choice+". Margin: "+result.margin.toFixed(4)+".";
+    consoleEl.textContent=result.ranking.map((r,i)=>(i+1)+". "+r.name.padEnd(18)+" score="+r.score.toFixed(4)+" uncertainty="+r.uncertainty.toFixed(2)).join("\n")+"\n\nselected_plan="+result.selected_plan+"\nfallback="+result.fallback+"\nreason="+result.reason;
+  }catch(err){
+    document.getElementById("decisionTitle").textContent="Aster rejected the input.";
+    document.getElementById("decisionReason").textContent=err.message;
+    consoleEl.textContent="ERROR: "+err.message;
+  }finally{
+    rankButton.disabled=false;
+    rankButton.textContent="Run Aster ranker";
+  }
+}
+
+scenario.addEventListener("change",()=>{renderCandidates(presets[scenario.value]);document.getElementById("decisionTitle").textContent="Candidate set changed.";document.getElementById("decisionReason").textContent="Edit any values, then run the repository's Python ranker.";document.getElementById("confidenceFill").style.width="0";document.getElementById("confidenceLabel").textContent="—";steps.forEach(x=>x.classList.remove("active"));});
+rankButton.addEventListener("click",runAster);
+renderCandidates(presets.clear);
+
+(async()=>{
+  try{
+    pyodide=await loadPyodide({indexURL:"https://cdn.jsdelivr.net/pyodide/v314.0.7/full/"});
+    const sourceResponse=await fetch("https://cdn.jsdelivr.net/gh/yjr28/aster-pg-optimizer@main/aster_ranker.py",{cache:"no-store"});
+    if(!sourceResponse.ok)throw new Error("Could not load aster_ranker.py");
+    const source=await sourceResponse.text();
+    pyodide.runPython(source);
+    runtimeReady=true;
+    runtimeChip.classList.remove("busy");
+    runtimeChip.classList.add("ready");
+    runtimeText.textContent="aster_ranker.py loaded";
+    runtimeLog.innerHTML="Ready. <b>CandidatePlan</b>, <b>score_plan</b>, and <b>rank_plans</b> are live from the repository source.";
+    rankButton.disabled=false;
+    rankButton.textContent="Run Aster ranker";
+  }catch(err){
+    runtimeChip.classList.remove("busy");
+    runtimeChip.classList.add("error");
+    runtimeText.textContent="runtime failed";
+    runtimeLog.textContent=err.message;
+    rankButton.textContent="Python runtime unavailable";
+    consoleEl.textContent="The live Python runtime could not initialize. Source links remain available above.";
+  }
+})();
 </script>
 </body>
 </html>
