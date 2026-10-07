@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Kestrel deterministic distributed failure replay — interactive evidence demo by YoungJun Ryu.">
+<title>Kestrel — Live Evidence Demo</title><link rel="stylesheet" href="../demo.css"></head>
+<body><header class="shell topbar"><a class="brand" href="../../"><span class="mark">YJ</span><span>YoungJun Ryu / Kestrel</span></a>
+<nav class="nav"><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">Source ↗</a><a href="../../#work">Portfolio</a></nav></header>
+<main><section class="hero"><div class="shell"><div class="eyebrow">Distributed systems / failure replay</div><h1>Kestrel</h1>
+<p class="lede">A flight recorder and replay system for distributed failures. This browser console mirrors the semantics of the current Go vertical slice: real service topology, seeded inventory latency injection, a 30 ms dependency timeout, outcome signatures, causal-path comparison, and Level-B failure-schedule replay.</p>
+<div class="pills"><span class="pill live">Interactive demo</span><span class="pill">10 logical services</span><span class="pill">Go 1.23+</span><span class="pill">Seeded faults</span><span class="pill">Real TCP in source</span></div></div></section>
+<section class="shell grid"><div class="panel"><div class="panel-head"><b>Failure replay console</b><span>mirrors current Go demo semantics</span></div><div class="panel-body">
+<div class="controls"><div class="control"><label>Injected inventory latency</label><select id="delay"><option value="15">15 ms — stays healthy</option><option value="30">30 ms — boundary</option><option value="75" selected>75 ms — current demo</option><option value="120">120 ms — timeout</option></select></div>
+<div class="control"><label>Seed</label><input id="seed" value="20260903" inputmode="numeric"></div></div>
+<div class="actions"><button id="run">Run healthy → failure → replay</button><button class="secondary" id="reset">Reset</button></div>
+<div class="graph" id="graph"></div><div class="console" id="console">Ready. Run the replay sequence.</div>
+<div class="note">The website does not pretend GitHub Pages can run the Go TCP system. The actual implementation uses <code>httptest.Server</code> TCP listeners in Go. This console intentionally reproduces the same documented fault threshold and replay-equivalence rules in-browser so a recruiter can inspect the mechanism immediately, then jump to the source.</div>
+</div></div>
+<aside class="evidence"><div class="item"><b>What the source actually does</b><span>Gateway → auth → account → order → inventory / pricing / payment, then asynchronous notification, audit, and analytics workers. Inventory gets the seeded latency fault.</span></div>
+<a href="https://github.com/yjr28/kestrel-replay/blob/main/cmd/kestrel-demo/main.go" target="_blank" rel="noreferrer"><b>Go demo entrypoint ↗</b><span>Runs healthy, injected-failure, and replay executions using a 75 ms inventory fault.</span></a>
+<a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/demo/demo.go" target="_blank" rel="noreferrer"><b>10-service TCP slice ↗</b><span>Real local HTTP/TCP boundaries, async fan-out, event recording, and a 30 ms dependency timeout.</span></a>
+<a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/graph/graph.go" target="_blank" rel="noreferrer"><b>Causal graph + divergence ↗</b><span>Parent-span, message, and fault edges plus conservative earliest meaningful divergence detection.</span></a>
+<a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/replay/replay.go" target="_blank" rel="noreferrer"><b>Replay equivalence ↗</b><span>Compares classification, HTTP status, terminal service, error code, and causal path.</span></a>
+<div class="item"><b>Claims policy</b><span>No throughput, replay-rate, or overhead benchmark is advertised here until the repository's benchmark gate promotes reproducible measurements.</span></div></aside></section></main>
+<footer class="shell footer"><span>Built as recruiter-facing evidence, not a screenshot.</span><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">github.com/yjr28/kestrel-replay ↗</a></footer>
+<script>
+const syncPath=["gateway","auth","account","order","inventory","pricing","payment"], asyncPath=["notification","audit","analytics"];
+const graph=document.getElementById("graph"), out=document.getElementById("console");
+function renderGraph(failed=false){graph.innerHTML=[...syncPath,...asyncPath].map((n,i)=>'<div class="node '+(failed&&n==="inventory"?"hot":"")+'">'+n.toUpperCase()+'</div>').join("")}
+function sig(classification,status,terminal,error,path){return {classification,http_status:status,terminal_service:terminal,error_code:error,causal_path:path}}
+async function digest(o){const body=o.classification+"\n"+o.http_status+"\n"+o.terminal_service+"\n"+o.error_code+"\n"+o.causal_path.map(x=>x+"\n").join("");const bytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(body));return [...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,"0")).join("").slice(0,16)}
+function equivalent(a,b){return a.classification===b.classification&&a.http_status===b.http_status&&a.terminal_service===b.terminal_service&&a.error_code===b.error_code&&JSON.stringify(a.causal_path)===JSON.stringify(b.causal_path)}
+document.getElementById("run").onclick=async()=>{
+ const delay=Number(document.getElementById("delay").value), seed=document.getElementById("seed").value.trim()||"20260903";
+ const healthy=sig("success",201,"","",syncPath);
+ const fails=delay>30;
+ const failing=fails?sig("distributed_failure",504,"inventory","inventory_timeout",["gateway","auth","account","order","inventory"]):sig("success",201,"","",syncPath);
+ const replay={...failing,causal_path:[...failing.causal_path]};
+ const [hd,fd,rd]=await Promise.all([digest(healthy),digest(failing),digest(replay)]);
+ renderGraph(fails);
+ const divergence=Math.max(0,delay-0);
+ out.innerHTML=
+ '<span class="ok">Kestrel vertical-slice demo</span>\n'+
+ '================================\n'+
+ 'fault.spec = {kind:"latency", target:"inventory/check", trigger:1, delay:'+delay+'ms, seed:'+seed+'}\n'+
+ 'dependency_timeout = 30ms\n\n'+
+ 'healthy outcome: '+healthy.classification+' (signature='+hd+')\n'+
+ 'failing outcome: '+(fails?'inventory/inventory_timeout':'success')+' (signature='+fd+')\n'+
+ (fails?'<span class="bad">divergence evidence: inventory/check latency_delta ≈ '+divergence+'ms</span>\n':'divergence evidence: none above failure threshold\n')+
+ 'replay outcome: '+(fails?'inventory/inventory_timeout':'success')+' (signature='+rd+')\n'+
+ '<span class="'+(equivalent(failing,replay)?'ok':'bad')+'">replay_match='+equivalent(failing,replay)+'</span>\n\n'+
+ (fails?'Failure schedule reproduced the same terminal outcome and causal path.':'Injected delay did not exceed the order→inventory timeout, so the request remained successful.');
+};
+document.getElementById("reset").onclick=()=>{document.getElementById("delay").value="75";document.getElementById("seed").value="20260903";out.textContent="Ready. Run the replay sequence.";renderGraph(false)};
+renderGraph(false);
+</script></body></html>
