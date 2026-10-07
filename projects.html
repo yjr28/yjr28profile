@@ -23,13 +23,13 @@
       <div class="project-visual visual-northstar">
         <span class="project-number">P01</span><span class="project-signal">HYBRID CLOUD</span>
         <img src="assets/northstar.svg" alt="">
-        <div class="visual-caption"><b>100</b><span>simulated hosts</span></div>
+        <div class="visual-caption"><b>14</b><span>control-plane API routes</span></div>
       </div>
       <div class="project-copy">
         <div class="project-head"><div><small>SYSTEMS / CLOUD</small><h3>Northstar</h3></div><span>2026</span></div>
         <p>A reusable hybrid-cloud server management platform: C firmware telemetry, a C++ Linux host agent, Java control plane, REST/JSON services over HTTP/TCP, PostgreSQL, Docker, KVM, and AWS deployment.</p>
-        <div class="project-metrics"><span><b>100</b> simulated hosts</span><span><b>12</b> documented endpoints</span><span><b>2</b> deploy targets</span></div>
-        <div class="project-footer"><div>C/C++ · Java · PostgreSQL · Docker · AWS · Jenkins</div><button data-case="northstar">OPEN CASE FILE ↗</button></div>
+        <div class="project-metrics"><span><b>100</b> simulated hosts</span><span><b>14</b> API routes</span><span><b>30 s</b> command leases</span></div>
+        <div class="project-footer"><div>C/C++ · Java · PostgreSQL · Docker · Prometheus · Jenkins</div><div><a href="projects/northstar/">LIVE DEMO ↗</a> · <a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">GITHUB ↗</a></div></div>
       </div>
     </article>
 
@@ -51,13 +51,13 @@
       <div class="project-visual visual-kestrel">
         <span class="project-number">P03</span><span class="project-signal">FAILURE REPLAY</span>
         <img src="assets/kestrel.svg" alt="">
-        <div class="visual-caption"><b>97%</b><span>failures replayed</span></div>
+        <div class="visual-caption"><b>10</b><span>logical services</span></div>
       </div>
       <div class="project-copy">
         <div class="project-head"><div><small>DISTRIBUTED SYSTEMS</small><h3>Kestrel</h3></div><span>2026</span></div>
-        <p>A Linux flight recorder for distributed failures, joining application traces with low-level runtime/network evidence and deterministic replay.</p>
-        <div class="project-metrics"><span><b>97%</b> injected failures replayed</span><span><b>25k+</b> req/s</span><span><b>&lt;4.2%</b> p95 overhead</span><span><b>−85%</b> root-cause time</span></div>
-        <div class="project-footer"><div>Go · Rust/eBPF · gRPC · OpenTelemetry · Docker/K8s</div><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">GITHUB ↗</a></div>
+        <p>A distributed-systems flight recorder that records a real TCP vertical slice, reconstructs causal evidence, and replays supported seeded failure schedules.</p>
+        <div class="project-metrics"><span><b>10</b> logical services</span><span><b>30 ms</b> dependency timeout</span><span><b>75 ms</b> seeded fault</span><span><b>Level B</b> replay</span></div>
+        <div class="project-footer"><div>Go · HTTP/TCP · Causal graphs · Seeded replay</div><div><a href="projects/kestrel/">LIVE DEMO ↗</a> · <a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">GITHUB ↗</a></div></div>
       </div>
     </article>
 
@@ -65,13 +65,13 @@
       <div class="project-visual visual-aster">
         <span class="project-number">P04</span><span class="project-signal">LEARNED DATABASE</span>
         <img src="assets/aster.svg" alt="">
-        <div class="visual-caption"><b>2.34×</b><span>geo-mean execution</span></div>
+        <div class="visual-caption"><b>GATED</b><span>uncertainty fallback</span></div>
       </div>
       <div class="project-copy">
         <div class="project-head"><div><small>DATABASES / ML</small><h3>Aster</h3></div><span>2026</span></div>
-        <p>A learned PostgreSQL query-plan ranker trained over 180k+ plans, with uncertainty-aware fallback designed to improve execution without making selection overhead the new bottleneck.</p>
-        <div class="project-metrics"><span><b>180k+</b> plans</span><span><b>2.34×</b> geo-mean</span><span><b>−41%</b> p95 latency</span><span><b>&lt;7 ms</b> selection</span></div>
-        <div class="project-footer"><div>PostgreSQL · Graph ML · PyTorch · Evaluation</div><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">GITHUB ↗</a></div>
+        <p>A transparent PostgreSQL query-plan ranking prototype with explicit uncertainty and a confidence gate that falls back to PostgreSQL when the ranker is too uncertain or the decision margin is too small.</p>
+        <div class="project-metrics"><span><b>5</b> scoring signals</span><span><b>2</b> fallback gates</span><span><b>Python</b> executable baseline</span></div>
+        <div class="project-footer"><div>Python · PostgreSQL planning · Evaluation</div><div><a href="projects/aster/">LIVE DEMO ↗</a> · <a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">GITHUB ↗</a></div></div>
       </div>
     </article>
 
