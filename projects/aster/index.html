@@ -145,7 +145,7 @@ function render(bestName=null){
   const min=Math.min(...ranking.map(p=>p.score));
   const span=Math.max(.001,max-min);
   plans.innerHTML=ranking.map(p=>{
-    const normalized=100-((p.score-min)/span)*72;
+    const normalized=28+((p.score-min)/span)*72;
     const best=p.name===bestName?" best":"";
     return '<div class="plan-row'+best+'">'+
       '<div><b>'+p.name+'</b><small>cost '+p.cost.toLocaleString()+' · rows '+p.rows.toLocaleString()+' · uncertainty '+p.u.toFixed(2)+'</small></div>'+
