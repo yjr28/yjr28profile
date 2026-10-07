@@ -15,32 +15,58 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check JavaScript syntax
         run: node --check app.js
-      - name: Check required site files and local references
+      - name: Check site files, nested references, and inline JavaScript
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
+          import subprocess
+          import tempfile
 
           root = Path('.')
           required = [
               'index.html', 'app.js', 'base.css', 'components.css', 'responsive.css',
               'experience.html', 'projects.html', 'skills.html', 'about.html',
-              'contact.html', 'resume.html', '.nojekyll'
+              'contact.html', 'resume.html', '.nojekyll',
+              'projects/demo.css',
+              'projects/kestrel/index.html',
+              'projects/northstar/index.html',
+              'projects/aster/index.html',
           ]
           missing = [p for p in required if not (root / p).exists()]
           if missing:
               raise SystemExit(f'Missing required files: {missing}')
 
           broken = []
-          for html in root.glob('*.html'):
+          script_failures = []
+          for html in root.rglob('*.html'):
               text = html.read_text(encoding='utf-8')
               for ref in re.findall(r'(?:href|src)="([^"]+)"', text):
-                  if ref.startswith(('http:', 'https:', 'mailto:', '#', 'data:')):
+                  if ref.startswith(('http:', 'https:', 'mailto:', '#', 'data:', 'javascript:')):
                       continue
-                  target = root / ref.split('#', 1)[0]
-                  if ref and not target.exists():
+                  clean = ref.split('#', 1)[0].split('?', 1)[0]
+                  if not clean:
+                      continue
+                  target = (html.parent / clean)
+                  if clean.endswith('/'):
+                      target = target / 'index.html'
+                  if not target.exists():
                       broken.append((str(html), ref))
+
+              for i, script in enumerate(re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', text, flags=re.S | re.I), start=1):
+                  if not script.strip():
+                      continue
+                  with tempfile.NamedTemporaryFile('w', suffix='.js', encoding='utf-8', delete=False) as tmp:
+                      tmp.write(script)
+                      tmp_path = tmp.name
+                  proc = subprocess.run(['node', '--check', tmp_path], capture_output=True, text=True)
+                  Path(tmp_path).unlink(missing_ok=True)
+                  if proc.returncode:
+                      script_failures.append((str(html), i, proc.stderr.strip()))
+
           if broken:
               raise SystemExit(f'Broken local references: {broken}')
+          if script_failures:
+              raise SystemExit(f'Inline JavaScript syntax errors: {script_failures}')
           print('Static site checks passed.')
           PY
