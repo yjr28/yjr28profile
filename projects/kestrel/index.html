@@ -3,166 +3,256 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Kestrel distributed failure replay demo by YoungJun Ryu.">
-<title>Kestrel · Failure Replay</title>
+<meta name="description" content="Run Kestrel's Go failure replay core in the browser through WebAssembly.">
+<title>Kestrel · Failure Lab</title>
 <link rel="stylesheet" href="../demo.css">
+<link rel="stylesheet" href="../app-demo.css">
+<script src="./wasm_exec.js"></script>
 </head>
 <body class="theme-kestrel">
 <header class="shell site-bar">
-  <a class="identity" href="../../" aria-label="Back to YoungJun Ryu portfolio">
-    <span class="identity-mark">YJ</span>
-    <span>YoungJun Ryu</span>
-    <span class="identity-project">/ Kestrel</span>
-  </a>
-  <nav class="site-nav" aria-label="Project navigation">
-    <a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">Source</a>
-    <a href="../../#work">Portfolio</a>
-  </nav>
+  <a class="identity" href="../../"><span class="identity-mark">YJ</span><span>YoungJun Ryu</span><span class="identity-project">/ Kestrel</span></a>
+  <nav class="site-nav"><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">Source</a><a href="../../#work">Portfolio</a></nav>
 </header>
 
 <main>
-  <section class="shell hero">
+  <section class="shell demo-intro">
     <h1>Kestrel</h1>
-    <div class="hero-copy">
-      <p>A distributed failure recorder that turns one bad request into a causal story you can replay. Inject latency, watch the first divergence appear, then verify that the replay lands on the same terminal outcome.</p>
-      <div class="hero-links">
-        <a href="#demo">Run the failure</a>
-        <a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/demo/demo.go" target="_blank" rel="noreferrer">Read the Go slice</a>
-      </div>
-    </div>
-
-    <div class="facts" aria-label="Kestrel implementation facts">
-      <div class="fact"><strong>10</strong><span>logical services</span></div>
-      <div class="fact"><strong>30 ms</strong><span>inventory timeout</span></div>
-      <div class="fact"><strong>75 ms</strong><span>default seeded fault</span></div>
-      <div class="fact"><strong>Level B</strong><span>schedule replay</span></div>
+    <p>Inject latency into a distributed request, watch the failure propagate, then replay it. The calculations below run Kestrel's Go fault, graph, model, and replay packages compiled to WebAssembly.</p>
+    <div class="demo-intro-meta">
+      <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Go/WASM</strong><span id="runtimeText">loading Kestrel core</span></span>
+      <span class="runtime-chip"><strong>Fault target</strong><span>inventory / check</span></span>
+      <span class="runtime-chip"><strong>Dependency timeout</strong><span>30 ms</span></span>
+      <span class="runtime-chip"><strong>Topology</strong><span>10 logical services</span></span>
     </div>
   </section>
 
-  <section id="demo" class="workbench">
-    <div class="shell">
-      <div class="workbench-head">
-        <div class="workbench-title">
-          <h2>Replay one failure, end to end.</h2>
-          <p>The browser mirrors the same threshold and outcome-signature rules as the current Go demo.</p>
-        </div>
-        <div class="status-line"><span class="status-dot"></span><span id="runStatus">ready to inject</span></div>
-      </div>
+  <section class="product-frame" aria-label="Kestrel interactive failure lab">
+    <div class="product-chrome">
+      <strong>Kestrel / Failure Lab</strong>
+      <span class="product-chrome-center">real Go core · WebAssembly</span>
+      <div class="product-chrome-actions"><a href="https://github.com/yjr28/kestrel-replay/tree/main/internal/browserdemo" target="_blank" rel="noreferrer">Browser adapter</a><a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/replay/replay.go" target="_blank" rel="noreferrer">Replay core</a></div>
+    </div>
 
-      <div class="control-strip">
-        <div class="field">
-          <label for="delay">Inventory latency</label>
-          <select id="delay">
-            <option value="15">15 ms · healthy</option>
-            <option value="30">30 ms · timeout boundary</option>
-            <option value="75" selected>75 ms · repository default</option>
-            <option value="120">120 ms · hard failure</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="seed">Fault seed</label>
-          <input id="seed" value="20260903" inputmode="numeric">
-        </div>
-        <div class="control-actions">
-          <button class="action" id="run">Inject + replay</button>
-          <button class="action secondary" id="reset">Reset</button>
-        </div>
-      </div>
-
-      <div class="instrument">
-        <div class="instrument-main">
-          <div class="instrument-label"><b>Request path</b><span>elapsed request time</span></div>
-
-          <div class="replay-track" id="track">
-            <div class="replay-row" data-service="gateway"><span class="replay-name">gateway</span><span class="replay-lane"><i class="replay-span" style="--start:0%;--width:12%"></i></span></div>
-            <div class="replay-row" data-service="auth"><span class="replay-name">auth</span><span class="replay-lane"><i class="replay-span" style="--start:10%;--width:14%"></i></span></div>
-            <div class="replay-row" data-service="account"><span class="replay-name">account</span><span class="replay-lane"><i class="replay-span" style="--start:21%;--width:14%"></i></span></div>
-            <div class="replay-row" data-service="order"><span class="replay-name">order</span><span class="replay-lane"><i class="replay-span" style="--start:32%;--width:18%"></i></span></div>
-            <div class="replay-row" data-service="inventory"><span class="replay-name">inventory</span><span class="replay-lane"><i class="replay-span" style="--start:47%;--width:18%"></i><i class="replay-marker" id="faultMarker" style="--mark:65%;display:none"></i></span></div>
-            <div class="replay-row" data-service="pricing"><span class="replay-name">pricing</span><span class="replay-lane"><i class="replay-span" style="--start:63%;--width:12%"></i></span></div>
-            <div class="replay-row" data-service="payment"><span class="replay-name">payment</span><span class="replay-lane"><i class="replay-span" style="--start:73%;--width:12%"></i></span></div>
-          </div>
-          <div class="replay-axis"><span>0 ms</span><span>30 ms timeout</span><span>request end</span></div>
-
-          <div class="replay-result" id="result">
-            <strong id="resultTitle">No fault injected yet.</strong>
-            <span id="resultMeta">waiting for run</span>
+    <div class="kestrel-app">
+      <aside class="k-control">
+        <div class="app-section-title"><h2>Fault injection</h2><span>inventory/check</span></div>
+        <div class="k-control-stack">
+          <div class="app-field">
+            <label for="delayRange">Injected latency</label>
+            <input id="delayRange" type="range" min="5" max="120" step="5" value="75">
+            <div class="k-range-line"><span>5 ms</span><strong id="delayValue">75 ms</strong><span>120 ms</span></div>
           </div>
 
-          <div class="console" id="console">Select a latency and run the sequence. The timeline will stop at the first terminal failure.</div>
-          <p class="note">GitHub Pages cannot run the Go TCP process itself. This view reproduces the repository's public fault threshold, path, and replay-equivalence rules; the linked source remains the executable implementation.</p>
+          <div class="app-field">
+            <label for="jitterRange">Deterministic jitter</label>
+            <input id="jitterRange" type="range" min="0" max="50" step="5" value="0">
+            <div class="k-range-line"><span>0%</span><strong id="jitterValue">0%</strong><span>50%</span></div>
+          </div>
+
+          <div class="app-field">
+            <label for="seedInput">Seed</label>
+            <input id="seedInput" inputmode="numeric" value="20260903">
+          </div>
+
+          <div>
+            <div style="margin-bottom:7px;color:var(--faint);font:500 9px/1 var(--mono);text-transform:uppercase;letter-spacing:.06em">Presets</div>
+            <div class="k-presets">
+              <button class="k-preset" data-delay="15" data-jitter="0">Healthy</button>
+              <button class="k-preset active" data-delay="75" data-jitter="0">Timeout</button>
+              <button class="k-preset" data-delay="75" data-jitter="30">Jitter</button>
+              <button class="k-preset" data-delay="120" data-jitter="0">Hard fail</button>
+            </div>
+          </div>
+
+          <button class="app-button k-run" id="runButton" disabled>Loading Go runtime…</button>
+        </div>
+      </aside>
+
+      <div class="k-workspace">
+        <div class="k-livebar">
+          <span id="phaseText">Runtime initialization</span>
+          <span id="runtimeHash">wasm checksum pending</span>
         </div>
 
-        <aside class="instrument-side" aria-label="Implementation evidence">
-          <div class="instrument-label"><b>Evidence in source</b><span>open any file</span></div>
-          <div class="source-list">
-            <a class="source-link" href="https://github.com/yjr28/kestrel-replay/blob/main/cmd/kestrel-demo/main.go" target="_blank" rel="noreferrer"><b>Demo entrypoint</b><span>Runs healthy, injected-failure, and replay executions with the seeded inventory fault.</span></a>
-            <a class="source-link" href="https://github.com/yjr28/kestrel-replay/blob/main/internal/demo/demo.go" target="_blank" rel="noreferrer"><b>TCP vertical slice</b><span>Real local HTTP boundaries, async fan-out, event recording, and the 30 ms dependency timeout.</span></a>
-            <a class="source-link" href="https://github.com/yjr28/kestrel-replay/blob/main/internal/graph/graph.go" target="_blank" rel="noreferrer"><b>Causal graph</b><span>Parent-span, message, and fault edges with conservative divergence detection.</span></a>
-            <a class="source-link" href="https://github.com/yjr28/kestrel-replay/blob/main/internal/replay/replay.go" target="_blank" rel="noreferrer"><b>Replay equivalence</b><span>Matches classification, HTTP status, terminal service, error code, and causal path.</span></a>
+        <div class="k-scene" id="scene">
+          <div class="k-path" id="syncPath">
+            <div class="k-node" data-service="gateway"><div class="k-node-dot">GW</div><div class="k-node-label">gateway</div><div class="k-node-op">create_order</div></div>
+            <div class="k-node" data-service="auth"><div class="k-node-dot">AU</div><div class="k-node-label">auth</div><div class="k-node-op">authorize</div></div>
+            <div class="k-node" data-service="account"><div class="k-node-dot">AC</div><div class="k-node-label">account</div><div class="k-node-op">load_account</div></div>
+            <div class="k-node" data-service="order"><div class="k-node-dot">OR</div><div class="k-node-label">order</div><div class="k-node-op">create</div></div>
+            <div class="k-node" data-service="inventory"><div class="k-node-dot">IN</div><div class="k-node-label">inventory</div><div class="k-node-op">check</div></div>
+            <div class="k-node" data-service="pricing"><div class="k-node-dot">PR</div><div class="k-node-label">pricing</div><div class="k-node-op">quote</div></div>
+            <div class="k-node" data-service="payment"><div class="k-node-dot">PA</div><div class="k-node-label">payment</div><div class="k-node-op">authorize</div></div>
           </div>
-        </aside>
+
+          <div class="k-worker-row" id="workerRow">
+            <div class="k-worker-label">async order.completed</div>
+            <div class="k-worker" data-service="notification"><b>notification</b><span>consumer</span></div>
+            <div class="k-worker" data-service="audit"><b>audit</b><span>consumer</span></div>
+            <div class="k-worker" data-service="analytics"><b>analytics</b><span>consumer</span></div>
+          </div>
+
+          <div class="k-outcome">
+            <div class="k-outcome-cell"><b id="outcomeValue">—</b><span>failing outcome</span></div>
+            <div class="k-outcome-cell"><b id="divergenceValue">—</b><span>first divergence</span></div>
+            <div class="k-outcome-cell"><b id="eventValue">—</b><span>recorded events</span></div>
+            <div class="k-outcome-cell"><b id="replayValue">—</b><span>replay equivalence</span></div>
+          </div>
+        </div>
+
+        <div class="k-trace-wrap">
+          <div class="k-trace-header"><span>service</span><span>kind</span><span>operation / evidence</span><span>duration</span></div>
+          <div id="traceRows"><div class="empty-copy" style="padding:14px 15px">Run a request to inspect the event stream generated by the Go runtime.</div></div>
+        </div>
       </div>
+    </div>
+
+    <div class="k-event-inspector" id="eventInspector">
+      <div><b>Selected event</b><span id="eventTitle">none</span></div>
+      <pre id="eventJSON">Click an event row after a run.</pre>
     </div>
   </section>
 </main>
 
-<footer class="shell site-footer">
-  <span>Failure evidence, not benchmark theater.</span>
-  <a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">github.com/yjr28/kestrel-replay</a>
-</footer>
+<footer class="shell site-footer"><span>The browser adapter replaces local TCP sockets only; fault decisions, graph construction, event types, signatures, and replay equivalence come from Kestrel's Go packages.</span><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">Repository</a></footer>
 
 <script>
-const syncPath=["gateway","auth","account","order","inventory","pricing","payment"];
-const out=document.getElementById("console");
-const resultTitle=document.getElementById("resultTitle");
-const resultMeta=document.getElementById("resultMeta");
-const statusText=document.getElementById("runStatus");
-const inventoryRow=document.querySelector('[data-service="inventory"]');
-const inventorySpan=inventoryRow.querySelector(".replay-span");
-const faultMarker=document.getElementById("faultMarker");
-function sig(classification,status,terminal,error,path){return {classification,http_status:status,terminal_service:terminal,error_code:error,causal_path:path}}
-async function digest(o){const body=o.classification+"\n"+o.http_status+"\n"+o.terminal_service+"\n"+o.error_code+"\n"+o.causal_path.map(x=>x+"\n").join("");const bytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(body));return [...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,"0")).join("").slice(0,16)}
-function equivalent(a,b){return a.classification===b.classification&&a.http_status===b.http_status&&a.terminal_service===b.terminal_service&&a.error_code===b.error_code&&JSON.stringify(a.causal_path)===JSON.stringify(b.causal_path)}
-function clearResolved(){document.querySelectorAll(".just-resolved").forEach(el=>el.classList.remove("just-resolved"))}
-document.getElementById("run").onclick=async()=>{
-  clearResolved();
-  const delay=Number(document.getElementById("delay").value);
-  const seed=document.getElementById("seed").value.trim()||"20260903";
-  const fails=delay>30;
-  const healthy=sig("success",201,"","",syncPath);
-  const failing=fails?sig("distributed_failure",504,"inventory","inventory_timeout",["gateway","auth","account","order","inventory"]):sig("success",201,"","",syncPath);
-  const replay={...failing,causal_path:[...failing.causal_path]};
-  const [hd,fd,rd]=await Promise.all([digest(healthy),digest(failing),digest(replay)]);
+const delayRange=document.getElementById("delayRange");
+const jitterRange=document.getElementById("jitterRange");
+const seedInput=document.getElementById("seedInput");
+const runButton=document.getElementById("runButton");
+const runtimeChip=document.getElementById("runtimeChip");
+const runtimeText=document.getElementById("runtimeText");
+const phaseText=document.getElementById("phaseText");
+const traceRows=document.getElementById("traceRows");
+const nodeMap=new Map([...document.querySelectorAll("[data-service]")].map(el=>[el.dataset.service,el]));
+let runtimeReady=false;
+let running=false;
 
-  inventoryRow.classList.toggle("fault",fails);
-  inventorySpan.style.setProperty("--width",fails?Math.min(47,18+delay/3)+"%":"18%");
-  faultMarker.style.display=fails?"block":"none";
-  statusText.textContent=fails?"failure reproduced":"request stayed healthy";
-  resultTitle.textContent=fails?"inventory_timeout reproduced":"request completed";
-  resultMeta.textContent=fails?"504 · replay_match=true":"201 · no terminal failure";
-  document.getElementById("result").classList.add("just-resolved");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function updateControls(){
+  document.getElementById("delayValue").textContent=delayRange.value+" ms";
+  document.getElementById("jitterValue").textContent=jitterRange.value+"%";
+}
+delayRange.addEventListener("input",updateControls);
+jitterRange.addEventListener("input",updateControls);
+document.querySelectorAll(".k-preset").forEach(btn=>btn.addEventListener("click",()=>{
+  delayRange.value=btn.dataset.delay;
+  jitterRange.value=btn.dataset.jitter;
+  document.querySelectorAll(".k-preset").forEach(x=>x.classList.toggle("active",x===btn));
+  updateControls();
+}));
+updateControls();
 
-  out.innerHTML=
-    '<span class="ok">healthy</span> signature='+hd+'\n'+
-    (fails?'<span class="bad">failure</span> inventory / inventory_timeout · signature='+fd+'\n':'<span class="ok">failure run</span> remained healthy · signature='+fd+'\n')+
-    'fault = latency '+delay+'ms · seed '+seed+'\n'+
-    'timeout = 30ms\n'+
-    (fails?'first divergence = inventory/check latency_delta\n':'first divergence = none above threshold\n')+
-    '<span class="'+(equivalent(failing,replay)?'ok':'bad')+'">replay_match = '+equivalent(failing,replay)+'</span> · replay signature='+rd;
-};
-document.getElementById("reset").onclick=()=>{
-  clearResolved();
-  document.getElementById("delay").value="75";
-  document.getElementById("seed").value="20260903";
-  inventoryRow.classList.remove("fault");
-  inventorySpan.style.setProperty("--width","18%");
-  faultMarker.style.display="none";
-  statusText.textContent="ready to inject";
-  resultTitle.textContent="No fault injected yet.";
-  resultMeta.textContent="waiting for run";
-  out.textContent="Select a latency and run the sequence. The timeline will stop at the first terminal failure.";
-};
+function resetScene(){
+  nodeMap.forEach(n=>n.classList.remove("active","success","failed"));
+  document.querySelectorAll(".k-worker").forEach(n=>n.classList.remove("active","success","failed"));
+}
+function eventDescription(e){
+  if(e.kind==="fault")return (e.attributes?.["fault.kind"]||"fault")+" · +"+Math.round(Number(e.attributes?.delay_us||0)/1000)+" ms";
+  if(e.kind==="message")return e.operation+" · "+(e.attributes?.["message.action"]||"message");
+  return e.operation||"";
+}
+function eventDuration(e){
+  const us=Number(e.attributes?.duration_us||0);
+  return us?((us/1000).toFixed(us>=10000?0:1)+" ms"):"—";
+}
+function renderTrace(events){
+  if(!events.length){traceRows.innerHTML='<div class="empty-copy" style="padding:14px 15px">No events recorded.</div>';return}
+  traceRows.innerHTML=events.map((e,i)=>`
+    <div class="k-trace-row" data-event-index="${i}">
+      <span class="${e.status==="error"?"fault":e.kind==="fault"?"fault":"good"}">${e.service||"system"}</span>
+      <span>${e.kind}</span>
+      <span>${eventDescription(e)}</span>
+      <span>${eventDuration(e)}</span>
+    </div>`).join("");
+  traceRows.querySelectorAll("[data-event-index]").forEach(row=>row.addEventListener("click",()=>{
+    traceRows.querySelectorAll(".k-trace-row").forEach(x=>x.classList.toggle("selected",x===row));
+    const e=events[Number(row.dataset.eventIndex)];
+    document.getElementById("eventTitle").textContent=(e.service||"system")+" / "+e.kind;
+    document.getElementById("eventJSON").textContent=JSON.stringify(e,null,2);
+  }));
+}
+async function animateRun(events,label){
+  phaseText.textContent=label;
+  resetScene();
+  const seen=new Set();
+  for(const e of events){
+    if(!e.service||seen.has(e.service)&&e.kind!=="fault")continue;
+    const node=nodeMap.get(e.service);
+    if(!node)continue;
+    node.classList.add("active");
+    await sleep(150);
+    node.classList.remove("active");
+    if(e.kind==="fault"||e.status==="error")node.classList.add("failed");
+    else node.classList.add("success");
+    seen.add(e.service);
+  }
+}
+async function runKestrel(){
+  if(!runtimeReady||running)return;
+  running=true;runButton.disabled=true;runButton.textContent="Running Go…";
+  resetScene();
+  traceRows.innerHTML='<div class="empty-copy" style="padding:14px 15px">Executing Kestrel in WebAssembly…</div>';
+  try{
+    const seed=Number(seedInput.value)||20260903;
+    const input={delay_ms:Number(delayRange.value),seed,jitter:Number(jitterRange.value)/100};
+    const raw=window.runKestrelGo(JSON.stringify(input));
+    const result=JSON.parse(raw);
+    if(result.error)throw new Error(result.error);
+
+    await animateRun(result.failing.events,"Recording injected run");
+    renderTrace(result.failing.events);
+    const outcome=result.failing.outcome;
+    document.getElementById("outcomeValue").textContent=outcome.classification==="success"?"201 success":"504 inventory";
+    document.getElementById("divergenceValue").textContent=result.has_divergence?result.divergence.service+" / "+result.divergence.reason:"none";
+    document.getElementById("eventValue").textContent=String(result.failing.events.length);
+    document.getElementById("replayValue").textContent="replaying…";
+
+    await sleep(350);
+    await animateRun(result.replayed.events,"Replaying same fault schedule");
+    document.getElementById("replayValue").textContent=result.replay_match?"MATCH":"DIVERGED";
+    document.getElementById("replayValue").className=result.replay_match?"ok":"bad";
+    phaseText.textContent=result.replay_match?"Replay reproduced terminal outcome":"Replay diverged";
+  }catch(err){
+    phaseText.textContent="Runtime error";
+    traceRows.innerHTML='<div class="empty-copy" style="padding:14px 15px;color:var(--danger)">'+String(err.message)+'</div>';
+  }finally{
+    running=false;runButton.disabled=false;runButton.textContent="Inject fault + replay";
+  }
+}
+runButton.addEventListener("click",runKestrel);
+
+(async()=>{
+  try{
+    const [wasmResponse,hashResponse]=await Promise.all([
+      fetch("https://raw.githubusercontent.com/yjr28/kestrel-replay/main/web/kestrel.wasm",{cache:"no-store"}),
+      fetch("https://raw.githubusercontent.com/yjr28/kestrel-replay/main/web/kestrel.wasm.sha256",{cache:"no-store"})
+    ]);
+    if(!wasmResponse.ok)throw new Error("Kestrel WebAssembly artifact is unavailable");
+    const go=new Go();
+    const bytes=await wasmResponse.arrayBuffer();
+    const instance=await WebAssembly.instantiate(bytes,go.importObject);
+    go.run(instance.instance).catch(err=>console.error("Kestrel Go runtime exited",err));
+    for(let i=0;i<50&&!window.runKestrelGo;i++)await sleep(20);
+    if(!window.runKestrelGo)throw new Error("Go runtime did not expose runKestrelGo");
+    runtimeReady=true;
+    runtimeChip.classList.remove("busy");runtimeChip.classList.add("ready");
+    runtimeText.textContent="Kestrel Go core loaded";
+    phaseText.textContent="Ready to inject a request";
+    if(hashResponse.ok){
+      const hash=(await hashResponse.text()).trim().split(/\s+/)[0];
+      document.getElementById("runtimeHash").textContent="wasm "+hash.slice(0,12);
+    }
+    runButton.disabled=false;runButton.textContent="Inject fault + replay";
+  }catch(err){
+    runtimeChip.classList.remove("busy");runtimeChip.classList.add("error");
+    runtimeText.textContent="runtime failed";
+    phaseText.textContent=err.message;
+    runButton.textContent="Go runtime unavailable";
+  }
+})();
 </script>
 </body>
 </html>
