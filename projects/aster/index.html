@@ -1,47 +1,188 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Aster PostgreSQL query-plan ranking prototype — live interactive demo by YoungJun Ryu.">
-<title>Aster — Live Query Plan Ranker</title><link rel="stylesheet" href="../demo.css"></head>
-<body><header class="shell topbar"><a class="brand" href="../../"><span class="mark">YJ</span><span>YoungJun Ryu / Aster</span></a>
-<nav class="nav"><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Source ↗</a><a href="../../#work">Portfolio</a></nav></header>
-<main><section class="hero"><div class="shell"><div class="eyebrow">Databases / query planning</div><h1>Aster</h1>
-<p class="lede">A PostgreSQL query-plan ranking prototype with an explicit uncertainty-aware fallback. The current version is intentionally transparent: it establishes a real executable ranking contract before any learned model or benchmark claim is allowed onto the portfolio.</p>
-<div class="pills"><span class="pill live">Executable prototype</span><span class="pill">Python stdlib</span><span class="pill">Uncertainty gate</span><span class="pill">Postgres fallback</span><span class="pill">No fake benchmarks</span></div></div></section>
-<section class="shell grid"><div class="panel"><div class="panel-head"><b>Plan ranking console</b><span>same equation as aster_ranker.py</span></div><div class="panel-body">
-<div class="controls"><div class="control"><label>Scenario</label><select id="scenario"><option value="clear">Clear index-plan win</option><option value="uncertain">Low cost, high uncertainty</option><option value="close">Too-close ranking</option></select></div>
-<div class="control"><label>PostgreSQL default</label><select id="pg"><option value="postgres_default">postgres_default</option><option value="index_join">index_join</option><option value="nested_loop">nested_loop</option></select></div></div>
-<div class="actions"><button id="rank">Rank candidate plans</button></div>
-<div id="plans" class="evidence"></div>
-<div class="console" id="console">Choose a scenario and rank the plans.</div>
-<div class="note">Lower score is better. Aster falls back to PostgreSQL's default when the best candidate has uncertainty &gt; 0.35 or when the score margin over the runner-up is &lt; 0.08. These are prototype policy values, not production-tuned thresholds.</div>
-</div></div>
-<aside class="evidence">
-<a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer"><b>Executable Python baseline ↗</b><span>Dataclasses, validation, deterministic score function, ranking, confidence gate, and PostgreSQL fallback.</span></a>
-<a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/test_aster_ranker.py" target="_blank" rel="noreferrer"><b>Tests ↗</b><span>Covers a clear ranker win, high-uncertainty fallback, and low-margin fallback.</span></a>
-<div class="item"><b>Current score</b><span class="code">0.46·log1p(cost) + 0.14·log1p(rows) + 0.13·seq_scans + 0.11·nested_loops + 0.16·uncertainty</span></div>
-<div class="item"><b>What comes next</b><span>Real EXPLAIN ANALYZE plan ingestion, plan-tree featurization, leakage-safe workload splits, a learned ranker, calibrated uncertainty, and reproducible evaluation artifacts.</span></div>
-<div class="item"><b>Evidence policy</b><span>No “180k plans,” “2.34× speedup,” or selection-latency claim is shown because the repository does not yet contain the corpus and benchmark artifacts needed to defend them.</span></div>
-</aside></section></main>
-<footer class="shell footer"><span>Baseline first. Claims after measurement.</span><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">github.com/yjr28/aster-pg-optimizer ↗</a></footer>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Aster PostgreSQL query-plan ranking prototype by YoungJun Ryu.">
+<title>Aster · Plan Ranker</title>
+<link rel="stylesheet" href="../demo.css">
+</head>
+<body class="theme-aster">
+<header class="shell site-bar">
+  <a class="identity" href="../../" aria-label="Back to YoungJun Ryu portfolio">
+    <span class="identity-mark">YJ</span>
+    <span>YoungJun Ryu</span>
+    <span class="identity-project">/ Aster</span>
+  </a>
+  <nav class="site-nav" aria-label="Project navigation">
+    <a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Source</a>
+    <a href="../../#work">Portfolio</a>
+  </nav>
+</header>
+
+<main>
+  <section class="shell hero">
+    <h1>Aster</h1>
+    <div class="hero-copy">
+      <p>A query-plan ranking prototype that can refuse its own answer. It scores candidate PostgreSQL plans, then hands control back to PostgreSQL when uncertainty is too high or the top two plans are too close to call.</p>
+      <div class="hero-links">
+        <a href="#demo">Rank the candidates</a>
+        <a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer">Read the ranker</a>
+      </div>
+    </div>
+
+    <div class="facts" aria-label="Aster prototype facts">
+      <div class="fact"><strong>5</strong><span>plan signals</span></div>
+      <div class="fact"><strong>0.35</strong><span>uncertainty ceiling</span></div>
+      <div class="fact"><strong>0.08</strong><span>minimum score margin</span></div>
+      <div class="fact"><strong>0</strong><span>third-party dependencies</span></div>
+    </div>
+  </section>
+
+  <section id="demo" class="workbench">
+    <div class="shell">
+      <div class="workbench-head">
+        <div class="workbench-title">
+          <h2>Let the ranker make the call, or decline it.</h2>
+          <p>Lower score wins. Confidence gates decide whether Aster is allowed to override PostgreSQL's default.</p>
+        </div>
+        <div class="status-line"><span class="status-dot"></span><span id="runStatus">scenario loaded</span></div>
+      </div>
+
+      <div class="control-strip">
+        <div class="field">
+          <label for="scenario">Scenario</label>
+          <select id="scenario">
+            <option value="clear">Clear index-plan win</option>
+            <option value="uncertain">Cheap plan, high uncertainty</option>
+            <option value="close">Top plans too close</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pg">PostgreSQL default</label>
+          <select id="pg">
+            <option value="postgres_default">postgres_default</option>
+            <option value="index_join">index_join</option>
+            <option value="nested_loop">nested_loop</option>
+          </select>
+        </div>
+        <div class="control-actions">
+          <button class="action" id="rank">Rank plans</button>
+        </div>
+      </div>
+
+      <div class="instrument">
+        <div class="instrument-main">
+          <div class="instrument-label"><b>Candidate plans</b><span>normalized score · lower is better</span></div>
+          <div class="plan-table" id="plans"></div>
+
+          <div class="decision" id="decision">
+            <div class="decision-copy">
+              <strong id="decisionTitle">No decision yet.</strong>
+              <span id="decisionReason">Run the ranker to apply uncertainty and margin gates.</span>
+            </div>
+            <div class="decision-badge" id="decisionBadge">waiting</div>
+          </div>
+
+          <div class="console" id="console">The browser uses the same deterministic scoring equation and fallback rules as aster_ranker.py.</div>
+          <p class="note">This is deliberately a baseline, not a disguised benchmark. The repository does not claim a trained plan corpus or production speedup yet; those numbers stay off the page until the data and evaluation artifacts exist.</p>
+        </div>
+
+        <aside class="instrument-side" aria-label="Implementation evidence">
+          <div class="instrument-label"><b>Evidence in source</b><span>open any file</span></div>
+          <div class="source-list">
+            <a class="source-link" href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer"><b>Ranking baseline</b><span>Validated plan schema, explicit score function, sorted candidates, uncertainty gate, margin gate, and PostgreSQL fallback.</span></a>
+            <a class="source-link" href="https://github.com/yjr28/aster-pg-optimizer/blob/main/test_aster_ranker.py" target="_blank" rel="noreferrer"><b>Unit tests</b><span>Clear win, high-uncertainty fallback, and low-margin fallback are all pinned in CI.</span></a>
+            <div class="source-item"><b>Current equation</b><span>0.46·log1p(cost) + 0.14·log1p(rows) + 0.13·seq scans + 0.11·nested loops + 0.16·uncertainty</span></div>
+            <div class="source-item"><b>Next engineering step</b><span>Ingest real EXPLAIN ANALYZE trees, build workload-safe splits, then benchmark a learned ranker against this contract.</span></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="shell site-footer">
+  <span>The model can abstain. That is part of the design.</span>
+  <a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">github.com/yjr28/aster-pg-optimizer</a>
+</footer>
+
 <script>
 const scenarios={
- clear:[
-  {name:"postgres_default",cost:1200,rows:50000,seq:2,nl:0,u:.10},
-  {name:"index_join",cost:180,rows:2500,seq:0,nl:0,u:.08},
-  {name:"nested_loop",cost:700,rows:12000,seq:0,nl:3,u:.12}],
- uncertain:[
-  {name:"postgres_default",cost:600,rows:9000,seq:1,nl:0,u:.05},
-  {name:"index_join",cost:90,rows:1000,seq:0,nl:0,u:.90},
-  {name:"nested_loop",cost:760,rows:11000,seq:0,nl:2,u:.10}],
- close:[
-  {name:"postgres_default",cost:100,rows:1000,seq:0,nl:0,u:.10},
-  {name:"index_join",cost:101,rows:1000,seq:0,nl:0,u:.10},
-  {name:"nested_loop",cost:900,rows:12000,seq:0,nl:3,u:.15}]
+  clear:[
+    {name:"postgres_default",cost:1200,rows:50000,seq:2,nl:0,u:.10},
+    {name:"index_join",cost:180,rows:2500,seq:0,nl:0,u:.08},
+    {name:"nested_loop",cost:700,rows:12000,seq:0,nl:3,u:.12}
+  ],
+  uncertain:[
+    {name:"postgres_default",cost:600,rows:9000,seq:1,nl:0,u:.05},
+    {name:"index_join",cost:90,rows:1000,seq:0,nl:0,u:.90},
+    {name:"nested_loop",cost:760,rows:11000,seq:0,nl:2,u:.10}
+  ],
+  close:[
+    {name:"postgres_default",cost:100,rows:1000,seq:0,nl:0,u:.10},
+    {name:"index_join",cost:101,rows:1000,seq:0,nl:0,u:.10},
+    {name:"nested_loop",cost:900,rows:12000,seq:0,nl:3,u:.15}
+  ]
 };
 const score=p=>.46*Math.log1p(p.cost)+.14*Math.log1p(p.rows)+.13*p.seq+.11*p.nl+.16*p.u;
-const plans=document.getElementById("plans"), out=document.getElementById("console"), scen=document.getElementById("scenario"), pg=document.getElementById("pg");
-function render(){const xs=scenarios[scen.value];plans.innerHTML=xs.map(p=>'<div class="item"><b>'+p.name+'</b><span>cost '+p.cost.toLocaleString()+' · rows '+p.rows.toLocaleString()+' · seq scans '+p.seq+' · nested loops '+p.nl+' · uncertainty '+p.u.toFixed(2)+'</span></div>').join("")}
-function rank(){const ranking=scenarios[scen.value].map(p=>({...p,score:score(p)})).sort((a,b)=>a.score-b.score),best=ranking[0],second=ranking[1],margin=second.score-best.score;let fallback=false,reason="ranker confidence gate passed";if(best.u>.35){fallback=true;reason="best candidate exceeds uncertainty threshold"}else if(margin<.08){fallback=true;reason="ranking margin is too small"}const selected=fallback?pg.value:best.name;
- out.innerHTML='<span class="ok">Aster ranking decision</span>\n======================\n'+ranking.map((p,i)=>(i+1)+'. '+p.name.padEnd(18)+' score='+p.score.toFixed(4)+' uncertainty='+p.u.toFixed(2)).join("\n")+'\n\nmodel_choice = '+best.name+'\npostgres_choice = '+pg.value+'\nmargin = '+margin.toFixed(4)+'\nreason = '+reason+'\n<span class="'+(fallback?'warn':'ok')+'">selected_plan = '+selected+(fallback?' (fallback)':'')+'</span>'}
-scen.onchange=render;document.getElementById("rank").onclick=rank;render();
-</script></body></html>
+const plans=document.getElementById("plans");
+const out=document.getElementById("console");
+const scen=document.getElementById("scenario");
+const pg=document.getElementById("pg");
+const runStatus=document.getElementById("runStatus");
+const decision=document.getElementById("decision");
+const decisionTitle=document.getElementById("decisionTitle");
+const decisionReason=document.getElementById("decisionReason");
+const decisionBadge=document.getElementById("decisionBadge");
+
+function evaluated(){
+  return scenarios[scen.value].map(p=>({...p,score:score(p)})).sort((a,b)=>a.score-b.score);
+}
+function render(bestName=null){
+  const ranking=evaluated();
+  const max=Math.max(...ranking.map(p=>p.score));
+  const min=Math.min(...ranking.map(p=>p.score));
+  const span=Math.max(.001,max-min);
+  plans.innerHTML=ranking.map(p=>{
+    const normalized=100-((p.score-min)/span)*72;
+    const best=p.name===bestName?" best":"";
+    return '<div class="plan-row'+best+'">'+
+      '<div><b>'+p.name+'</b><small>cost '+p.cost.toLocaleString()+' · rows '+p.rows.toLocaleString()+' · uncertainty '+p.u.toFixed(2)+'</small></div>'+
+      '<div class="score-track"><div class="score-fill" style="--score:'+normalized.toFixed(1)+'%"></div></div>'+
+      '<div class="plan-score">'+p.score.toFixed(4)+'</div>'+
+    '</div>';
+  }).join("");
+}
+function rank(){
+  const ranking=evaluated();
+  const best=ranking[0], second=ranking[1], margin=second.score-best.score;
+  let fallback=false, reason="ranker confidence gate passed";
+  if(best.u>.35){fallback=true;reason="best candidate exceeds the 0.35 uncertainty ceiling"}
+  else if(margin<.08){fallback=true;reason="top-two score margin is below 0.08"}
+  const selected=fallback?pg.value:best.name;
+
+  render(best.name);
+  runStatus.textContent=fallback?"fallback engaged":"ranker accepted";
+  decisionTitle.textContent=selected;
+  decisionReason.textContent=reason+" · model choice: "+best.name+" · margin: "+margin.toFixed(4);
+  decisionBadge.textContent=fallback?"postgres fallback":"ranker selected";
+  decisionBadge.className="decision-badge "+(fallback?"warn":"ok");
+  decision.classList.remove("just-resolved");
+  requestAnimationFrame(()=>decision.classList.add("just-resolved"));
+
+  out.innerHTML=
+    ranking.map((p,i)=>(i+1)+'. '+p.name.padEnd(18)+' score='+p.score.toFixed(4)+' uncertainty='+p.u.toFixed(2)).join("\n")+
+    '\n\nmodel_choice = '+best.name+
+    '\npostgres_choice = '+pg.value+
+    '\nmargin = '+margin.toFixed(4)+
+    '\nreason = '+reason+
+    '\n<span class="'+(fallback?'warn':'ok')+'">selected_plan = '+selected+(fallback?' (fallback)':'')+'</span>';
+}
+scen.onchange=()=>{render();runStatus.textContent="scenario loaded";decisionTitle.textContent="No decision yet.";decisionReason.textContent="Run the ranker to apply uncertainty and margin gates.";decisionBadge.textContent="waiting";decisionBadge.className="decision-badge";};
+pg.onchange=()=>{if(decisionTitle.textContent!=="No decision yet.")rank()};
+document.getElementById("rank").onclick=rank;
+render();
+</script>
+</body>
+</html>
