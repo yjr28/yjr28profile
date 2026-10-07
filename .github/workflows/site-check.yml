@@ -29,7 +29,9 @@ jobs:
               'experience.html', 'projects.html', 'skills.html', 'about.html',
               'contact.html', 'resume.html', '.nojekyll',
               'projects/demo.css',
+              'projects/app-demo.css',
               'projects/kestrel/index.html',
+              'projects/kestrel/wasm_exec.js',
               'projects/northstar/index.html',
               'projects/aster/index.html',
           ]
