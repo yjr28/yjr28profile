@@ -70,8 +70,8 @@
 
       <div class="proof-grid reveal" aria-label="Selected engineering metrics">
         <div class="proof"><strong>250k+</strong><span>records / day in production</span></div>
-        <div class="proof"><strong>25k+</strong><span>req / s in Kestrel</span></div>
-        <div class="proof"><strong>2.34×</strong><span>geo-mean query execution</span></div>
+        <div class="proof"><strong>10</strong><span>services in Kestrel replay graph</span></div>
+        <div class="proof"><strong>3</strong><span>live engineering demos</span></div>
         <div class="proof"><strong>3</strong><span>languages spoken</span></div>
       </div>
     </section>
@@ -90,15 +90,15 @@
           <div class="project-copy">
             <div class="project-meta"><span>Distributed systems</span><span>2026</span></div>
             <h3>Kestrel</h3>
-            <p>A Linux flight recorder for distributed failures that joins application traces with low-level runtime and network evidence, then deterministically replays incidents.</p>
+            <p>A distributed-systems flight recorder that correlates application evidence, reconstructs causal graphs, and replays the supported failure schedules captured by the current vertical slice.</p>
             <div class="project-results">
-              <span><b>97%</b> injected failures replayed</span>
-              <span><b>25k+</b> req/s</span>
-              <span><b>&lt;4.2%</b> p95 overhead</span>
+              <span><b>10</b> logical services</span>
+              <span><b>30 ms</b> dependency timeout</span>
+              <span><b>Level B</b> schedule replay</span>
             </div>
             <div class="project-bottom">
               <span>Go · Rust/eBPF · gRPC · OpenTelemetry</span>
-              <a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">View repository ↗</a>
+              <span><a href="projects/kestrel/">Live demo ↗</a> · <a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">Repository ↗</a></span>
             </div>
           </div>
           <div class="project-visual project-visual-kestrel" aria-hidden="true">
@@ -122,20 +122,20 @@
           <div class="project-copy">
             <div class="project-meta"><span>Databases / ML</span><span>2026</span></div>
             <h3>Aster</h3>
-            <p>A learned PostgreSQL query-plan ranker trained over 180k+ plans, with uncertainty-aware fallback designed to improve execution without moving the bottleneck into plan selection.</p>
+            <p>A transparent PostgreSQL query-plan ranking prototype with explicit uncertainty and a confidence gate that falls back to PostgreSQL when the model decision is too uncertain or too close.</p>
             <div class="project-results">
-              <span><b>180k+</b> plans</span>
-              <span><b>2.34×</b> geo-mean speedup</span>
-              <span><b>&lt;7 ms</b> selection</span>
+              <span><b>5</b> plan signals</span>
+              <span><b>2</b> fallback gates</span>
+              <span><b>0 deps</b> baseline</span>
             </div>
             <div class="project-bottom">
-              <span>PostgreSQL · PyTorch · Graph ML · Evaluation</span>
-              <a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">View repository ↗</a>
+              <span>Python · PostgreSQL planning · Evaluation</span>
+              <span><a href="projects/aster/">Live demo ↗</a> · <a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Repository ↗</a></span>
             </div>
           </div>
           <div class="project-visual project-visual-aster" aria-hidden="true">
             <div class="system-art aster-art">
-              <div class="art-head"><span>QUERY PLAN RANKING</span><b>&lt;7 ms</b></div>
+              <div class="art-head"><span>QUERY PLAN RANKING</span><b>PROTOTYPE</b></div>
               <div class="plan-tree">
                 <div class="plan-node plan-root">HASH JOIN</div>
                 <div class="plan-branch left"></div><div class="plan-branch right"></div>
@@ -143,8 +143,8 @@
                 <div class="plan-node plan-right">INDEX SCAN</div>
               </div>
               <div class="speed-compare">
-                <div><span>POSTGRES</span><i style="--w:43%"></i><b>1.00×</b></div>
-                <div><span>ASTER</span><i style="--w:100%"></i><b>2.34×</b></div>
+                <div><span>DEFAULT</span><i style="--w:70%"></i><b>SAFE</b></div>
+                <div><span>RANKER</span><i style="--w:100%"></i><b>GATED</b></div>
               </div>
             </div>
             <div class="visual-index">02</div>
@@ -188,12 +188,12 @@
             <p>A reusable hybrid-cloud server management platform spanning device telemetry, a Linux host agent, a Java control plane, PostgreSQL state, containerized deployment, and AWS.</p>
             <div class="project-results">
               <span><b>100</b> simulated hosts</span>
-              <span><b>12</b> documented endpoints</span>
-              <span><b>2</b> deploy targets</span>
+              <span><b>14</b> API routes</span>
+              <span><b>30 s</b> command leases</span>
             </div>
             <div class="project-bottom">
-              <span>C/C++ · Java · PostgreSQL · Docker · AWS · Jenkins</span>
-              <span class="project-private">Private build</span>
+              <span>C/C++ · Java · PostgreSQL · Docker · Prometheus · Jenkins</span>
+              <span><a href="projects/northstar/">Live demo ↗</a> · <a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Repository ↗</a></span>
             </div>
           </div>
           <div class="project-visual project-visual-northstar" aria-hidden="true">
