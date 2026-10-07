@@ -189,6 +189,8 @@ function processAgent(){
   if(!agentOn)return;
   const t=now();
   commands.forEach(c=>{
+    const host=hosts.find(h=>h.id===c.hostId);
+    if(!host||!hostOnline(host))return;
     if(c.state==="QUEUED"&&t-c.updatedAt>900){
       c.state="LEASED";c.updatedAt=t;c.leaseToken=makeId("lease");c.attempts++;
       logAPI("POST","/api/v1/hosts/"+c.hostId+"/commands/lease",200,c.id+" leased for 30 s");
