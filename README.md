@@ -4,7 +4,7 @@ Recruiter-facing static portfolio for **YoungJun Ryu**, focused on software engi
 
 ## Highlights
 
-- Featured work includes **Northstar**, a hybrid-cloud server management platform spanning C firmware telemetry, C++ Linux agents, Java services, REST/JSON APIs, PostgreSQL, Docker, AWS, and Jenkins CI/CD.
+- Featured work includes **NorthStar**, a hybrid-cloud server management platform spanning native telemetry, C++ Linux agents, Java/Spring services, PostgreSQL, Docker, Prometheus, tracing, and Jenkins CI.
 - Original project identities and SVG artwork for Northstar, Kestrel, Aster, GTStinger, and LastRide.
 - Content aligned to the current application resume.
 - Dark/light themes, animated signal network, recruiter-mode shortcuts, case-study interactions, and Byteberry.
