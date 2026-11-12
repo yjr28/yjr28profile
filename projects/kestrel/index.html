@@ -7,6 +7,7 @@
 <title>Kestrel · Failure Lab</title>
 <link rel="stylesheet" href="../demo.css">
 <link rel="stylesheet" href="../app-demo.css">
+<link rel="stylesheet" href="../showcase.css">
 <script src="./wasm_exec.js"></script>
 </head>
 <body class="theme-kestrel">
@@ -16,9 +17,9 @@
 </header>
 
 <main>
-  <section class="shell demo-intro">
+  <section class="shell demo-intro" data-index="01">
     <h1>Kestrel</h1>
-    <p>Inject latency into a distributed request, watch the failure propagate, then replay it. The calculations below run Kestrel's Go fault, graph, model, and replay packages compiled to WebAssembly.</p>
+    <p>One request. Ten services. One fault you can trace all the way back. Inject latency, orbit the service graph, inspect every recorded event, then replay the actual Go execution in WebAssembly.</p>
     <div class="demo-intro-meta">
       <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Go/WASM</strong><span id="runtimeText">loading Kestrel core</span></span>
       <span class="runtime-chip"><strong>Fault target</strong><span>inventory / check</span></span>
@@ -76,6 +77,9 @@
         </div>
 
         <div class="k-scene" id="scene">
+          <canvas id="kOrbitCanvas" class="k-orbit-canvas" tabindex="0" aria-label="Rotatable 3D schematic of Kestrel's ten logical services. Drag or use arrow keys to rotate; click a service to inspect its recorded events."></canvas>
+          <div class="k-orbit-hud"><div><strong>LIVE TOPOLOGY / 10 SERVICES</strong><small>Drag to orbit · select node to investigate · schematic traffic</small></div>
+            <div class="orbit-coordinate"><b>REPLAY / LEVEL B</b><br><span class="world-shortcut"><kbd>SPACE</kbd> run&nbsp; <kbd>1–4</kbd> presets</span><br><button type="button" class="world-motion-toggle" id="kMotion">Pause ambience</button></div></div>
           <div class="k-path" id="syncPath">
             <div class="k-node" data-service="gateway"><div class="k-node-dot">GW</div><div class="k-node-label">gateway</div><div class="k-node-op">create_order</div></div>
             <div class="k-node" data-service="auth"><div class="k-node-dot">AU</div><div class="k-node-label">auth</div><div class="k-node-op">authorize</div></div>
@@ -254,5 +258,6 @@ runButton.addEventListener("click",runKestrel);
   }
 })();
 </script>
+<script src="../showcase.js"></script>
 </body>
 </html>
