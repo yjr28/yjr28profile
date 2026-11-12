@@ -364,15 +364,11 @@ img {
   letter-spacing: -0.01em;
 }
 
-.reveal {
-  opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 720ms cubic-bezier(.2,.75,.2,1), transform 720ms cubic-bezier(.2,.75,.2,1);
-}
-
+/* Critical content stays readable in fast snapshots, offline, and without JavaScript. */
+.reveal,
 .reveal.is-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="base.css">
   <link rel="stylesheet" href="components.css">
   <link rel="stylesheet" href="responsive.css">
+  <link rel="stylesheet" href="portfolio-additions.css">
 </head>
 <body>
   <header class="site-header">
@@ -72,7 +73,7 @@
         <div class="proof"><strong>250k+</strong><span>records / day in production</span></div>
         <div class="proof"><strong>10</strong><span>services in Kestrel replay graph</span></div>
         <div class="proof"><strong>3</strong><span>live engineering demos</span></div>
-        <div class="proof"><strong>3</strong><span>languages spoken</span></div>
+        <div class="proof"><strong>5</strong><span>engineering case studies</span></div>
       </div>
     </section>
 
@@ -82,7 +83,7 @@
           <p class="eyebrow">01 / Selected work</p>
           <h2>Projects with a reason to exist.</h2>
         </div>
-        <p class="section-note">Selected builds where the constraint, system, and result are all visible.</p>
+        <p class="section-note">Open a case study to inspect the architecture, decisions, and what the demo actually runs.</p>
       </div>
 
       <div class="shell project-list">
@@ -118,6 +119,20 @@
           </div>
         </article>
 
+        <article class="project project-reverse project-axon reveal">
+  <div class="project-copy">
+    <div class="project-meta"><span>Developer platform / tooling</span><span>2026</span></div>
+    <h3>AXON</h3>
+    <p>Making the developer loop inspectable: Go and Python tooling routed through MCP and REST contracts, with CI feedback treated as part of the system rather than an afterthought.</p>
+    <div class="project-results"><span><b>MCP + REST</b> tool contracts</span><span><b>Go / Python</b> execution</span><span><b>CI</b> feedback loops</span></div>
+    <div class="project-bottom"><span>Developer tooling · CI · Service boundaries</span><a href="projects/axon/">Inspect AXON case study</a></div>
+  </div>
+  <div class="project-visual project-visual-axon" aria-hidden="true">
+    <div class="axon-home-art"><span>Change</span><i></i><span>Route</span><i></i><span>Execute</span><i></i><span>Verify</span></div>
+    <div class="visual-index">02</div>
+  </div>
+</article>
+
         <article class="project project-reverse reveal">
           <div class="project-copy">
             <div class="project-meta"><span>Databases / ML</span><span>2026</span></div>
@@ -142,12 +157,13 @@
                 <div class="plan-node plan-left">SEQ SCAN</div>
                 <div class="plan-node plan-right">INDEX SCAN</div>
               </div>
-              <div class="speed-compare">
-                <div><span>DEFAULT</span><i style="--w:70%"></i><b>SAFE</b></div>
-                <div><span>RANKER</span><i style="--w:100%"></i><b>GATED</b></div>
+              <div class="speed-compare aster-gate-preview" aria-label="Uncertainty gated selection">
+                <div><span>Candidate</span><b>Score</b></div>
+                <div><span>Uncertainty</span><b>Gate</b></div>
+                <div><span>Decision</span><b>Fallback if unsure</b></div>
               </div>
             </div>
-            <div class="visual-index">02</div>
+            <div class="visual-index">03</div>
           </div>
         </article>
 
@@ -177,9 +193,23 @@
               </svg>
               <div class="route-labels"><span>YOU</span><span>TRANSFER</span><span>HOME</span></div>
             </div>
-            <div class="visual-index">03</div>
+            <div class="visual-index">04</div>
           </div>
         </article>
+
+        <article class="project project-studyhub reveal">
+  <div class="project-copy">
+    <div class="project-meta"><span>Identity / campus product</span><span>2026</span></div>
+    <h3>Waseda Study Hub</h3>
+    <p>A study-buddy and study-space platform built around verified university access, private conversations, and AI-assisted matching with deterministic regression tests and a safe fallback.</p>
+    <div class="project-results"><span><b>Verified</b> Waseda sign-in</span><span><b>Private</b> messaging</span><span><b>Tested</b> AI ranking</span></div>
+    <div class="project-bottom"><span>Next.js · TypeScript · Firebase · AI matching</span><span><a href="projects/studyhub/">Inspect product case study</a> · <a href="https://github.com/Waseda-Study-Hub/frontend" target="_blank" rel="noreferrer">Repository</a></span></div>
+  </div>
+  <div class="project-visual project-visual-studyhub" aria-hidden="true">
+    <div class="study-home-art"><div><span>Find your people.</span><b>W</b></div><p>identity → discovery → match</p><div class="home-study-path"><span>Verified</span><span>Profiles</span><span>Messages</span></div></div>
+    <div class="visual-index">05</div>
+  </div>
+</article>
 
         <article class="project project-reverse reveal">
           <div class="project-copy">
@@ -211,7 +241,7 @@
               </div>
               <div class="art-foot"><span>TELEMETRY</span><span>REST</span><span>POSTGRESQL</span></div>
             </div>
-            <div class="visual-index">04</div>
+            <div class="visual-index">06</div>
           </div>
         </article>
       </div>

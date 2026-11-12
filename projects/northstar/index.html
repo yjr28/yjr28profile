@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
 <meta name="description" content="Operate a live NorthStar fleet console in the browser: telemetry, host status, command leasing, acknowledgement, and API audit.">
-<title>NorthStar · Fleet Console</title>
+<title>NorthStar / Fleet Console</title>
 <link rel="stylesheet" href="../demo.css">
 <link rel="stylesheet" href="../app-demo.css">
+<link rel="stylesheet" href="../case-studies.css">
 </head>
 <body class="theme-northstar">
 <header class="shell site-bar">
@@ -15,21 +17,34 @@
 </header>
 
 <main>
-  <section class="shell demo-intro">
+  <section class="case-hero case-northstar" aria-label="NorthStar case study">
+  <div class="case-title-rail">
     <h1>NorthStar</h1>
-    <p>Manage a small Linux fleet. Watch telemetry move, take a host offline, queue a command, and see an agent lease and acknowledge it using the same public lifecycle as the Spring control plane.</p>
-    <div class="demo-intro-meta">
-      <span class="runtime-chip ready"><i class="runtime-led"></i><strong>Fleet lab</strong><span>running locally in this tab</span></span>
-      <span class="runtime-chip"><strong>API contract</strong><span>14 Spring routes</span></span>
-      <span class="runtime-chip"><strong>Command lease</strong><span>30 seconds · token bound</span></span>
-      <span class="runtime-chip"><strong>Online window</strong><span>90 seconds</span></span>
-    </div>
-  </section>
+    <p class="case-statement">Control the fleet when a machine stops answering.</p>
+    <p class="case-lede">Inspect host telemetry, take a host offline, queue a command, and resume its agent. This browser lab models the public command lifecycle of the Spring control plane; it is not connected to a live fleet.</p>
+  <a class="case-start" href="#lab">Open the fleet console</a>
+  </div>
+  <aside class="case-figure" aria-label="Command delivery contract">
+    <p class="case-figure-label">What the control plane has to get right</p>
+    <ol class="control-contract">
+      <li><b>01</b> Receive heartbeats and retain host state</li>
+      <li><b>02</b> Queue a command without assuming delivery</li>
+      <li><b>03</b> Lease work to an available agent</li>
+      <li><b>04</b> Record acknowledgement against the lease</li>
+    </ol>
+  </aside>
+  <div class="demo-intro-meta">
+    <span class="runtime-chip ready"><i class="runtime-led"></i><strong>Fleet lab</strong><span>running locally in this tab</span></span>
+    <span class="runtime-chip"><strong>API contract</strong><span>14 Spring routes</span></span>
+    <span class="runtime-chip"><strong>Command lease</strong><span>30 seconds, token bound</span></span>
+    <span class="runtime-chip"><strong>Online window</strong><span>90 seconds</span></span>
+  </div>
+</section>
 
-  <section class="product-frame" aria-label="NorthStar interactive fleet console">
+  <section id="lab" class="product-frame" aria-label="NorthStar interactive fleet console">
     <div class="product-chrome">
       <strong>NorthStar / Fleet Console</strong>
-      <span class="product-chrome-center">browser lab · mirrors HostController contract</span>
+      <span class="product-chrome-center">browser lab / mirrors HostController contract</span>
       <div class="product-chrome-actions"><a href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/api/HostController.java" target="_blank" rel="noreferrer">HostController</a></div>
     </div>
 
@@ -42,7 +57,7 @@
       <section class="ns-main">
         <div class="ns-overview">
           <div class="ns-host-title">
-            <div><h2 id="selectedHostName">edge-atl-01</h2><p id="selectedHostMeta">linux · amd64 · agent 0.3.0</p></div>
+            <div><h2 id="selectedHostName">edge-atl-01</h2><p id="selectedHostMeta">linux / amd64 / agent 0.3.0</p></div>
             <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">
               <button class="app-button secondary compact" id="heartbeatButton">Heartbeat</button>
               <button class="app-button secondary compact" id="offlineButton">Miss 100 s</button>
@@ -50,10 +65,10 @@
           </div>
 
           <div class="ns-metric-grid">
-            <div class="ns-metric"><b id="cpuMetric">—</b><span>CPU</span></div>
-            <div class="ns-metric"><b id="memMetric">—</b><span>Memory</span></div>
-            <div class="ns-metric"><b id="loadMetric">—</b><span>Load 1m</span></div>
-            <div class="ns-metric"><b id="statusMetric">—</b><span>Status</span></div>
+            <div class="ns-metric"><b id="cpuMetric">Not run</b><span>CPU</span></div>
+            <div class="ns-metric"><b id="memMetric">Not run</b><span>Memory</span></div>
+            <div class="ns-metric"><b id="loadMetric">Not run</b><span>Load 1m</span></div>
+            <div class="ns-metric"><b id="statusMetric">Not run</b><span>Status</span></div>
           </div>
 
           <div class="ns-chart" aria-label="Live CPU telemetry chart">
@@ -91,6 +106,11 @@
       </aside>
     </div>
   </section>
+<section class="case-analysis three" aria-label="Engineering decisions">
+ <article><h2>Offline isn't a failed command.</h2><p>A command remains queued when an agent is unavailable. The UI lets you separate intent to execute from proof of delivery.</p></article>
+ <article><h2>Delivery requires a lease.</h2><p>The modeled transition from queued to leased to acknowledged includes a token-bound lease. Restart the agent and observe state change in the activity log.</p><a href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/api/HostController.java" target="_blank" rel="noreferrer">Inspect API controller</a></article>
+ <article><h2>Simulation, clearly labeled.</h2><p>Host metrics and command events on this page are simulated in the browser using the public lifecycle. They are not a live deployment or a production benchmark.</p></article>
+</section>
 </main>
 
 <footer class="shell site-footer"><span>The browser lab is intentionally credential-free; the repository contains the Java/PostgreSQL implementation.</span><a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Repository</a></footer>
@@ -152,7 +172,7 @@ function renderChart(h){
 function renderHost(){
   const h=selectedHost();
   document.getElementById("selectedHostName").textContent=h.name;
-  document.getElementById("selectedHostMeta").textContent=h.os+" · "+h.arch+" · agent "+h.agent+" · "+h.region;
+  document.getElementById("selectedHostMeta").textContent=h.os+" / "+h.arch+" / agent "+h.agent+" / "+h.region;
   document.getElementById("cpuMetric").textContent=h.cpu.toFixed(0)+"%";
   document.getElementById("memMetric").textContent=h.mem.toFixed(0)+"%";
   document.getElementById("loadMetric").textContent=h.load.toFixed(2);
@@ -165,7 +185,7 @@ function renderCommands(){
   if(!rows.length){commandList.innerHTML='<div class="empty-copy" style="padding:16px 0">No commands for this host yet. Queue one and leave the agent running to watch the full lifecycle.</div>';return}
   commandList.innerHTML=rows.map(c=>`
     <div class="ns-command-row">
-      <div><b>${esc(c.type)}</b><span style="display:block;margin-top:4px">${esc(c.id)} · attempt ${c.attempts}</span></div>
+      <div><b>${esc(c.type)}</b><span style="display:block;margin-top:4px">${esc(c.id)} / attempt ${c.attempts}</span></div>
       <span>${new Date(c.createdAt).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span>
       <span class="ns-command-state ${c.state}">${c.state}</span>
     </div>`).join("");
@@ -213,7 +233,7 @@ document.getElementById("queueButton").addEventListener("click",()=>{
 });
 document.getElementById("offlineButton").addEventListener("click",()=>{
   const h=selectedHost();h.offline=true;h.lastSeen=now()-100000;
-  logAPI("GET","/api/v1/hosts/"+h.id+"/status",200,"online=false · ageSeconds=100");
+  logAPI("GET","/api/v1/hosts/"+h.id+"/status",200,"online=false / ageSeconds=100");
   renderAll();
 });
 document.getElementById("heartbeatButton").addEventListener("click",()=>{
@@ -225,7 +245,7 @@ agentToggle.addEventListener("click",()=>{
   agentOn=!agentOn;
   agentToggle.classList.toggle("on",agentOn);
   agentToggle.setAttribute("aria-pressed",String(agentOn));
-  document.getElementById("agentLabel").textContent=agentOn?"polling every 1.5 s":"paused · commands stay queued";
+  document.getElementById("agentLabel").textContent=agentOn?"polling every 1.5 s":"paused / commands stay queued";
   logAPI("AGENT","poll loop",200,agentOn?"resumed":"paused");
 });
 

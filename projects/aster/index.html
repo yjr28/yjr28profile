@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
 <meta name="description" content="Run the Aster PostgreSQL plan-ranking prototype in your browser using the real Python source.">
-<title>Aster · Query Plan Lab</title>
+<title>Aster / Query Plan Lab</title>
 <link rel="stylesheet" href="../demo.css">
 <link rel="stylesheet" href="../app-demo.css">
+<link rel="stylesheet" href="../case-studies.css">
 <script src="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"></script>
 </head>
 <body class="theme-aster">
@@ -16,20 +18,33 @@
 </header>
 
 <main>
-  <section class="shell demo-intro">
+  <section class="case-hero case-aster" aria-label="Aster case study">
+  <div class="case-lead">
     <h1>Aster</h1>
-    <p>Edit the plans. Change their uncertainty. Then run the real Python ranker from the repository and watch Aster either pick a plan or refuse to override PostgreSQL.</p>
-    <div class="demo-intro-meta">
-      <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Python runtime</strong><span id="runtimeText">loading repository source</span></span>
-      <span class="runtime-chip"><strong>Engine</strong><span>Pyodide · Python 3.14</span></span>
-      <span class="runtime-chip"><strong>Policy</strong><span>lower score wins · confidence gated</span></span>
-    </div>
-  </section>
+    <p class="case-statement">A faster-looking plan isn't always a better choice.</p>
+    <p class="case-lede">Give Aster alternative PostgreSQL query plans, change their uncertainty, and let the real Python ranker decide whether to override the default plan or leave it alone.</p>
+  <a class="case-start" href="#lab">Run the Python plan lab</a>
+  </div>
+  <aside class="case-figure" aria-label="Plan selection contract">
+    <p class="case-figure-label">The selection policy</p>
+    <ol class="aster-rule">
+      <li>Score the candidate plans with explicit signals.</li>
+      <li>Check uncertainty and the margin of the leading plan.</li>
+      <li>Fall back to PostgreSQL if confidence is insufficient.</li>
+    </ol>
+    <p class="case-figure-note">A constrained prototype; this page does not claim production speedups.</p>
+  </aside>
+  <div class="demo-intro-meta">
+    <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Python runtime</strong><span id="runtimeText">loading repository source</span></span>
+    <span class="runtime-chip"><strong>Engine</strong><span>Pyodide / browser Python</span></span>
+    <span class="runtime-chip"><strong>Policy</strong><span>lower score wins, confidence gated</span></span>
+  </div>
+</section>
 
-  <section class="product-frame" aria-label="Aster interactive application">
+  <section id="lab" class="product-frame" aria-label="Aster interactive application">
     <div class="product-chrome">
       <strong>Aster / Plan Lab</strong>
-      <span class="product-chrome-center">actual aster_ranker.py · browser runtime</span>
+      <span class="product-chrome-center">actual aster_ranker.py / browser runtime</span>
       <div class="product-chrome-actions"><a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer">Python source</a></div>
     </div>
 
@@ -74,9 +89,9 @@ WHERE a.region = 'APAC'
         <div class="a-candidates" id="candidateTable"></div>
 
         <div class="a-rank-flow" aria-label="Aster decision pipeline">
-          <div class="a-rank-step" id="stepScore"><b>1 · Score</b><span>Evaluate the five explicit plan signals.</span></div>
-          <div class="a-rank-step" id="stepGate"><b>2 · Gate</b><span>Check uncertainty and top-two margin.</span></div>
-          <div class="a-rank-step" id="stepSelect"><b>3 · Select</b><span>Use Aster's choice or fall back to PostgreSQL.</span></div>
+          <div class="a-rank-step" id="stepScore"><b>1 / Score</b><span>Evaluate the five explicit plan signals.</span></div>
+          <div class="a-rank-step" id="stepGate"><b>2 / Gate</b><span>Check uncertainty and top-two margin.</span></div>
+          <div class="a-rank-step" id="stepSelect"><b>3 / Select</b><span>Use Aster's choice or fall back to PostgreSQL.</span></div>
         </div>
 
         <div class="a-decision" aria-live="polite">
@@ -85,7 +100,7 @@ WHERE a.region = 'APAC'
             <p id="decisionReason">The first run executes the Python module loaded above, not a JavaScript copy of its scoring function.</p>
           </div>
           <div class="a-confidence">
-            <label><span>decision confidence</span><span id="confidenceLabel">—</span></label>
+            <label><span>decision confidence</span><span id="confidenceLabel">Not run</span></label>
             <div class="a-confidence-track"><div class="a-confidence-fill" id="confidenceFill"></div></div>
           </div>
         </div>
@@ -94,6 +109,11 @@ WHERE a.region = 'APAC'
       </div>
     </div>
   </section>
+<section class="case-analysis three" aria-label="Engineering decisions">
+ <article><h2>Never override on a hunch.</h2><p>The margin and uncertainty thresholds are explicit inputs. Select an uncertain candidate set and see the ranker choose the PostgreSQL fallback.</p></article>
+ <article><h2>Inspect the source being run.</h2><p>The page loads the repository's Python ranker into Pyodide. If the runtime or source cannot load, the interface reports failure instead of showing invented results.</p><a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer">Inspect Python ranker</a></article>
+ <article><h2>Prototype, not a benchmark.</h2><p>These candidate plans are editable examples. Their scores demonstrate the decision policy, not measured query runtimes or a validated speedup over PostgreSQL.</p></article>
+</section>
 </main>
 
 <footer class="shell site-footer"><span>Prototype policy is executable; benchmark claims wait for benchmark artifacts.</span><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Repository</a></footer>
@@ -138,7 +158,7 @@ function renderCandidates(rows){
       <div class="a-mini"><label>Seq scans</label><input data-key="seq_scans" type="number" min="0" step="1" value="${p.seq_scans}"></div>
       <div class="a-mini"><label>Nested loops</label><input data-key="nested_loops" type="number" min="0" step="1" value="${p.nested_loops}"></div>
       <div class="a-mini"><label>Uncertainty</label><input data-key="uncertainty" type="number" min="0" max="1" step=".01" value="${p.uncertainty}"></div>
-      <div class="a-score" data-score>—</div>
+      <div class="a-score" data-score>Not run</div>
     </div>`).join("");
 }
 
@@ -228,7 +248,7 @@ async function runAster(){
     const confidence=Math.max(0,Math.min(1,result.margin/Math.max(payload.min_margin,.0001)));
     document.getElementById("confidenceFill").style.width=(confidence*100).toFixed(0)+"%";
     document.getElementById("confidenceLabel").textContent=(confidence*100).toFixed(0)+"%";
-    document.getElementById("decisionTitle").textContent=result.selected_plan+(result.fallback?" · PostgreSQL fallback":" · Aster selected");
+    document.getElementById("decisionTitle").textContent=result.selected_plan+(result.fallback?" / PostgreSQL fallback":" / Aster selected");
     document.getElementById("decisionReason").textContent=result.reason+" Model choice: "+result.model_choice+". Margin: "+result.margin.toFixed(4)+".";
     consoleEl.textContent=result.ranking.map((r,i)=>(i+1)+". "+r.name.padEnd(18)+" score="+r.score.toFixed(4)+" uncertainty="+r.uncertainty.toFixed(2)).join("\n")+"\n\nselected_plan="+result.selected_plan+"\nfallback="+result.fallback+"\nreason="+result.reason;
   }catch(err){

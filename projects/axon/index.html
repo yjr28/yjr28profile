@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<meta name="description" content="AXON: a developer-platform case study about Go/Python tool routing, repeatable CI workflows, and deliberate boundaries between tools and jobs.">
+<title>AXON | Engineering the developer loop</title>
+<link rel="stylesheet" href="../demo.css">
+<link rel="stylesheet" href="../case-studies.css">
+</head>
+<body class="theme-axon">
+<header class="shell site-bar">
+  <a class="identity" href="../../" aria-label="Return to YoungJun Ryu portfolio"><span class="identity-mark">YJ</span><span>YoungJun Ryu</span><span class="identity-project">/ AXON</span></a>
+  <nav class="site-nav" aria-label="Project navigation"><a href="../../#work">Selected work</a><a href="../kestrel/">Kestrel case study</a></nav>
+</header>
+<main>
+<section class="case-hero">
+  <div class="axon-header">
+    <div>
+      <h1>AXON</h1>
+      <p class="axon-headline">The development loop is infrastructure, too.</p>
+    </div>
+    <div class="axon-copy">
+      <p>A Go and Python developer platform built around MCP and REST tools. AXON treats tooling, execution, and feedback as one workflow instead of a pile of disconnected scripts.</p>
+      <p class="case-quiet">Architecture walkthrough below. This is an explanatory model, not a live connection to CI or an agent.</p>
+    </div>
+  </div>
+</section>
+<section class="axon-board" aria-labelledby="axon-model">
+  <h2 id="axon-model">Follow one change through the toolchain</h2>
+  <p>Choose a boundary to inspect. The diagram is conceptual: its purpose is to show where responsibilities start and end, not to impersonate a running backend.</p>
+  <div class="axon-flow" role="group" aria-label="Pipeline stages">
+    <button type="button" class="axon-step" data-axon="request" aria-pressed="true"><span>01 / entry</span><strong>Tool request</strong><small>Typed intent</small></button>
+    <button type="button" class="axon-step" data-axon="gateway" aria-pressed="false"><span>02 / contract</span><strong>Gateway</strong><small>Tool interfaces</small></button>
+    <button type="button" class="axon-step" data-axon="execution" aria-pressed="false"><span>03 / work</span><strong>Executor</strong><small>Go / Python</small></button>
+    <button type="button" class="axon-step" data-axon="feedback" aria-pressed="false"><span>04 / outcome</span><strong>Feedback</strong><small>CI / diagnosis</small></button>
+  </div>
+  <div class="axon-explain" aria-live="polite">
+    <b id="axon-phase">Tool request</b>
+    <p id="axon-detail">A developer or agent makes a bounded request. The interface should express the operation and its arguments before anything runs, so tooling can reject invalid work early.</p>
+  </div>
+</section>
+<section class="case-analysis three" aria-label="Engineering tradeoffs">
+  <article>
+    <h2>Why use a gateway?</h2>
+    <p>MCP and REST entry points decouple the caller from individual implementation details. That makes it easier to evolve a tool without forcing every consumer to understand its internals.</p>
+  </article>
+  <article>
+    <h2>Why make CI part of the workflow?</h2>
+    <p>Fast local feedback is useful only when the same action can be checked again. AXON's direction was repeatable execution and visible results, not an opaque one-off automation.</p>
+  </article>
+  <article>
+    <h2>Where is the evidence?</h2>
+    <p>Project notes report that CI feedback time improved from roughly 18 to 4 minutes. This page does not simulate that benchmark or claim that it was independently reproduced.</p>
+  </article>
+</section>
+</main>
+<footer class="shell site-footer"><span>Case study: architecture and reported project measurements. No live environment connected.</span><a href="../../#contact">Contact about the implementation</a></footer>
+<script>
+(function(){
+  "use strict";
+  const stages={
+    request:["Tool request","A developer or agent makes a bounded request. The interface should express the operation and its arguments before anything runs, so tooling can reject invalid work early."],
+    gateway:["Gateway contract","MCP and REST expose tool capabilities through contracts. Routing, validation, and failure reporting live at this boundary; the caller should not need to know which process handles the operation."],
+    execution:["Execution boundary","Go and Python handle different parts of the work. Each action should be observable and have a well-defined completion or error state instead of silently swallowing failure."],
+    feedback:["Feedback and diagnosis","CI and tooling feed actionable results back to the caller. A useful developer platform can distinguish a successful tool invocation from a successful build or test run."]
+  };
+  const buttons=Array.from(document.querySelectorAll("[data-axon]"));
+  function show(stage){
+    const copy=stages[stage];if(!copy)return;
+    buttons.forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.axon===stage)));
+    document.getElementById("axon-phase").textContent=copy[0];
+    document.getElementById("axon-detail").textContent=copy[1];
+  }
+  buttons.forEach(b=>b.addEventListener("click",()=>show(b.dataset.axon)));
+})();
+</script>
+</body>
+</html>

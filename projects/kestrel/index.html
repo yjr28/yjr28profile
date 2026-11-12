@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
 <meta name="description" content="Run Kestrel's Go failure replay core in the browser through WebAssembly.">
-<title>Kestrel · Failure Lab</title>
+<title>Kestrel / Failure Lab</title>
 <link rel="stylesheet" href="../demo.css">
 <link rel="stylesheet" href="../app-demo.css">
+<link rel="stylesheet" href="../case-studies.css">
 <script src="./wasm_exec.js"></script>
 </head>
 <body class="theme-kestrel">
@@ -16,21 +18,36 @@
 </header>
 
 <main>
-  <section class="shell demo-intro">
+  <section class="case-hero case-kestrel" aria-label="Kestrel case study">
+  <div class="case-lead">
     <h1>Kestrel</h1>
-    <p>Inject latency into a distributed request, watch the failure propagate, then replay it. The calculations below run Kestrel's Go fault, graph, model, and replay packages compiled to WebAssembly.</p>
-    <div class="demo-intro-meta">
-      <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Go/WASM</strong><span id="runtimeText">loading Kestrel core</span></span>
-      <span class="runtime-chip"><strong>Fault target</strong><span>inventory / check</span></span>
-      <span class="runtime-chip"><strong>Dependency timeout</strong><span>30 ms</span></span>
-      <span class="runtime-chip"><strong>Topology</strong><span>10 logical services</span></span>
+    <p class="case-statement">A failure is rarely where the symptoms appear.</p>
+    <p class="case-lede">Inject latency into a ten-service request, follow the causal trail, then replay the same seeded failure. This lab runs Kestrel's fault, graph, model and replay packages compiled from Go to WebAssembly.</p>
+    <p class="case-quiet">Change the failure conditions below and inspect the evidence, not just the outcome.</p>
+  <a class="case-start" href="#lab">Run the failure lab</a>
+  </div>
+  <aside class="case-figure" aria-label="Example fault injection plan">
+    <p class="case-figure-label">The experiment you can run</p>
+    <div class="case-chain">
+      <div><b>gateway / create_order</b><span>entry</span></div>
+      <div><b>order / create</b><span>downstream</span></div>
+      <div><b>inventory / check</b><span>fault target</span></div>
+      <div><b>replay / comparison</b><span>verify</span></div>
     </div>
-  </section>
+    <p class="case-figure-note">This is the configured fault path, not a result. Run the demo to see the actual event trace.</p>
+  </aside>
+  <div class="demo-intro-meta">
+    <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Go/WASM</strong><span id="runtimeText">loading Kestrel core</span></span>
+    <span class="runtime-chip"><strong>Fault target</strong><span>inventory / check</span></span>
+    <span class="runtime-chip"><strong>Dependency timeout</strong><span>30 ms</span></span>
+    <span class="runtime-chip"><strong>Topology</strong><span>10 logical services</span></span>
+  </div>
+</section>
 
-  <section class="product-frame" aria-label="Kestrel interactive failure lab">
+  <section id="lab" class="product-frame" aria-label="Kestrel interactive failure lab">
     <div class="product-chrome">
       <strong>Kestrel / Failure Lab</strong>
-      <span class="product-chrome-center">real Go core · WebAssembly</span>
+      <span class="product-chrome-center">real Go core / WebAssembly</span>
       <div class="product-chrome-actions"><a href="https://github.com/yjr28/kestrel-replay/tree/main/internal/browserdemo" target="_blank" rel="noreferrer">Browser adapter</a><a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/replay/replay.go" target="_blank" rel="noreferrer">Replay core</a></div>
     </div>
 
@@ -94,10 +111,10 @@
           </div>
 
           <div class="k-outcome">
-            <div class="k-outcome-cell"><b id="outcomeValue">—</b><span>failing outcome</span></div>
-            <div class="k-outcome-cell"><b id="divergenceValue">—</b><span>first divergence</span></div>
-            <div class="k-outcome-cell"><b id="eventValue">—</b><span>recorded events</span></div>
-            <div class="k-outcome-cell"><b id="replayValue">—</b><span>replay equivalence</span></div>
+            <div class="k-outcome-cell"><b id="outcomeValue">Not run</b><span>failing outcome</span></div>
+            <div class="k-outcome-cell"><b id="divergenceValue">Not run</b><span>first divergence</span></div>
+            <div class="k-outcome-cell"><b id="eventValue">Not run</b><span>recorded events</span></div>
+            <div class="k-outcome-cell"><b id="replayValue">Not run</b><span>replay equivalence</span></div>
           </div>
         </div>
 
@@ -113,6 +130,11 @@
       <pre id="eventJSON">Click an event row after a run.</pre>
     </div>
   </section>
+<section class="case-analysis three" aria-label="Engineering decisions">
+ <article><h2>Where did it first diverge?</h2><p>The graph connects spans and recorded events so the first causal break can be distinguished from later failures. Select a trace row to read its evidence.</p><a href="https://github.com/yjr28/kestrel-replay/tree/main/internal/graph" target="_blank" rel="noreferrer">Inspect graph package</a></article>
+ <article><h2>Could it happen again?</h2><p>Seeded faults keep the reproduction schedule controlled. Replay equivalence compares supported events under the same constraints rather than promising deterministic behavior for an entire production network.</p><a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/replay/replay.go" target="_blank" rel="noreferrer">Inspect replay implementation</a></article>
+ <article><h2>What is actually running?</h2><p>The fault and replay logic run as compiled Go in the browser. The adapter substitutes for local TCP sockets; this is a real core demo with a browser transport boundary.</p><a href="https://github.com/yjr28/kestrel-replay/tree/main/internal/browserdemo" target="_blank" rel="noreferrer">Inspect browser adapter</a></article>
+</section>
 </main>
 
 <footer class="shell site-footer"><span>The browser adapter replaces local TCP sockets only; fault decisions, graph construction, event types, signatures, and replay equivalence come from Kestrel's Go packages.</span><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">Repository</a></footer>
@@ -150,8 +172,8 @@ function resetScene(){
   document.querySelectorAll(".k-worker").forEach(n=>n.classList.remove("active","success","failed"));
 }
 function eventDescription(e){
-  if(e.kind==="fault")return (e.attributes?.["fault.kind"]||"fault")+" · +"+Math.round(Number(e.attributes?.delay_us||0)/1000)+" ms";
-  if(e.kind==="message")return e.operation+" · "+(e.attributes?.["message.action"]||"message");
+  if(e.kind==="fault")return (e.attributes?.["fault.kind"]||"fault")+" / +"+Math.round(Number(e.attributes?.delay_us||0)/1000)+" ms";
+  if(e.kind==="message")return e.operation+" / "+(e.attributes?.["message.action"]||"message");
   return e.operation||"";
 }
 function eventDuration(e){
