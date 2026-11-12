@@ -7,6 +7,7 @@
 <title>NorthStar · Fleet Console</title>
 <link rel="stylesheet" href="../demo.css">
 <link rel="stylesheet" href="../app-demo.css">
+<link rel="stylesheet" href="../showcase.css">
 </head>
 <body class="theme-northstar">
 <header class="shell site-bar">
@@ -15,9 +16,9 @@
 </header>
 
 <main>
-  <section class="shell demo-intro">
+  <section class="shell demo-intro" data-index="03">
     <h1>NorthStar</h1>
-    <p>Manage a small Linux fleet. Watch telemetry move, take a host offline, queue a command, and see an agent lease and acknowledge it using the same public lifecycle as the Spring control plane.</p>
+    <p>An entire Linux fleet, seen from orbit. Pick a region on the globe, watch real-time simulated telemetry, drop a host offline, then follow the lease-and-acknowledge lifecycle in the browser control plane.</p>
     <div class="demo-intro-meta">
       <span class="runtime-chip ready"><i class="runtime-led"></i><strong>Fleet lab</strong><span>running locally in this tab</span></span>
       <span class="runtime-chip"><strong>API contract</strong><span>14 Spring routes</span></span>
@@ -41,6 +42,11 @@
 
       <section class="ns-main">
         <div class="ns-overview">
+          <div class="ns-globe-stage" aria-label="Rotating globe showing ATL, IAD, NRT and FRA fleet locations">
+            <canvas id="nsGlobeCanvas" tabindex="0" aria-label="Interactive globe. Drag left or right to rotate, click a visible host pin to select it, or choose a host from the fleet list."></canvas>
+            <div class="ns-globe-top"><div>GLOBAL EDGE FLEET<b>Four regions. One control plane.</b></div><div>SCHEMATIC / SIMULATED TELEMETRY<br><span class="world-shortcut"><kbd>←</kbd><kbd>→</kbd> select host · <kbd>H</kbd> heartbeat</span></div></div>
+            <div class="ns-globe-legend"><button type="button" id="nsMotion" class="world-motion-toggle">Pause ambience</button> · drag to orbit · select a beacon</div>
+          </div>
           <div class="ns-host-title">
             <div><h2 id="selectedHostName">edge-atl-01</h2><p id="selectedHostMeta">linux · amd64 · agent 0.3.0</p></div>
             <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">
@@ -116,6 +122,9 @@ const commandList=document.getElementById("commandList");
 const agentToggle=document.getElementById("agentToggle");
 
 function hostOnline(h){return !h.offline && now()-h.lastSeen<=90000}
+window.northstarIsHostOnline=id=>{const host=hosts.find(h=>h.id===id);return Boolean(host&&hostOnline(host))};
+window.northstarSelectedHost=()=>selectedHostId;
+window.northstarSelectHost=id=>{if(hosts.some(h=>h.id===id)){selectedHostId=id;renderAll()}};
 function selectedHost(){return hosts.find(h=>h.id===selectedHostId)}
 function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function logAPI(method,path,status,detail){
@@ -241,5 +250,6 @@ renderAll();
 setInterval(sampleTelemetry,1500);
 setInterval(processAgent,450);
 </script>
+<script src="../showcase.js"></script>
 </body>
 </html>

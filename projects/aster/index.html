@@ -7,6 +7,7 @@
 <title>Aster · Query Plan Lab</title>
 <link rel="stylesheet" href="../demo.css">
 <link rel="stylesheet" href="../app-demo.css">
+<link rel="stylesheet" href="../showcase.css">
 <script src="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"></script>
 </head>
 <body class="theme-aster">
@@ -16,9 +17,9 @@
 </header>
 
 <main>
-  <section class="shell demo-intro">
+  <section class="shell demo-intro" data-index="02">
     <h1>Aster</h1>
-    <p>Edit the plans. Change their uncertainty. Then run the real Python ranker from the repository and watch Aster either pick a plan or refuse to override PostgreSQL.</p>
+    <p>Put query plans on the table. Alter their costs, row estimates and uncertainty, then run the real Python policy and see exactly when PostgreSQL gets the final say.</p>
     <div class="demo-intro-meta">
       <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Python runtime</strong><span id="runtimeText">loading repository source</span></span>
       <span class="runtime-chip"><strong>Engine</strong><span>Pyodide · Python 3.14</span></span>
@@ -36,6 +37,7 @@
     <div class="aster-app">
       <aside class="a-query">
         <div class="app-section-title"><h2>Workload</h2><span>context</span></div>
+        <div class="a-annotation">SQL is illustrative context. The prototype ranks the five editable plan signals below; it does not execute or parse this query.</div>
         <textarea class="a-query-code" id="queryText" spellcheck="false">SELECT o.id, o.total_cents
 FROM orders o
 JOIN accounts a ON a.id = o.account_id
@@ -70,7 +72,13 @@ WHERE a.region = 'APAC'
       </aside>
 
       <div class="a-main">
+        <div class="a-plan-stage" id="asterStage" aria-label="Interactive three dimensional comparison of candidate plan cost and ranked scores">
+          <div class="a-stage-head"><div>FIG 01 · PLAN SPECIMENS<b id="asterStageLabel">Estimated cost · lower is better</b></div><span class="a-stage-mode" id="asterStageMode">POSTGRES COST INPUTS</span></div>
+          <div class="a-stage-platform"></div>
+          <span class="a-stage-note">Select a pillar to edit its inputs · CTRL + ENTER to run</span>
+        </div>
         <div class="app-section-title"><h2>Candidate plans</h2><span>edit any input</span></div>
+        <div class="mobile-scroll-hint">↔ Swipe the candidate table to edit all five plan inputs.</div>
         <div class="a-candidates" id="candidateTable"></div>
 
         <div class="a-rank-flow" aria-label="Aster decision pipeline">
@@ -85,7 +93,7 @@ WHERE a.region = 'APAC'
             <p id="decisionReason">The first run executes the Python module loaded above, not a JavaScript copy of its scoring function.</p>
           </div>
           <div class="a-confidence">
-            <label><span>decision confidence</span><span id="confidenceLabel">—</span></label>
+            <label><span>margin / required threshold (not a probability)</span><span id="confidenceLabel">—</span></label>
             <div class="a-confidence-track"><div class="a-confidence-fill" id="confidenceFill"></div></div>
           </div>
         </div>
@@ -216,6 +224,7 @@ async function runAster(){
     const result=await executeRanker(payload);
     setStep(1); await sleep(260);
     setStep(2);
+    window.dispatchEvent(new CustomEvent("aster:result",{detail:{result,payload}}));
 
     result.ranking.forEach(item=>{
       const row=[...table.querySelectorAll(".a-candidate")].find(r=>r.querySelector("b").textContent===item.name);
@@ -227,7 +236,7 @@ async function runAster(){
 
     const confidence=Math.max(0,Math.min(1,result.margin/Math.max(payload.min_margin,.0001)));
     document.getElementById("confidenceFill").style.width=(confidence*100).toFixed(0)+"%";
-    document.getElementById("confidenceLabel").textContent=(confidence*100).toFixed(0)+"%";
+    document.getElementById("confidenceLabel").textContent=(result.margin/Math.max(payload.min_margin,.0001)).toFixed(2)+"×";
     document.getElementById("decisionTitle").textContent=result.selected_plan+(result.fallback?" · PostgreSQL fallback":" · Aster selected");
     document.getElementById("decisionReason").textContent=result.reason+" Model choice: "+result.model_choice+". Margin: "+result.margin.toFixed(4)+".";
     consoleEl.textContent=result.ranking.map((r,i)=>(i+1)+". "+r.name.padEnd(18)+" score="+r.score.toFixed(4)+" uncertainty="+r.uncertainty.toFixed(2)).join("\n")+"\n\nselected_plan="+result.selected_plan+"\nfallback="+result.fallback+"\nreason="+result.reason;
@@ -269,5 +278,6 @@ renderCandidates(presets.clear);
   }
 })();
 </script>
+<script src="../showcase.js"></script>
 </body>
 </html>
