@@ -487,10 +487,12 @@ function buildSkyObjects(){
 }
 function buildPetals(){
  const count=window.innerWidth<650?185:350;
- const geo=new THREE.PlaneGeometry(.46,.26);
- const mat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.78,side:THREE.DoubleSide,depthWrite:false});
+ // A range of vivid sakura pinks stays legible against the clear daytime sky.
+ // Keep petal sizes and movement natural instead of adding more visual clutter.
+ const geo=new THREE.PlaneGeometry(.49,.29);
+ const mat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.95,side:THREE.DoubleSide,depthWrite:false});
  const mesh=new THREE.InstancedMesh(geo,mat,count);mesh.frustumCulled=false;mesh.renderOrder=2;scene.add(mesh);
- const colors=[new THREE.Color(0xfce1e8),new THREE.Color(0xf7b4cb),new THREE.Color(0xf0a0bb),new THREE.Color(0xffe6ec)];
+ const colors=[new THREE.Color(0xdc4d87),new THREE.Color(0xe86b98),new THREE.Color(0xf184aa),new THREE.Color(0xf39abc),new THREE.Color(0xe15b91)];
  for(let i=0;i<count;i++){
   const d={x:range(-75,85),y:range(3,46),z:range(-58,45),speed:range(.45,1.15),spin:range(.3,1.5),phase:range(0,6.28)};
   petals.push(d);
