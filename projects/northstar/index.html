@@ -16,22 +16,20 @@
 </header>
 
 <main>
-  <section class="shell demo-intro" data-index="03">
+  <section class="shell demo-intro">
     <h1>NorthStar</h1>
-    <p>An entire Linux fleet, seen from orbit. Pick a region on the globe, watch real-time simulated telemetry, drop a host offline, then follow the lease-and-acknowledge lifecycle in the browser control plane.</p>
+    <p>Inspect four simulated Linux hosts. Choose one on the map, change its status, or queue a command to see how the agent leases and acknowledges it.</p>
     <div class="demo-intro-meta">
-      <span class="runtime-chip ready"><i class="runtime-led"></i><strong>Fleet lab</strong><span>running locally in this tab</span></span>
-      <span class="runtime-chip"><strong>API contract</strong><span>14 Spring routes</span></span>
-      <span class="runtime-chip"><strong>Command lease</strong><span>30 seconds · token bound</span></span>
-      <span class="runtime-chip"><strong>Online window</strong><span>90 seconds</span></span>
+      <span class="runtime-chip ready"><i class="runtime-led"></i><strong>Browser demo</strong><span>Simulated telemetry</span></span>
+      <span class="runtime-chip"><strong>Online</strong><span>Heartbeat within 90 s</span></span>
     </div>
   </section>
 
   <section class="product-frame" aria-label="NorthStar interactive fleet console">
     <div class="product-chrome">
-      <strong>NorthStar / Fleet Console</strong>
-      <span class="product-chrome-center">browser lab · mirrors HostController contract</span>
-      <div class="product-chrome-actions"><a href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/api/HostController.java" target="_blank" rel="noreferrer">HostController</a></div>
+      <strong>Fleet operations</strong>
+      <span class="product-chrome-center">Browser simulation / Spring API contract</span>
+      <div class="product-chrome-actions"><a href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/api/HostController.java" target="_blank" rel="noreferrer">Controller source</a></div>
     </div>
 
     <div class="northstar-app">
@@ -42,16 +40,16 @@
 
       <section class="ns-main">
         <div class="ns-overview">
-          <div class="ns-globe-stage" aria-label="Rotating globe showing ATL, IAD, NRT and FRA fleet locations">
+          <div class="ns-globe-stage" aria-label="Host map showing ATL, IAD, NRT and FRA regions">
             <canvas id="nsGlobeCanvas" tabindex="0" aria-label="Interactive globe. Drag left or right to rotate, click a visible host pin to select it, or choose a host from the fleet list."></canvas>
-            <div class="ns-globe-top"><div>GLOBAL EDGE FLEET<b>Four regions. One control plane.</b></div><div>SCHEMATIC / SIMULATED TELEMETRY<br><span class="world-shortcut"><kbd>←</kbd><kbd>→</kbd> select host · <kbd>H</kbd> heartbeat</span></div></div>
-            <div class="ns-globe-legend"><button type="button" id="nsMotion" class="world-motion-toggle">Pause ambience</button> · drag to orbit · select a beacon</div>
+            <div class="ns-globe-top"><div>HOST LOCATIONS<b>Select a region</b></div><div>ATL · IAD · NRT · FRA<br>SIMULATED DATA</div></div>
+            <div class="ns-globe-legend"><button type="button" id="nsMotion" class="world-motion-toggle">Reset map</button><span>Drag to rotate · select a marker</span></div>
           </div>
           <div class="ns-host-title">
             <div><h2 id="selectedHostName">edge-atl-01</h2><p id="selectedHostMeta">linux · amd64 · agent 0.3.0</p></div>
             <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">
-              <button class="app-button secondary compact" id="heartbeatButton">Heartbeat</button>
-              <button class="app-button secondary compact" id="offlineButton">Miss 100 s</button>
+              <button class="app-button secondary compact" id="heartbeatButton">Send heartbeat</button>
+              <button class="app-button secondary compact" id="offlineButton">Simulate offline</button>
             </div>
           </div>
 
@@ -62,7 +60,7 @@
             <div class="ns-metric"><b id="statusMetric">—</b><span>Status</span></div>
           </div>
 
-          <div class="ns-chart" aria-label="Live CPU telemetry chart">
+          <div class="ns-chart" aria-label="Simulated CPU history">
             <svg viewBox="0 0 700 120" preserveAspectRatio="none" role="img" aria-label="CPU percent over recent samples">
               <path class="area" id="cpuArea" d=""></path>
               <path id="cpuLine" d=""></path>
@@ -74,12 +72,13 @@
           <div class="app-section-title"><h2>Send a command</h2><span>queue → lease → acknowledge</span></div>
           <div class="ns-command-form">
             <div class="app-field"><label for="commandType">Command</label><select id="commandType"><option>restart_service</option><option>collect_diagnostics</option><option>rotate_logs</option></select></div>
-            <div class="app-field"><label for="commandPayload">Payload</label><input id="commandPayload" value='{"service":"api"}'></div>
+            <div class="app-field"><label for="commandPayload">Payload (JSON)</label><input id="commandPayload" value='{"service":"api"}'></div>
             <button class="app-button" id="queueButton">Queue command</button>
           </div>
 
+          <p id="commandError" class="command-error" role="alert" hidden></p>
           <div class="ns-command-list" id="commandList">
-            <div class="empty-copy" style="padding:16px 0">No commands for this host yet. Queue one and leave the agent running to watch the full lifecycle.</div>
+            <div class="empty-copy" style="padding:16px 0">No commands yet. Queue one to see its status.</div>
           </div>
         </div>
       </section>
@@ -88,18 +87,18 @@
         <div class="ns-agent">
           <div class="ns-agent-toggle">
             <div><b style="font-size:12px">Host agent</b><div style="margin-top:3px;color:var(--faint);font:500 8px/1 var(--mono)" id="agentLabel">polling every 1.5 s</div></div>
-            <button class="ns-switch on" id="agentToggle" aria-label="Toggle host agent" aria-pressed="true"></button>
+            <button class="ns-switch on" id="agentToggle" aria-label="Toggle simulated host agent" aria-pressed="true"></button>
           </div>
-          <p>With the agent on, queued commands are leased and acknowledged automatically. Turn it off to leave work waiting in the control plane.</p>
+          <p>On: commands advance automatically. Off: commands stay queued.</p>
         </div>
         <div class="ns-pane-head"><b>API activity</b><span>latest first</span></div>
-        <div class="ns-api-log" id="apiLog"></div>
+        <div class="ns-api-log" id="apiLog" tabindex="0" aria-label="Recent simulated API activity"></div>
       </aside>
     </div>
   </section>
 </main>
 
-<footer class="shell site-footer"><span>The browser lab is intentionally credential-free; the repository contains the Java/PostgreSQL implementation.</span><a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Repository</a></footer>
+<footer class="shell site-footer"><span>This page simulates the agent and telemetry. The Java/PostgreSQL implementation is in the repository.</span><a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Repository</a></footer>
 
 <script>
 const now=()=>Date.now();
@@ -171,7 +170,7 @@ function renderHost(){
 }
 function renderCommands(){
   const rows=commands.filter(c=>c.hostId===selectedHostId).slice().reverse();
-  if(!rows.length){commandList.innerHTML='<div class="empty-copy" style="padding:16px 0">No commands for this host yet. Queue one and leave the agent running to watch the full lifecycle.</div>';return}
+  if(!rows.length){commandList.innerHTML='<div class="empty-copy" style="padding:16px 0">No commands yet. Queue one to see its status.</div>';return}
   commandList.innerHTML=rows.map(c=>`
     <div class="ns-command-row">
       <div><b>${esc(c.type)}</b><span style="display:block;margin-top:4px">${esc(c.id)} · attempt ${c.attempts}</span></div>
@@ -179,7 +178,7 @@ function renderCommands(){
       <span class="ns-command-state ${c.state}">${c.state}</span>
     </div>`).join("");
 }
-function renderAll(){renderFleet();renderHost();renderCommands()}
+function renderAll(){renderFleet();renderHost();renderCommands();window.northstarRenderMap?.()}
 function sampleTelemetry(){
   tick++;
   hosts.forEach((h,i)=>{
@@ -211,10 +210,18 @@ function processAgent(){
   renderCommands();
 }
 
+document.getElementById("commandPayload").addEventListener("input",()=>{document.getElementById("commandError").hidden=true;});
 document.getElementById("queueButton").addEventListener("click",()=>{
   const h=selectedHost();
   let payload=document.getElementById("commandPayload").value.trim()||"{}";
-  try{JSON.parse(payload)}catch{logAPI("POST","/api/v1/commands",400,"payload must be valid JSON");return}
+  const error=document.getElementById("commandError");
+  error.hidden=true;
+  try{JSON.parse(payload)}catch{
+    error.textContent="Enter valid JSON before queuing a command.";
+    error.hidden=false;
+    document.getElementById("commandPayload").focus();
+    logAPI("POST","/api/v1/commands",400,"payload must be valid JSON");return
+  }
   const command={id:makeId("cmd"),hostId:h.id,type:document.getElementById("commandType").value,payload,state:"QUEUED",createdAt:now(),updatedAt:now(),attempts:0,leaseToken:null};
   commands.push(command);
   logAPI("POST","/api/v1/commands",201,command.id+" queued for "+h.name);
