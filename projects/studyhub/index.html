@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<meta name="description" content="Waseda Study Hub engineering case study: verified campus access, study matching, private features, and deterministic AI evaluations.">
+<title>Waseda Study Hub | Build for campus trust</title>
+<link rel="stylesheet" href="../demo.css">
+<link rel="stylesheet" href="../case-studies.css">
+</head>
+<body class="theme-studyhub">
+<header class="shell site-bar">
+<a class="identity" href="../../" aria-label="Return to YoungJun Ryu portfolio"><span class="identity-mark">YJ</span><span>YoungJun Ryu</span><span class="identity-project">/ Study Hub</span></a>
+<nav class="site-nav" aria-label="Project navigation"><a href="https://github.com/Waseda-Study-Hub/frontend" target="_blank" rel="noreferrer">Source code</a><a href="../../#station-line">Portfolio</a></nav>
+</header>
+<main>
+<section class="case-hero">
+  <div>
+    <h1>Waseda <br>Study Hub</h1>
+    <p class="case-statement">Campus software has to earn the right to connect people.</p>
+    <p class="case-lede">A student platform for finding study buddies and study spots. It combines verified Waseda access, private messaging, reporting tools, and AI-assisted matching.</p>
+    <p class="case-quiet">Next.js, TypeScript, Firebase. The public repository contains its authentication and matching implementation, deterministic tests, and AI evaluation harness.</p>
+  </div>
+  <aside class="campus-map" aria-label="Verified member flow">
+    <h2>From visitor to trusted member</h2>
+    <ol class="campus-route">
+      <li>Public pages without member records</li>
+      <li>Verified Waseda Google account</li>
+      <li>Profiles and course-overlap discovery</li>
+      <li>Private conversations and reporting</li>
+    </ol>
+  </aside>
+</section>
+<section class="study-panel" aria-labelledby="request-walkthrough">
+  <h2 id="request-walkthrough">Walk through a product request</h2>
+  <p>Choose a path and inspect which boundary matters. These traces are schematic descriptions derived from the public source, not requests sent to a live account or backend.</p>
+  <div class="study-choices" role="group" aria-label="Request scenarios">
+    <button class="study-choice" type="button" data-study="public" aria-pressed="true">Public visitor</button>
+    <button class="study-choice" type="button" data-study="member" aria-pressed="false">Verified member</button>
+    <button class="study-choice" type="button" data-study="match" aria-pressed="false">AI Study Match</button>
+  </div>
+  <div class="study-trace" aria-live="polite">
+    <div><b id="st1-title">Request</b><span id="st1-desc">Open a publicly accessible landing page.</span></div>
+    <div><b id="st2-title">Identity</b><span id="st2-desc">Do not require a session to read public content.</span></div>
+    <div><b id="st3-title">Data boundary</b><span id="st3-desc">Do not include private member or location records.</span></div>
+    <div class="selected"><b id="st4-title">Response</b><span id="st4-desc">Return public content without leaking private state.</span></div>
+  </div>
+  <p class="study-result" id="study-result">The design principle: a public preview should not expose real student records.</p>
+</section>
+<section class="case-analysis three" aria-label="Engineering decisions">
+  <article><h2>Access is a product feature.</h2><p>Member-specific features require a verified university account. Public pages intentionally exclude private member and location records.</p><a href="https://github.com/Waseda-Study-Hub/frontend/blob/main/README.md" target="_blank" rel="noreferrer">Read access model</a></article>
+  <article><h2>AI output needs a fallback.</h2><p>AI Study Match uses server-side Gemini extraction. Deterministic tests check sanitization, ranking explanations, and the fallback when a query matches nobody.</p><a href="https://github.com/Waseda-Study-Hub/frontend/blob/main/AI_MATCHING.md" target="_blank" rel="noreferrer">Inspect matching design</a></article>
+  <article><h2>Tests should mean something.</h2><p>CI tests are deterministic and do not call the live model. A separate evaluation runner measures real extraction behavior before prompt or model changes.</p><a href="https://github.com/Waseda-Study-Hub/frontend" target="_blank" rel="noreferrer">Inspect tests and CI</a></article>
+</section>
+</main>
+<footer class="shell site-footer"><span>Explanatory request walkthrough. No account data or network calls.</span><a href="https://github.com/Waseda-Study-Hub/frontend" target="_blank" rel="noreferrer">Project repository</a></footer>
+<script>
+(function(){
+"use strict";
+const paths={
+public:{
+steps:[["Request","Open a publicly accessible landing page."],["Identity","Do not require a session to read public content."],["Data boundary","Do not include private member or location records."],["Response","Return public content without leaking private state."]],
+result:"The design principle: a public preview should not expose real student records."
+},
+member:{
+steps:[["Request","Open profiles, matching, or private messages."],["Identity","Require a verified Waseda Google account."],["Permission","Only show member features under an authorized session."],["Response","Support matching, messaging and reporting within the private experience."]],
+result:"The design principle: student identity and private features have an explicit trust boundary."
+},
+match:{
+steps:[["Request","Describe an ideal study buddy in natural language."],["Server","Extract intent with a server-side Gemini request."],["Validation","Sanitize model output and rank profiles with weighted fields."],["Fallback","If the query matches nobody, preserve backend ordering."]],
+result:"The design principle: an AI recommendation should have deterministic tests and an explainable fallback."
+}
+};
+const b=Array.from(document.querySelectorAll("[data-study]"));
+function show(key){
+ const item=paths[key];if(!item)return;
+ b.forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.study===key)));
+ item.steps.forEach((step,i)=>{
+  document.getElementById("st"+(i+1)+"-title").textContent=step[0];
+  document.getElementById("st"+(i+1)+"-desc").textContent=step[1];
+ });
+ document.getElementById("study-result").textContent=item.result;
+}
+b.forEach(button=>button.addEventListener("click",()=>show(button.dataset.study)));
+})();
+</script>
+</body>
+</html>

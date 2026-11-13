@@ -1,370 +1,123 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="description" content="YoungJun Ryu — software engineer building backend systems, distributed software, infrastructure, and ML systems.">
-  <meta name="theme-color" content="#0b0b0c">
-  <meta property="og:title" content="YoungJun Ryu — Software Engineer">
-  <meta property="og:description" content="Backend systems, distributed software, infrastructure, and ML systems.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://yjr28.github.io/yjr28profile/">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="YoungJun Ryu — Software Engineer">
-  <meta name="twitter:description" content="Backend systems, distributed software, infrastructure, and ML systems.">
-  <link rel="canonical" href="https://yjr28.github.io/yjr28profile/">
-  <title>YoungJun Ryu — Software Engineer</title>
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="base.css">
-  <link rel="stylesheet" href="components.css">
-  <link rel="stylesheet" href="responsive.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102941">
+<meta name="description" content="Explore the engineering portfolio of YoungJun Ryu through a living 3D map of Japan: five projects, five districts, and a railway connecting them all.">
+<meta property="og:title" content="YoungJun Ryu — The Japan Line">
+<meta property="og:description" content="An explorable 3D portfolio of backend, distributed systems, AI, and software engineering.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://yjr28.github.io/yjr28profile/assets/japan-world-og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:url" content="https://yjr28.github.io/yjr28profile/">
+<link rel="canonical" href="https://yjr28.github.io/yjr28profile/">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="japan-world.css">
+<title>YoungJun Ryu — The Japan Line</title>
 </head>
 <body>
-  <header class="site-header">
-    <a class="wordmark" href="#top" aria-label="YoungJun Ryu home">
-      <span class="wordmark-mark">YJ</span>
-      <span class="wordmark-text">YoungJun Ryu</span>
+<a class="skip-link" href="#station-line">Skip 3D world and explore projects</a>
+
+<div class="world-app" id="world-app">
+  <div class="sky-backdrop" aria-hidden="true"><span class="sky-sun"></span><span class="sky-moon"></span><span class="sky-haze"></span></div>
+  <canvas id="world-canvas" aria-label="Interactive 3D model of Japan with project districts, cherry blossoms and moving trains. Drag to explore; use the project station buttons below to navigate without using the canvas."></canvas>
+
+  <header class="global-nav">
+    <a class="brand" href="./" aria-label="YoungJun Ryu home">
+      <span class="brand-seal">柳</span>
+      <span class="brand-name"><strong>YoungJun Ryu</strong><small>柳栄俊 / software engineer</small></span>
     </a>
-
-    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
-      <span></span><span></span>
-    </button>
-
-    <nav class="site-nav" aria-label="Primary navigation">
-      <a href="#work">Work</a>
-      <a href="#experience">Experience</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
-      <a class="nav-resume" href="resume.html" target="_blank" rel="noreferrer">Resume ↗</a>
+    <nav class="nav-actions" aria-label="Portfolio navigation">
+      <button id="overview-toggle" class="nav-map" type="button" aria-pressed="false"><span class="nav-compass" aria-hidden="true">⌖</span><span id="overview-label">Map view</span></button>
+      <button id="ride-toggle" class="nav-ride" type="button" aria-pressed="false">Ride the line</button>
+      <a href="resume.html">Résumé</a>
+      <a class="nav-github" href="https://github.com/yjr28" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+      <button class="about-toggle" type="button" data-about>About</button>
     </nav>
   </header>
 
-  <main id="top">
-    <section class="hero shell">
-      <div class="hero-kicker reveal">
-        <span class="status-dot"></span>
-        <span>Atlanta · Tokyo</span>
-        <span class="hero-rule"></span>
-        <span>Open to Summer 2027 SWE</span>
-      </div>
+  <section class="world-intro" aria-labelledby="site-title">
+    <p class="intro-route"><span aria-hidden="true">✿</span> The Japan Line <span class="route-kanji" lang="ja">日本縦断</span></p>
+    <h1 id="site-title">Next stop:<br><em>something I built.</em></h1>
+    <p>I'm YoungJun. I build backend systems, infrastructure and products. Choose a station or follow the tracks.</p>
+    <button class="intro-explore" id="begin-exploring" type="button">Visit the first stop <span aria-hidden="true">↘</span></button>
+  </section>
 
-      <div class="hero-grid">
-        <div class="hero-title-wrap reveal">
-          <h1>
-            I build software
-            <span>that holds up.</span>
-          </h1>
-        </div>
+  <div class="world-coordinate" aria-hidden="true"><span>BLUE HOUR</span><span class="world-coordinate-line"></span><span>DAYLIGHT</span></div>
 
-        <div class="hero-side reveal">
-          <p class="hero-lede">
-            I’m YoungJun, a computer science student at Waseda University currently studying at Georgia Tech. I work on backend systems, distributed software, infrastructure, and ML systems where performance and reliability are measurable.
-          </p>
+  <div class="world-control-hint" id="control-hint">
+    <span class="hint-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9.5v5.6a6 6 0 0 0 12 0v-5.6a6 6 0 0 0-12 0Zm6 0v3.7m0-9v3m0 10v3M2 12h2m16 0h2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <span><strong>Make yourself at home.</strong><small>Drag to orbit, scroll to zoom, tap a destination</small></span>
+    <button class="hint-dismiss" id="dismiss-hint" aria-label="Dismiss controls hint" type="button">×</button>
+  </div>
 
-          <div class="hero-actions">
-            <a class="button button-primary" href="#work">View selected work <span>↓</span></a>
-            <a class="button button-quiet" href="https://github.com/yjr28" target="_blank" rel="noreferrer">GitHub ↗</a>
-          </div>
-        </div>
-      </div>
+  <div class="project-markers" id="project-markers" aria-label="Project destinations">
+    <button class="world-marker" data-station="northstar" type="button"><span class="marker-pin">01</span><span class="marker-text">NorthStar<small>東京・夜景</small></span></button>
+    <button class="world-marker" data-station="axon" type="button"><span class="marker-pin">02</span><span class="marker-text">AXON<small>鉄道工房</small></span></button>
+    <button class="world-marker" data-station="aster" type="button"><span class="marker-pin">03</span><span class="marker-text">Aster<small>京都・庭園</small></span></button>
+    <button class="world-marker" data-station="kestrel" type="button"><span class="marker-pin">04</span><span class="marker-text">Kestrel<small>富士山</small></span></button>
+    <button class="world-marker" data-station="studyhub" type="button"><span class="marker-pin">05</span><span class="marker-text">Study Hub<small>早稲田・東京</small></span></button>
+  </div>
 
-      <div class="proof-grid reveal" aria-label="Selected engineering metrics">
-        <div class="proof"><strong>250k+</strong><span>records / day in production</span></div>
-        <div class="proof"><strong>10</strong><span>services in Kestrel replay graph</span></div>
-        <div class="proof"><strong>3</strong><span>live engineering demos</span></div>
-        <div class="proof"><strong>3</strong><span>languages spoken</span></div>
-      </div>
-    </section>
+  <button id="train-tip" class="train-tip" type="button" aria-label="Visit LastRide: the project connecting the railway">
+    <span class="train-tip-icon" aria-hidden="true">↝</span><span>The rails lead to <strong>LastRide</strong></span><span aria-hidden="true">↗</span>
+  </button>
 
-    <section id="work" class="section section-work">
-      <div class="shell section-head reveal">
-        <div>
-          <p class="eyebrow">01 / Selected work</p>
-          <h2>Projects with a reason to exist.</h2>
-        </div>
-        <p class="section-note">Selected builds where the constraint, system, and result are all visible.</p>
-      </div>
+  <aside class="project-info" id="project-info" aria-hidden="true" aria-labelledby="info-title">
+    <div class="info-header"><span class="info-stop" id="info-stop">Station 01</span><button class="info-close" id="info-close" type="button" aria-label="Close project details">×</button></div>
+    <p class="info-place" id="info-place">Tokyo / after dark</p>
+    <h2 id="info-title">NorthStar</h2>
+    <p class="info-tagline" id="info-tagline">Make the infrastructure visible.</p>
+    <p class="info-description" id="info-description">A hybrid-cloud fleet control plane.</p>
+    <div class="info-meta" id="info-meta"></div>
+    <div class="info-actions"><a id="info-primary" class="info-primary" href="projects/northstar/">Explore this project <span aria-hidden="true">↗</span></a><a id="info-secondary" class="info-secondary" href="https://github.com/yjr28/NorthStar" target="_blank" rel="noopener noreferrer">Source code <span aria-hidden="true">↗</span></a></div>
+  </aside>
 
-      <div class="shell project-list">
-        <article class="project reveal">
-          <div class="project-copy">
-            <div class="project-meta"><span>Distributed systems</span><span>2026</span></div>
-            <h3>Kestrel</h3>
-            <p>A distributed-systems flight recorder that correlates application evidence, reconstructs causal graphs, and replays the supported failure schedules captured by the current vertical slice.</p>
-            <div class="project-results">
-              <span><b>10</b> logical services</span>
-              <span><b>30 ms</b> dependency timeout</span>
-              <span><b>Level B</b> schedule replay</span>
-            </div>
-            <div class="project-bottom">
-              <span>Go · HTTP/TCP · Causal graphs · Seeded replay</span>
-              <span><a href="projects/kestrel/">Run Go demo ↗</a> · <a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">Repository ↗</a></span>
-            </div>
-          </div>
-          <div class="project-visual project-visual-kestrel" aria-hidden="true">
-            <div class="system-art kestrel-art">
-              <div class="art-head"><span>FAILURE TRACE / REPLAY</span><b>LEVEL B</b></div>
-              <div class="kestrel-services">
-                <span class="service-node">API</span>
-                <span class="service-node fault-node">WORKER<i>FAULT</i></span>
-                <span class="service-node">DB</span>
-              </div>
-              <div class="trace-track">
-                <span></span><span></span><span class="trace-fault"></span><span></span><span></span><span></span>
-              </div>
-              <div class="art-foot"><span>TRACE</span><span>FAULT</span><span>REPLAY</span></div>
-            </div>
-            <div class="visual-index">01</div>
-          </div>
-        </article>
+  <aside class="about-panel" id="about-panel" aria-hidden="true" aria-labelledby="about-title">
+    <div class="about-top"><span lang="ja">旅の途中</span><button class="about-close" type="button" data-about aria-label="Close about panel">×</button></div>
+    <p class="about-index">A little about the builder</p>
+    <h2 id="about-title">YoungJun<br>Ryu.</h2>
+    <p>I'm a computer science student at Waseda University, currently on exchange at Georgia Tech. I build software where performance, reliability and product decisions can be tested.</p>
+    <div class="about-links">
+      <a href="resume.html">View résumé <span aria-hidden="true">↗</span></a>
+      <a href="experience.html">Experience <span aria-hidden="true">↗</span></a>
+      <a href="projects.html">Project archive <span aria-hidden="true">↗</span></a>
+      <a href="mailto:yryu43@gatech.edu">Get in touch <span aria-hidden="true">↗</span></a>
+    </div>
+    <p class="about-foot">Atlanta ↔ Tokyo / Class of 2028</p>
+  </aside>
 
-        <article class="project project-reverse reveal">
-          <div class="project-copy">
-            <div class="project-meta"><span>Databases / ML</span><span>2026</span></div>
-            <h3>Aster</h3>
-            <p>A transparent PostgreSQL query-plan ranking prototype with explicit uncertainty and a confidence gate that falls back to PostgreSQL when the model decision is too uncertain or too close.</p>
-            <div class="project-results">
-              <span><b>5</b> plan signals</span>
-              <span><b>2</b> fallback gates</span>
-              <span><b>0 deps</b> baseline</span>
-            </div>
-            <div class="project-bottom">
-              <span>Python · PostgreSQL planning · Evaluation</span>
-              <span><a href="projects/aster/">Run Aster ↗</a> · <a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Repository ↗</a></span>
-            </div>
-          </div>
-          <div class="project-visual project-visual-aster" aria-hidden="true">
-            <div class="system-art aster-art">
-              <div class="art-head"><span>QUERY PLAN RANKING</span><b>PROTOTYPE</b></div>
-              <div class="plan-tree">
-                <div class="plan-node plan-root">HASH JOIN</div>
-                <div class="plan-branch left"></div><div class="plan-branch right"></div>
-                <div class="plan-node plan-left">SEQ SCAN</div>
-                <div class="plan-node plan-right">INDEX SCAN</div>
-              </div>
-              <div class="speed-compare">
-                <div><span>DEFAULT</span><i style="--w:70%"></i><b>SAFE</b></div>
-                <div><span>RANKER</span><i style="--w:100%"></i><b>GATED</b></div>
-              </div>
-            </div>
-            <div class="visual-index">02</div>
-          </div>
-        </article>
+  <div class="map-key" id="map-key" aria-hidden="true"><span class="map-key-label">THE LINE</span><span class="map-key-route"><i></i><i></i><i></i><i></i><i></i></span><span>5 districts · 1 railway</span></div>
 
-        <article class="project reveal">
-          <div class="project-copy">
-            <div class="project-meta"><span>Last-train planning / mobile product</span><span>2026</span></div>
-            <h3>LastRide</h3>
-            <p>LastRide (帰り時) helps people in Japan get home before the last train: choose a destination, follow a reliability-aware leave-by countdown, receive timely reminders, and compare first trains, taxis, walking, or overnight options if the train is missed. Co-built with Nicholas Nagai Roberts.</p>
-            <div class="project-results">
-              <span><b>1st / 52</b> Shipaton</span>
-              <span><b>ODPT</b> last-train data</span>
-              <span><b>MapKit</b> walking routes</span>
-            </div>
-            <div class="project-bottom">
-              <span>React Native / Expo · TypeScript · Express · ODPT · MapKit</span>
-              <a href="https://lastride.jp/en/" target="_blank" rel="noopener noreferrer" aria-label="Visit LastRide website, opens in a new tab">VISIT LASTRIDE.JP/EN/ ↗</a>
-            </div>
-          </div>
-          <div class="project-visual project-visual-lastride" aria-hidden="true">
-            <div class="system-art lastride-art">
-              <div class="art-head"><span>LATEST SAFE DEPARTURE</span><b>LIVE</b></div>
-              <div class="route-clock">23:48</div>
-              <svg class="route-map-art" viewBox="0 0 460 210" role="presentation">
-                <path d="M35 165 C95 160, 105 70, 177 78 S282 154, 330 105 S395 48, 430 52" fill="none" stroke="currentColor" stroke-width="4"/>
-                <circle cx="35" cy="165" r="9"/><circle cx="177" cy="78" r="9"/><circle cx="330" cy="105" r="9"/><circle cx="430" cy="52" r="9"/>
-                <circle class="route-pulse" cx="177" cy="78" r="18" fill="none" stroke="currentColor" stroke-width="2"/>
-              </svg>
-              <div class="route-labels"><span>YOU</span><span>TRANSFER</span><span>HOME</span></div>
-            </div>
-            <div class="visual-index">03</div>
-          </div>
-        </article>
+  <nav class="station-line" id="station-line" aria-label="Jump directly to a project">
+    <span id="work" class="legacy-anchor" aria-hidden="true"></span>
+    <div class="station-line-heading"><span class="heading-tiny" lang="ja">次の停車駅</span><strong>Choose a stop</strong></div>
+    <div class="station-track" aria-hidden="true"></div>
+    <button class="station" type="button" data-station="northstar"><i class="station-dot"></i><span class="station-no">01</span><strong>NorthStar</strong><small>Night city</small></button>
+    <button class="station" type="button" data-station="axon"><i class="station-dot"></i><span class="station-no">02</span><strong>AXON</strong><small>Rail workshop</small></button>
+    <button class="station" type="button" data-station="aster"><i class="station-dot"></i><span class="station-no">03</span><strong>Aster</strong><small>Kyoto gardens</small></button>
+    <button class="station" type="button" data-station="kestrel"><i class="station-dot"></i><span class="station-no">04</span><strong>Kestrel</strong><small>Mount Fuji</small></button>
+    <button class="station" type="button" data-station="studyhub"><i class="station-dot"></i><span class="station-no">05</span><strong>Study Hub</strong><small>Waseda</small></button>
+    <a class="station station-lastride" href="https://lastride.jp/en/" target="_blank" rel="noopener noreferrer"><i class="station-dot"></i><span class="station-no">Express</span><strong>LastRide</strong><small>Board the train ↗</small></a>
+  </nav>
 
-        <article class="project project-reverse reveal">
-          <div class="project-copy">
-            <div class="project-meta"><span>Hybrid cloud / systems</span><span>2026</span></div>
-            <h3>Northstar</h3>
-            <p>A reusable server-management platform spanning native Linux telemetry, a C++ host agent, a Java/Spring control plane, PostgreSQL state, command delivery, containerized local deployment, and observability.</p>
-            <div class="project-results">
-              <span><b>100</b> simulated hosts</span>
-              <span><b>14</b> API routes</span>
-              <span><b>30 s</b> command leases</span>
-            </div>
-            <div class="project-bottom">
-              <span>C/C++ · Java · PostgreSQL · Docker · Prometheus · Jenkins</span>
-              <span><a href="projects/northstar/">Open fleet console ↗</a> · <a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Repository ↗</a></span>
-            </div>
-          </div>
-          <div class="project-visual project-visual-northstar" aria-hidden="true">
-            <div class="system-art northstar-art">
-              <div class="art-head"><span>HYBRID CONTROL PLANE</span><b>100 HOSTS</b></div>
-              <div class="fleet-grid">
-                <div class="fleet">
-                  <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                  <small>HOST FLEET</small>
-                </div>
-                <div class="flow-arrow">→</div>
-                <div class="control-box"><b>AGENT</b><span>C++ / Linux</span></div>
-                <div class="flow-arrow">→</div>
-                <div class="cloud-box"><b>CONTROL</b><span>Java / PostgreSQL</span></div>
-              </div>
-              <div class="art-foot"><span>TELEMETRY</span><span>REST</span><span>POSTGRESQL</span></div>
-            </div>
-            <div class="visual-index">04</div>
-          </div>
-        </article>
-      </div>
-    </section>
+  <div class="tiny-footer"><span>Made to be explored <span aria-hidden="true">✿</span></span><span class="tiny-footer-right"><button id="motion-toggle" type="button" aria-pressed="false">Pause motion</button> <span class="footer-sep">/</span> <button id="quality-toggle" type="button" aria-pressed="false">Lite mode</button> <span class="footer-sep">/</span> <span>© 2026 YJ</span></span></div>
 
-    <section id="experience" class="section shell">
-      <div class="section-head reveal">
-        <div>
-          <p class="eyebrow">02 / Experience</p>
-          <h2>Production changed how I build.</h2>
-        </div>
-        <p class="section-note">I care about the full path from architecture to rollout: interfaces, data correctness, deployment, observability, and the people depending on the system.</p>
-      </div>
+  <div id="world-toast" class="world-toast" role="status" aria-live="polite"></div>
+  <div id="world-loading" class="world-loading" aria-live="polite"><div class="loading-line"><span class="loading-sakura">桜</span><strong>Setting the scene...</strong><small>Japan / just a little further</small></div><div class="loading-progress"><span></span></div></div>
 
-      <div class="experience-list">
-        <article class="experience reveal">
-          <div class="experience-date">May 2026 — Present</div>
-          <div class="experience-main">
-            <div class="experience-title">
-              <div>
-                <p>Software Engineering Intern</p>
-                <h3>Green Carbon, Inc.</h3>
-              </div>
-              <span>Tokyo, Japan</span>
-            </div>
-            <p class="experience-summary">Backend systems, cloud migration, internal tooling, and operational workflows for data-heavy carbon-project work.</p>
-            <div class="experience-bullets">
-              <p>Led a four-person Apps Script → containerized AWS migration across five countries and 50+ users, cutting monthly report preparation by 81%.</p>
-              <p>Refactored ingestion and reconciliation services processing 250k+ records/day, with tracing, parity gates, CI/CD, and 1,200+ automated tests.</p>
-              <p>Built permission-scoped service interfaces across backend modules with project-level RBAC, PII-safe handling, and consistent error contracts.</p>
-            </div>
-            <div class="tag-row"><span>AWS</span><span>Docker</span><span>Python</span><span>PostgreSQL</span><span>RBAC</span><span>MCP</span></div>
-          </div>
-        </article>
+  <div id="no-webgl" class="no-webgl" hidden>
+    <h2>A map for every browser.</h2><p>The 3D version couldn't start here. You can still explore every project below.</p>
+    <a href="projects/kestrel/">Kestrel</a> <a href="projects/northstar/">NorthStar</a> <a href="projects/aster/">Aster</a> <a href="projects/axon/">AXON</a> <a href="projects/studyhub/">Waseda Study Hub</a> <a href="https://lastride.jp/en/">LastRide</a>
+  </div>
+</div>
 
-        <article class="experience reveal">
-          <div class="experience-date">2026 — Present</div>
-          <div class="experience-main">
-            <div class="experience-title">
-              <div>
-                <p>Fullstack Engineer</p>
-                <h3>GDG on Campus, Waseda</h3>
-              </div>
-              <span>Tokyo, Japan</span>
-            </div>
-            <p class="experience-summary">Engineering and team contribution on Waseda Study Hub, a student matching and study-discovery product.</p>
-            <div class="experience-bullets">
-              <p>Worked across Git reviews, API-contract discussions, frontend implementation, FastAPI/Firebase integration, and release handoffs.</p>
-              <p>Contributed to a product serving 1,200+ students and 3,500+ study connections, with reported 48% 8-week retention.</p>
-            </div>
-            <div class="tag-row"><span>Next.js</span><span>TypeScript</span><span>React</span><span>FastAPI</span><span>Firebase</span></div>
-          </div>
-        </article>
-      </div>
-    </section>
+<noscript><div class="noscript-content"><h1>YoungJun Ryu / Engineering projects</h1><p>JavaScript is needed for the 3D world, but not to read the work.</p><a href="projects/kestrel/">Kestrel</a><a href="projects/northstar/">NorthStar</a><a href="projects/aster/">Aster</a><a href="projects/axon/">AXON</a><a href="projects/studyhub/">Waseda Study Hub</a><a href="https://lastride.jp/en/">LastRide</a><a href="resume.html">Résumé</a></div></noscript>
 
-    <section class="section archive-section">
-      <div class="shell section-head reveal">
-        <div>
-          <p class="eyebrow">03 / More projects</p>
-          <h2>Archive.</h2>
-        </div>
-        <p class="section-note">Additional systems, research, and product work across routing, scientific ML, data infrastructure, and automation.</p>
-      </div>
-
-      <div class="shell archive-list">
-        <a class="archive-row reveal" href="https://github.com/yjr28/biohub" target="_blank" rel="noreferrer">
-          <span>05</span><strong>BioHub Cell Tracking</strong><em>Scientific ML / evaluation</em><i>Python · LOEO · provenance</i><b>↗</b>
-        </a>
-        <div class="archive-row reveal">
-          <span>06</span><strong>GTStinger</strong><em>Real-time campus routing</em><i>GTFS-RT · routing graphs · offline cache</i><b>—</b>
-        </div>
-        <div class="archive-row reveal">
-          <span>07</span><strong>Relay</strong><em>Event + analytics pipeline</em><i>Django · Kafka · Go · ClickHouse</i><b>—</b>
-        </div>
-        <div class="archive-row reveal">
-          <span>08</span><strong>ScholarshipOS</strong><em>Local-first automation</em><i>Python · SQLite · rule engine</i><b>—</b>
-        </div>
-        <div class="archive-row reveal">
-          <span>09</span><strong>PaddyProof</strong><em>Geospatial evidence QA</em><i>Remote sensing · uncertainty · provenance</i><b>—</b>
-        </div>
-        <div class="archive-row reveal">
-          <span>10</span><strong>Hackathon Factory</strong><em>Agent control plane</em><i>State machines · GitHub Actions · compliance</i><b>—</b>
-        </div>
-      </div>
-    </section>
-
-    <section id="about" class="section shell">
-      <div class="section-head reveal">
-        <div>
-          <p class="eyebrow">04 / About</p>
-          <h2>Tokyo foundation.<br>Atlanta year.</h2>
-        </div>
-        <p class="section-note">I’m most interested in engineering where software architecture, performance, and real user constraints collide.</p>
-      </div>
-
-      <div class="about-grid">
-        <div class="about-copy reveal">
-          <p class="about-lede">I like problems where a system can be measured, broken deliberately, and improved from evidence.</p>
-          <p>My default loop is simple: understand the failure mode, build the smallest reliable mechanism, then benchmark what changed. That has pulled me toward backend systems, distributed software, infrastructure, and ML systems rather than one narrow application layer.</p>
-          <div class="principle"><span>Operating principle</span><strong>Measure → Build → Verify</strong></div>
-        </div>
-
-        <div class="about-facts reveal">
-          <div class="fact">
-            <span>Education</span>
-            <strong>Waseda University</strong>
-            <p>B.Eng. Computer Science & Communications Engineering · Sep 2028</p>
-          </div>
-          <div class="fact">
-            <span>Exchange</span>
-            <strong>Georgia Institute of Technology</strong>
-            <p>Computer Science · Aug 2026 — May 2027</p>
-          </div>
-          <div class="fact">
-            <span>Selected recognition</span>
-            <strong>Shipaton Grand Prize</strong>
-            <p>1st / 52 · 2026</p>
-          </div>
-          <div class="fact">
-            <span>Languages</span>
-            <strong>English · Japanese · Korean</strong>
-            <p>Native · Native · Fluent</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact" class="contact-section">
-      <div class="shell contact-grid">
-        <div class="reveal">
-          <p class="eyebrow">05 / Contact</p>
-          <h2>Build something<br>that holds up.</h2>
-        </div>
-        <div class="contact-side reveal">
-          <p>I’m looking for Summer 2027 software engineering opportunities across backend systems, infrastructure, distributed software, and ML engineering.</p>
-          <div class="contact-links">
-            <a href="mailto:yryu43@gatech.edu">yryu43@gatech.edu <span>↗</span></a>
-            <a href="https://github.com/yjr28" target="_blank" rel="noreferrer">GitHub <span>↗</span></a>
-            <a href="https://www.linkedin.com/in/youngjun-ryu-845618256/" target="_blank" rel="noreferrer">LinkedIn <span>↗</span></a>
-            <a href="resume.html" target="_blank" rel="noreferrer">Resume <span>↗</span></a>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer shell">
-    <span>© 2026 YoungJun Ryu</span>
-    <span>Software engineer · Tokyo ⇄ Atlanta</span>
-    <a href="#top">Back to top ↑</a>
-  </footer>
-
-  <script src="app.js" defer></script>
+<script type="module" src="japan-world.js"></script>
 </body>
 </html>
