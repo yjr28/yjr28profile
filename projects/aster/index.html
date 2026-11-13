@@ -2,281 +2,107 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Run the Aster PostgreSQL plan-ranking prototype in your browser using the real Python source.">
-<title>Aster · Query Plan Lab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Aster: compare candidate PostgreSQL execution plans with the real Python scoring and uncertainty-gating prototype in your browser.">
+<title>Aster — Plan analysis</title>
 <link rel="stylesheet" href="../demo.css">
-<link rel="stylesheet" href="../app-demo.css">
-<link rel="stylesheet" href="../showcase.css">
+<link rel="stylesheet" href="../product-labs.css">
 <script src="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"></script>
+<script src="./lab.js" defer></script>
 </head>
-<body class="theme-aster">
-<header class="shell site-bar">
-  <a class="identity" href="../../"><span class="identity-mark">YJ</span><span>YoungJun Ryu</span><span class="identity-project">/ Aster</span></a>
-  <nav class="site-nav"><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Source</a><a href="../../#work">Portfolio</a></nav>
+<body class="pl-body pl-aster">
+<header class="pl-global">
+  <a class="pl-mark" href="../../" aria-label="YJ — return to YoungJun Ryu's portfolio">YJ</a>
+  <div class="pl-crumb"><a href="../../#work">Projects</a><span>/</span><strong>Aster</strong></div>
+  <nav aria-label="Project links"><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">GitHub repository ↗</a></nav>
 </header>
-
-<main>
-  <section class="shell demo-intro">
-    <h1>Aster</h1>
-    <p>Compare three execution plans. Change their estimated costs and uncertainty, then see when the Python ranker selects a plan or defers to PostgreSQL.</p>
-    <div class="demo-intro-meta">
-      <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Python runtime</strong><span id="runtimeText">loading repository source</span></span>
-      <span class="runtime-chip"><strong>Decision</strong><span>Score + safety checks</span></span>
+<main class="pl-root">
+  <header class="pl-heading">
+    <div class="pl-heading-copy">
+      <h1>Aster <span class="pl-heading-suffix">/ plan analysis</span></h1>
+      <p>Compare PostgreSQL plan candidates using the actual Python ranker. Change the cost estimates, then see why Aster selects a plan or keeps the database default.</p>
     </div>
-  </section>
-
-  <section class="product-frame" aria-label="Aster interactive application">
-    <div class="product-chrome">
-      <strong>Plan comparison</strong>
-      <span class="product-chrome-center">aster_ranker.py / Pyodide</span>
-      <div class="product-chrome-actions"><a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer">Python source</a></div>
+    <div class="pl-runtime" id="runtimeChip" role="status" aria-live="polite">
+      <span class="pl-led"></span><span id="runtimeText">Loading Python…</span>
     </div>
+  </header>
 
-    <div class="aster-app">
-      <aside class="a-query">
-        <div class="app-section-title"><h2>Example query</h2><span>not executed</span></div>
-        <p class="interaction-note">The SQL is for context. Only the plan inputs affect the result.</p>
-        <pre class="a-query-code">SELECT o.id, o.total_cents
+  <section class="pl-window" aria-label="Aster interactive plan comparison">
+    <div class="pl-window-head">
+      <div class="pl-window-path"><span>Query Analysis</span><span>/</span><strong>Plan comparison</strong></div>
+      <span class="pl-window-note">Real aster_ranker.py · Pyodide</span>
+    </div>
+    <div class="a-workbench">
+      <aside class="a-config">
+        <div class="a-pane-heading"><h2>Workload</h2><span>01 / Inputs</span></div>
+        <div class="a-query-block">
+          <div class="a-query-heading"><span>SQL example</span><span>Context only</span></div>
+          <pre id="queryText" tabindex="0" aria-label="Example SQL, not executed">SELECT o.id, o.total_cents
 FROM orders o
 JOIN accounts a ON a.id = o.account_id
 WHERE a.region = 'APAC'
   AND o.created_at >= NOW() - INTERVAL '30 days';</pre>
-
-        <div class="app-field">
-          <label for="scenario">Test case</label>
-          <select id="scenario">
-            <option value="clear">Clear winner</option>
-            <option value="uncertain">High uncertainty</option>
-            <option value="close">Close scores</option>
-          </select>
+          <p>This demo ranks plan inputs; it does not execute this query.</p>
         </div>
-
-        <div class="app-field" style="margin-top:14px">
-          <label for="pgChoice">PostgreSQL plan</label>
-          <select id="pgChoice">
-            <option value="postgres_default">postgres_default</option>
-            <option value="index_join">index_join</option>
-            <option value="nested_loop">nested_loop</option>
-          </select>
+        <div class="a-config-form">
+          <label>Scenario
+            <select id="scenario">
+              <option value="clear">Clear winner</option>
+              <option value="uncertain">High uncertainty</option>
+              <option value="close">Nearly tied</option>
+            </select>
+          </label>
+          <label>PostgreSQL default
+            <select id="pgChoice">
+              <option value="postgres_default">postgres_default</option>
+              <option value="index_join">index_join</option>
+              <option value="nested_loop">nested_loop</option>
+            </select>
+          </label>
+          <div class="a-number-pair">
+            <label>Max uncertainty
+              <input id="maxUncertainty" type="number" min="0" max="1" step=".05" value=".35">
+            </label>
+            <label>Min score margin
+              <input id="minMargin" type="number" min="0" step=".01" value=".08">
+            </label>
+          </div>
+          <button id="rankButton" class="pl-primary" disabled>Loading Python…</button>
+          <div class="a-runtime-log" id="runtimeLog">Loading the repository's Python source.</div>
         </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
-          <div class="app-field"><label for="maxUncertainty">Max uncertainty</label><input id="maxUncertainty" type="number" min="0" max="1" step=".05" value=".35"></div>
-          <div class="app-field"><label for="minMargin">Min margin</label><input id="minMargin" type="number" min="0" step=".01" value=".08"></div>
-        </div>
-
-        <button class="app-button" id="rankButton" style="width:100%;margin-top:18px" disabled>Loading Python…</button>
-        <div class="a-runtime-log" id="runtimeLog">Booting Pyodide and loading <b>aster_ranker.py</b> from the GitHub repository.</div>
       </aside>
 
-      <div class="a-main">
-        <div class="a-plan-stage" id="asterStage" aria-label="Interactive three dimensional comparison of candidate plan cost and ranked scores">
-          <div class="a-stage-head"><div>PLAN SCORES<b id="asterStageLabel">Estimated cost · lower is better</b></div><span class="a-stage-mode" id="asterStageMode">INPUT COST</span></div>
-          <div class="a-stage-platform"></div>
-          <span class="a-stage-note">Select a bar to edit inputs</span>
-        </div>
-        <div class="app-section-title"><h2>Plan inputs</h2><span>editable values</span></div>
-        <div class="mobile-scroll-hint">↔ Swipe the candidate table to edit all five plan inputs.</div>
-        <div class="a-candidates" id="candidateTable"></div>
-
-        <div class="a-rank-flow" aria-label="Aster decision pipeline">
-          <div class="a-rank-step" id="stepScore"><b>1 · Score</b><span>Evaluate plan inputs.</span></div>
-          <div class="a-rank-step" id="stepGate"><b>2 · Check</b><span>Compare uncertainty and margin.</span></div>
-          <div class="a-rank-step" id="stepSelect"><b>3 · Choose</b><span>Choose a plan or keep PostgreSQL.</span></div>
+      <section class="a-results" aria-label="Editable candidate plan comparison">
+        <div class="a-pane-heading"><div><h2>Candidate plans</h2><p>Change an estimate, then rerun the ranker.</p></div><span>02 / Compare</span></div>
+        <div class="a-table-hint">Scroll horizontally to edit all five plan signals <span aria-hidden="true">↔</span></div>
+        <div class="a-plan-table">
+          <div class="a-plan-header"><span>Plan</span><span>PG cost</span><span>Rows</span><span>Seq scans</span><span>Nested loops</span><span>Uncertainty</span><span>Score</span></div>
+          <div id="candidateTable"></div>
         </div>
 
-        <div class="a-decision" aria-live="polite">
-          <div>
-            <h2 id="decisionTitle">Run the ranker</h2>
-            <p id="decisionReason">Results come from the repository’s Python module.</p>
-          </div>
-          <div class="a-confidence">
-            <label><span>Margin ÷ minimum required</span><span id="confidenceLabel">—</span></label>
-            <div class="a-confidence-track"><div class="a-confidence-fill" id="confidenceFill"></div></div>
-          </div>
+        <div class="a-comparison">
+          <div class="a-comparison-title"><h3>Model score</h3><span>Lower is better · estimated score, not execution time</span></div>
+          <div id="scoreComparison" class="a-score-bars" aria-live="polite"><div class="pl-empty">The score comparison will appear after Python is ready.</div></div>
         </div>
+      </section>
 
-        <div class="console" id="console" style="min-height:150px">Ranked scores will appear here.</div>
-      </div>
+      <aside class="a-verdict" aria-label="Ranker decision">
+        <div class="a-pane-heading"><h2>Decision</h2><span>03 / Result</span></div>
+        <div class="a-verdict-top"><span id="decisionStatus" class="pl-small-status">Waiting</span><h2 id="decisionTitle">Evaluating plans…</h2><p id="decisionReason">Loading the original Python ranker.</p></div>
+        <dl class="a-verdict-facts">
+          <div><dt>Model's first choice</dt><dd id="modelChoice">—</dd></div>
+          <div><dt>PostgreSQL default</dt><dd id="defaultChoice">—</dd></div>
+          <div><dt>Top-two score margin</dt><dd id="marginValue">—</dd></div>
+          <div><dt>Required margin</dt><dd id="minimumMarginValue">—</dd></div>
+          <div><dt>Uncertainty limit</dt><dd id="uncertaintyValue">—</dd></div>
+        </dl>
+        <details class="a-raw"><summary>Python output</summary><pre id="console" tabindex="0" aria-label="Python ranking output">Waiting for Python…</pre></details>
+      </aside>
+    </div>
+    <div class="pl-footnote"><span>Safety-gating policy is executable. This prototype does not claim actual measured PostgreSQL query speedups.</span>
+      <a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer">Review the ranker source ↗</a>
     </div>
   </section>
 </main>
-
-<footer class="shell site-footer"><span>Prototype policy is executable; benchmark claims wait for benchmark artifacts.</span><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">Repository</a></footer>
-
-<script>
-const presets={
-  clear:[
-    {name:"postgres_default",postgres_cost:1200,estimated_rows:50000,seq_scans:2,nested_loops:0,uncertainty:.10},
-    {name:"index_join",postgres_cost:180,estimated_rows:2500,seq_scans:0,nested_loops:0,uncertainty:.08},
-    {name:"nested_loop",postgres_cost:700,estimated_rows:12000,seq_scans:0,nested_loops:3,uncertainty:.12}
-  ],
-  uncertain:[
-    {name:"postgres_default",postgres_cost:600,estimated_rows:9000,seq_scans:1,nested_loops:0,uncertainty:.05},
-    {name:"index_join",postgres_cost:90,estimated_rows:1000,seq_scans:0,nested_loops:0,uncertainty:.90},
-    {name:"nested_loop",postgres_cost:760,estimated_rows:11000,seq_scans:0,nested_loops:2,uncertainty:.10}
-  ],
-  close:[
-    {name:"postgres_default",postgres_cost:100,estimated_rows:1000,seq_scans:0,nested_loops:0,uncertainty:.10},
-    {name:"index_join",postgres_cost:101,estimated_rows:1000,seq_scans:0,nested_loops:0,uncertainty:.10},
-    {name:"nested_loop",postgres_cost:900,estimated_rows:12000,seq_scans:0,nested_loops:3,uncertainty:.15}
-  ]
-};
-
-const table=document.getElementById("candidateTable");
-const scenario=document.getElementById("scenario");
-const rankButton=document.getElementById("rankButton");
-const runtimeChip=document.getElementById("runtimeChip");
-const runtimeText=document.getElementById("runtimeText");
-const runtimeLog=document.getElementById("runtimeLog");
-const consoleEl=document.getElementById("console");
-const steps=[document.getElementById("stepScore"),document.getElementById("stepGate"),document.getElementById("stepSelect")];
-let pyodide=null;
-let runtimeReady=false;
-
-function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function renderCandidates(rows){
-  table.innerHTML=rows.map((p,i)=>`
-    <div class="a-candidate" data-row="${i}">
-      <div class="a-candidate-name"><b>${escapeHTML(p.name)}</b><span>candidate ${i+1}</span></div>
-      <div class="a-mini"><label>PG cost<input aria-label="${p.name} PG cost" data-key="postgres_cost" type="number" min="0" step="1" value="${p.postgres_cost}"></label></div>
-      <div class="a-mini"><label>Rows<input aria-label="${p.name} Rows" data-key="estimated_rows" type="number" min="0" step="1" value="${p.estimated_rows}"></label></div>
-      <div class="a-mini"><label>Seq scans<input aria-label="${p.name} Seq scans" data-key="seq_scans" type="number" min="0" step="1" value="${p.seq_scans}"></label></div>
-      <div class="a-mini"><label>Nested loops<input aria-label="${p.name} Nested loops" data-key="nested_loops" type="number" min="0" step="1" value="${p.nested_loops}"></label></div>
-      <div class="a-mini"><label>Uncertainty<input aria-label="${p.name} Uncertainty" data-key="uncertainty" type="number" min="0" max="1" step=".01" value="${p.uncertainty}"></label></div>
-      <div class="a-score" data-score>—</div>
-    </div>`).join("");
-}
-
-function readCandidates(){
-  return [...table.querySelectorAll(".a-candidate")].map((row,i)=>{
-    const base=presets[scenario.value][i];
-    const read=(key)=>Number(row.querySelector('[data-key="'+key+'"]').value);
-    const plan={name:base.name,postgres_cost:read("postgres_cost"),estimated_rows:Math.round(read("estimated_rows")),seq_scans:Math.round(read("seq_scans")),nested_loops:Math.round(read("nested_loops")),uncertainty:read("uncertainty")};
-    if(!Number.isFinite(plan.postgres_cost)||plan.postgres_cost<0||!Number.isFinite(plan.estimated_rows)||plan.estimated_rows<0||!Number.isFinite(plan.uncertainty)||plan.uncertainty<0||plan.uncertainty>1) throw new Error("Plan inputs must be valid non-negative numbers; uncertainty stays between 0 and 1.");
-    return plan;
-  });
-}
-
-function setStep(index){
-  steps.forEach((el,i)=>el.classList.toggle("active",i===index));
-}
-
-function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
-
-async function executeRanker(payload){
-  pyodide.globals.set("aster_payload_json",JSON.stringify(payload));
-  try{
-    const raw=pyodide.runPython(`
-import json
-_payload = json.loads(aster_payload_json)
-_plans = [
-    CandidatePlan(
-        name=p["name"],
-        postgres_cost=float(p["postgres_cost"]),
-        estimated_rows=int(p["estimated_rows"]),
-        seq_scans=int(p["seq_scans"]),
-        nested_loops=int(p["nested_loops"]),
-        uncertainty=float(p["uncertainty"]),
-    )
-    for p in _payload["candidates"]
-]
-_decision = rank_plans(
-    _plans,
-    postgres_choice=_payload["postgres_choice"],
-    min_margin=float(_payload["min_margin"]),
-    max_uncertainty=float(_payload["max_uncertainty"]),
-)
-json.dumps({
-    "selected_plan": _decision.selected_plan,
-    "model_choice": _decision.model_choice,
-    "postgres_choice": _decision.postgres_choice,
-    "fallback": _decision.fallback,
-    "reason": _decision.reason,
-    "margin": _decision.margin,
-    "ranking": [
-        {"name": r.plan.name, "score": r.score, "uncertainty": r.plan.uncertainty}
-        for r in _decision.ranking
-    ],
-})
-`);
-    return JSON.parse(raw);
-  }finally{
-    pyodide.globals.delete("aster_payload_json");
-  }
-}
-
-async function runAster(){
-  if(!runtimeReady)return;
-  rankButton.disabled=true;
-  rankButton.textContent="Running Python…";
-  document.querySelectorAll(".a-candidate").forEach(r=>r.classList.remove("winner"));
-  try{
-    const payload={
-      candidates:readCandidates(),
-      postgres_choice:document.getElementById("pgChoice").value,
-      min_margin:Number(document.getElementById("minMargin").value),
-      max_uncertainty:Number(document.getElementById("maxUncertainty").value)
-    };
-    setStep(0); await sleep(220);
-    const result=await executeRanker(payload);
-    setStep(1); await sleep(260);
-    setStep(2);
-    window.dispatchEvent(new CustomEvent("aster:result",{detail:{result,payload}}));
-
-    result.ranking.forEach(item=>{
-      const row=[...table.querySelectorAll(".a-candidate")].find(r=>r.querySelector("b").textContent===item.name);
-      if(row){
-        row.querySelector("[data-score]").textContent=item.score.toFixed(4);
-        if(item.name===result.selected_plan)row.classList.add("winner");
-      }
-    });
-
-    const confidence=Math.max(0,Math.min(1,result.margin/Math.max(payload.min_margin,.0001)));
-    document.getElementById("confidenceFill").style.transform="scaleX("+confidence.toFixed(3)+")";
-    document.getElementById("confidenceLabel").textContent=(result.margin/Math.max(payload.min_margin,.0001)).toFixed(2)+"×";
-    document.getElementById("decisionTitle").textContent=result.selected_plan+(result.fallback?" · PostgreSQL retained":" · selected by Aster");
-    document.getElementById("decisionReason").textContent=result.reason+" Model choice: "+result.model_choice+". Margin: "+result.margin.toFixed(4)+".";
-    consoleEl.textContent=result.ranking.map((r,i)=>(i+1)+". "+r.name.padEnd(18)+" score="+r.score.toFixed(4)+" uncertainty="+r.uncertainty.toFixed(2)).join("\n")+"\n\nselected_plan="+result.selected_plan+"\nfallback="+result.fallback+"\nreason="+result.reason;
-  }catch(err){
-    document.getElementById("decisionTitle").textContent="Aster rejected the input.";
-    document.getElementById("decisionReason").textContent=err.message;
-    consoleEl.textContent="ERROR: "+err.message;
-  }finally{
-    rankButton.disabled=false;
-    rankButton.textContent="Run Aster ranker";
-  }
-}
-
-scenario.addEventListener("change",()=>{renderCandidates(presets[scenario.value]);document.getElementById("decisionTitle").textContent="Inputs changed";document.getElementById("decisionReason").textContent="Run again to update the result.";document.getElementById("confidenceFill").style.transform="scaleX(0)";document.getElementById("confidenceLabel").textContent="—";steps.forEach(x=>x.classList.remove("active"));});
-rankButton.addEventListener("click",runAster);
-renderCandidates(presets.clear);
-
-(async()=>{
-  try{
-    pyodide=await loadPyodide({indexURL:"https://cdn.jsdelivr.net/pyodide/v314.0.7/full/"});
-    const sourceResponse=await fetch("https://cdn.jsdelivr.net/gh/yjr28/aster-pg-optimizer@main/aster_ranker.py",{cache:"no-store"});
-    if(!sourceResponse.ok)throw new Error("Could not load aster_ranker.py");
-    const source=await sourceResponse.text();
-    pyodide.runPython(source);
-    runtimeReady=true;
-    runtimeChip.classList.remove("busy");
-    runtimeChip.classList.add("ready");
-    runtimeText.textContent="aster_ranker.py loaded";
-    runtimeLog.innerHTML="Ready. <b>CandidatePlan</b>, <b>score_plan</b>, and <b>rank_plans</b> are live from the repository source.";
-    rankButton.disabled=false;
-    rankButton.textContent="Run Aster ranker";
-  }catch(err){
-    runtimeChip.classList.remove("busy");
-    runtimeChip.classList.add("error");
-    runtimeText.textContent="runtime failed";
-    runtimeLog.textContent=err.message;
-    rankButton.textContent="Python runtime unavailable";
-    consoleEl.textContent="The live Python runtime could not initialize. Source links remain available above.";
-  }
-})();
-</script>
-<script src="../showcase.js"></script>
 </body>
 </html>
