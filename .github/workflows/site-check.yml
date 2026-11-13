@@ -14,7 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check JavaScript syntax
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check japan-world.js
+          node --check tests/homepage.mjs
       - name: Check site files, nested references, and inline JavaScript
         run: |
           python - <<'PY'

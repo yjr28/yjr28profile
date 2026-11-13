@@ -10,11 +10,11 @@ const canvas = $("world-canvas");
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const app = $("world-app");
 const stationData = {
-  northstar:{number:"01",name:"NorthStar",place:"東京・秋葉原 / Tokyo after dark",tagline:"Control the fleet. Understand the failure.",description:"A hybrid-cloud server management system with native Linux telemetry, a C++ agent, and a Java/Spring control plane. Try the interactive command lifecycle: make a host go offline, queue work, and bring the agent back.",meta:["C++ agent","Spring / Java","PostgreSQL","Telemetry"],url:"projects/northstar/",source:"https://github.com/yjr28/NorthStar",pos:[-35,2,-3],camera:[-27,22,28]},
-  axon:{number:"02",name:"AXON",place:"鉄道工房 / The developer workshop",tagline:"The development loop is infrastructure.",description:"A Go/Python tool platform built around MCP and REST. Trace a request through its entry point, tool gateway, execution boundary, and CI feedback loop.",meta:["Go / Python","MCP + REST","CI pipelines","Tooling"],url:"projects/axon/",source:null,pos:[-19,2,18],camera:[-13,20,42]},
-  aster:{number:"03",name:"Aster",place:"京都・庭園 / Kyoto gardens",tagline:"Choose a plan. Know when to abstain.",description:"A PostgreSQL query-plan ranking prototype that scores candidate plans while enforcing uncertainty and decision-margin thresholds. The demo runs its Python ranker inside your browser.",meta:["PostgreSQL","Python","Query planning","Confidence gates"],url:"projects/aster/",source:"https://github.com/yjr28/aster-pg-optimizer",pos:[0,2,-19],camera:[12,21,16]},
-  kestrel:{number:"04",name:"Kestrel",place:"富士山 / The Fuji observatory",tagline:"Find the first divergence, not the loudest symptom.",description:"A Go distributed-systems flight recorder with causal traces and replayable seeded faults. Inject latency and follow the events through a ten-service request using the actual Go core compiled to WebAssembly.",meta:["Go / WebAssembly","Causal traces","Fault injection","Replay"],url:"projects/kestrel/",source:"https://github.com/yjr28/kestrel-replay",pos:[30,2,-18],camera:[34,25,21]},
-  studyhub:{number:"05",name:"Waseda Study Hub",place:"早稲田・東京 / Waseda campus",tagline:"Build campus software with a trust boundary.",description:"A student discovery and study-buddy product with verified university sign-in, private conversations, and AI-assisted matching. Explore the authorization and ranking decisions in its case study.",meta:["Next.js","Firebase","Auth / privacy","AI matching"],url:"projects/studyhub/",source:"https://github.com/Waseda-Study-Hub/frontend",pos:[29,2,18],camera:[29,22,49]}
+  northstar:{number:"1",name:"NorthStar",place:"東京・秋葉原 / Tokyo after dark",tagline:"Control the fleet. Understand the failure.",description:"A hybrid-cloud server management system with native Linux telemetry, a C++ agent, and a Java/Spring control plane. Try the interactive command lifecycle: make a host go offline, queue work, and bring the agent back.",meta:["C++ agent","Spring / Java","PostgreSQL","Telemetry"],url:"projects/northstar/",source:"https://github.com/yjr28/NorthStar",pos:[-35,2,-3],camera:[-27,22,28]},
+  axon:{number:"2",name:"AXON",place:"鉄道工房 / The developer workshop",tagline:"The development loop is infrastructure.",description:"A Go/Python tool platform built around MCP and REST. Trace a request through its entry point, tool gateway, execution boundary, and CI feedback loop.",meta:["Go / Python","MCP + REST","CI pipelines","Tooling"],url:"projects/axon/",source:null,pos:[-19,2,18],camera:[-13,20,42]},
+  aster:{number:"3",name:"Aster",place:"京都・庭園 / Kyoto gardens",tagline:"Choose a plan. Know when to abstain.",description:"A PostgreSQL query-plan ranking prototype that scores candidate plans while enforcing uncertainty and decision-margin thresholds. The demo runs its Python ranker inside your browser.",meta:["PostgreSQL","Python","Query planning","Confidence gates"],url:"projects/aster/",source:"https://github.com/yjr28/aster-pg-optimizer",pos:[0,2,-19],camera:[12,21,16]},
+  kestrel:{number:"4",name:"Kestrel",place:"富士山 / The Fuji observatory",tagline:"Find the first divergence, not the loudest symptom.",description:"A Go distributed-systems flight recorder with causal traces and replayable seeded faults. Inject latency and follow the events through a ten-service request using the actual Go core compiled to WebAssembly.",meta:["Go / WebAssembly","Causal traces","Fault injection","Replay"],url:"projects/kestrel/",source:"https://github.com/yjr28/kestrel-replay",pos:[30,2,-18],camera:[34,25,21]},
+  studyhub:{number:"5",name:"Waseda Study Hub",place:"早稲田・東京 / Waseda campus",tagline:"Build campus software with a trust boundary.",description:"A student discovery and study-buddy product with verified university sign-in, private conversations, and AI-assisted matching. Explore the authorization and ranking decisions in its case study.",meta:["Next.js","Firebase","Auth / privacy","AI matching"],url:"projects/studyhub/",source:"https://github.com/Waseda-Study-Hub/frontend",pos:[29,2,18],camera:[29,22,49]}
 };
 const LASTRIDE = "https://lastride.jp/en/";
 const clamp = THREE.MathUtils.clamp;
@@ -49,7 +49,9 @@ const animated={clock:0,motion:!reduced,lite:false,focused:null,overview:false,s
 const look={center:V(0,0,0),target:V(0,0,0),yaw:0.14,pitch:0.98,distance:125,targetYaw:0.14,targetPitch:0.98,targetDistance:125};
 const minDistance=20,maxDistance=170;
 const pointer={down:false,dragged:false,x:0,y:0,x0:0,y0:0,mode:"orbit"};
-const viewport={width:0,height:0};
+const viewport={width:0,height:0,left:0,top:0};
+const touchPoints=new Map();
+let pinchDistance=0;
 const dummy = new THREE.Object3D();
 
 function add(parent,geometry,mat,x=0,y=0,z=0,cast=true){
@@ -432,7 +434,9 @@ function buildRailway(){
    }
    cars.push(g);
   }
-  trains.push({cars,start,speed:accent===material.vermillion?.011:-.0095});
+  const train={cars,start,speed:accent===material.vermillion?.011:-.0095};
+  trains.push(train);
+  positionTrain(train);
  }
  addTrain(.29,material.vermillion);
  addTrain(.74,material.roofGreen);
@@ -446,6 +450,15 @@ function buildRailway(){
   box(platform,2.5,.2,5.8,material.roofGreen,-.75,2.12,0);
   lantern(platform,-.83,1.5,.22);
  }
+}
+function positionTrain(train){
+ const direction=Math.sign(train.speed);
+ train.cars.forEach((car,i)=>{
+  const k=(train.start-direction*i*4.85/railLength+1)%1;
+  const p=railwayCurve.getPointAt(k),tan=railwayCurve.getTangentAt(k);
+  car.position.copy(p);car.position.y+=.24;
+  car.rotation.set(0,Math.atan2(tan.x*direction,tan.z*direction),0);
+ });
 }
 function buildSkyObjects(){
  // The sky itself is a CSS gradient. The objects here cast real shadows and move through it.
@@ -502,7 +515,12 @@ function buildPetals(){
 }
 function buildWater(){
  const geo=new THREE.PlaneGeometry(360,270,1,1);
- const mat=new THREE.MeshBasicMaterial({color:0x65a9bf,transparent:true,opacity:.13,depthWrite:false});
+ // A soft sea edge avoids a rectangular horizon when orbiting or riding the train.
+ const fade=document.createElement("canvas");fade.width=fade.height=64;
+ const ctx=fade.getContext("2d"),gradient=ctx.createRadialGradient(32,32,10,32,32,32);
+ gradient.addColorStop(0,"white");gradient.addColorStop(1,"black");
+ ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);
+ const mat=new THREE.MeshBasicMaterial({color:0x65a9bf,transparent:true,opacity:.13,alphaMap:new THREE.CanvasTexture(fade),depthWrite:false});
  const plane=add(world,geo,mat,0,-2.85,0,false);plane.rotation.x=-Math.PI/2;
  for(const p of [[-35,-3,16,13],[-19,18,15,12],[0,-19,17,14],[30,-18,18,14],[29,18,17,13]]){
   for(let k=0;k<2;k++){
@@ -516,10 +534,10 @@ function buildWorld(){
  scene=new THREE.Scene();
  camera=new THREE.PerspectiveCamera(43,1,.15,550);
  world=new THREE.Group();scene.add(world);
- scene.add(new THREE.HemisphereLight(0xe5f5fb,0x294d51,2.05));
+ scene.add(new THREE.HemisphereLight(0xe5f5fb,0x294d51,1.65));
  scene.add(new THREE.AmbientLight(0x8db5d7,.55));
- const sun=new THREE.DirectionalLight(0xffe3bd,2.15);sun.position.set(65,93,45);sun.castShadow=true;
- sun.shadow.mapSize.set(1024,1024);
+ const sun=new THREE.DirectionalLight(0xffe3bd,2.65);sun.position.set(65,93,45);sun.castShadow=true;
+ sun.shadow.mapSize.set(2048,2048);
  sun.shadow.camera.left=-115;sun.shadow.camera.right=115;sun.shadow.camera.top=115;sun.shadow.camera.bottom=-115;
  sun.shadow.camera.near=2;sun.shadow.camera.far=240;sun.shadow.normalBias=.03;sun.shadow.bias=-.00015;
  scene.add(sun);
@@ -545,20 +563,25 @@ function openLastRide(){
  toast("All aboard the LastRide express.");
 }
 function closeAbout(){
+ $("about-panel").inert=true;
  $("about-panel").classList.remove("open");$("about-panel").setAttribute("aria-hidden","true");
 }
 function exitRide(){animated.ride=false;const b=$("ride-toggle");b.setAttribute("aria-pressed","false");b.textContent="Ride the line"}
 function closeInfo(){
+ const hadFocus=$("project-info").contains(document.activeElement);
+ $("project-info").inert=true;
  $("project-info").classList.remove("visible");$("project-info").setAttribute("aria-hidden","true");
  app.classList.remove("station-selected");
+ if(hadFocus&&animated.focused)document.querySelector(`.station[data-station="${animated.focused}"]`).focus({preventScroll:true});
  animated.focused=null;
+ if(camera)resize();
  stationButtons.forEach(b=>b.classList.remove("active"));
  markerButtons.forEach(b=>b.setAttribute("aria-pressed","false"));
 }
 function resetOverview({animate=true}={}){
  exitRide();closeInfo();closeAbout();
  animated.overview=true;
- look.target.set(0,1,0);look.targetYaw=.08;look.targetPitch=1.14;look.targetDistance=136;
+ look.target.set(0,1,0);look.targetYaw=.08;look.targetPitch=1.14;look.targetDistance=window.innerWidth<760?115:124;
  $("overview-toggle").setAttribute("aria-pressed","true");$("overview-label").textContent="Free camera";
  if(!animate){look.center.copy(look.target);look.yaw=look.targetYaw;look.pitch=look.targetPitch;look.distance=look.targetDistance}
 }
@@ -581,21 +604,24 @@ function focusStation(id){
  const primary=$("info-primary");primary.href=d.url;primary.querySelector("span").textContent="↗";
  const secondary=$("info-secondary");
  if(d.source){secondary.href=d.source;secondary.style.display="flex"}else{secondary.style.display="none"}
+ $("project-info").inert=false;
  $("project-info").setAttribute("aria-hidden","false");$("project-info").classList.add("visible");
  app.classList.add("station-selected");
+ resize();
  $("control-hint").classList.add("hidden");
  stationButtons.forEach(b=>b.classList.toggle("active",b.dataset.station===id));
  markerButtons.forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.station===id)));
- // Avoid forcing visitors to watch an animation before opening the project.
+ $("info-close").focus({preventScroll:true});
+ // Details and links are available before the camera settles.
 }
 function toggleMap(){
- if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";look.targetPitch=.83;look.targetDistance=100;return}
+ if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";look.targetPitch=.83;look.targetDistance=window.innerWidth<760?110:102;return}
  resetOverview();
 }
 function bindUI(){
  $("ride-toggle").addEventListener("click",()=>{
   if(animated.ride){resetOverview();return}
-  closeInfo();closeAbout();animated.ride=true;app.classList.add("station-selected");
+  closeInfo();closeAbout();animated.ride=true;app.classList.add("station-selected");resize();
   $("ride-toggle").setAttribute("aria-pressed","true");$("ride-toggle").textContent="Exit the ride";
   $("control-hint").classList.add("hidden");toast("A moving postcard from the LastRide express.");
  });
@@ -603,11 +629,10 @@ function bindUI(){
  $("info-close").addEventListener("click",closeInfo);
  $("begin-exploring").addEventListener("click",()=>focusStation("northstar"));
  $("overview-toggle").addEventListener("click",toggleMap);
- $("train-tip").addEventListener("click",openLastRide);
  document.querySelectorAll("[data-about]").forEach(b=>b.addEventListener("click",()=>{
   const panel=$("about-panel");
-  if(panel.classList.contains("open"))closeAbout();
-  else{closeInfo();panel.classList.add("open");panel.setAttribute("aria-hidden","false")}
+  if(panel.classList.contains("open")){closeAbout();document.querySelector(".about-toggle").focus({preventScroll:true})}
+  else{closeInfo();panel.inert=false;panel.classList.add("open");panel.setAttribute("aria-hidden","false");panel.querySelector(".about-close").focus({preventScroll:true})}
  }));
  $("dismiss-hint").addEventListener("click",()=>$("control-hint").classList.add("hidden"));
  $("motion-toggle").addEventListener("click",()=>{
@@ -629,7 +654,7 @@ function bindUI(){
  document.addEventListener("keydown",e=>{
   const tag=document.activeElement?.tagName;
   if(tag==="INPUT"||tag==="TEXTAREA"||e.ctrlKey||e.metaKey||e.altKey)return;
-  if(e.key==="Escape"){closeInfo();closeAbout();return}
+  if(e.key==="Escape"){const aboutOpen=$("about-panel").classList.contains("open");closeInfo();closeAbout();if(aboutOpen)document.querySelector(".about-toggle").focus({preventScroll:true});return}
   if(e.key.toLowerCase()==="t"){$("ride-toggle").click();e.preventDefault();return}
   if(e.key.toLowerCase()==="m"){toggleMap();e.preventDefault();return}
   if(e.key.toLowerCase()==="r"){resetOverview();e.preventDefault();return}
@@ -641,12 +666,28 @@ function bindUI(){
  });
  canvas.addEventListener("contextmenu",e=>e.preventDefault());
  canvas.addEventListener("pointerdown",e=>{
-  if(e.button>2)return;
+  if(e.button!==0&&e.button!==2)return;
+  if(e.pointerType==="touch"){
+   touchPoints.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   canvas.setPointerCapture(e.pointerId);
+   if(touchPoints.size===2){
+    const [a,b]=[...touchPoints.values()];pinchDistance=Math.hypot(a.x-b.x,a.y-b.y);
+    pointer.dragged=true;return;
+   }
+  }
   if(animated.ride)resetOverview();
   pointer.down=true;pointer.dragged=false;pointer.x=e.clientX;pointer.y=e.clientY;pointer.x0=e.clientX;pointer.y0=e.clientY;pointer.mode=(e.button===2||e.shiftKey)?"pan":"orbit";
   canvas.setPointerCapture(e.pointerId);
  });
  canvas.addEventListener("pointermove",e=>{
+  if(touchPoints.has(e.pointerId)){
+   touchPoints.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(touchPoints.size===2){
+    const [a,b]=[...touchPoints.values()],distance=Math.hypot(a.x-b.x,a.y-b.y);
+    if(pinchDistance>0&&distance>0)look.targetDistance=clamp(look.targetDistance*pinchDistance/distance,minDistance,maxDistance);
+    pinchDistance=distance;pointer.dragged=true;return;
+   }
+  }
   if(pointer.down){
    const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;
    pointer.x=e.clientX;pointer.y=e.clientY;
@@ -673,6 +714,8 @@ function bindUI(){
   }
  });
  canvas.addEventListener("pointerup",e=>{
+  touchPoints.delete(e.pointerId);
+  if(pinchDistance){pinchDistance=0;pointer.down=false;return}
   if(!pointer.down)return;
   pointer.down=false;
   if(!pointer.dragged){
@@ -681,7 +724,7 @@ function bindUI(){
    if(hit?.station){focusStation(hit.station);return}
   }
  });
- canvas.addEventListener("pointercancel",()=>pointer.down=false);
+ canvas.addEventListener("pointercancel",()=>{pointer.down=false;touchPoints.clear();pinchDistance=0});
  canvas.addEventListener("wheel",e=>{
   e.preventDefault();
   look.targetDistance=clamp(look.targetDistance*Math.exp(e.deltaY*.00135),minDistance,maxDistance);
@@ -701,25 +744,35 @@ function rayHit(e){
  return null;
 }
 function resize(){
- viewport.width=window.innerWidth;viewport.height=window.innerHeight;
+ const bounds=canvas.getBoundingClientRect();
+ viewport.width=bounds.width;viewport.height=bounds.height;viewport.left=0;viewport.top=0;
  if(!renderer)return;
  renderer.setSize(viewport.width,viewport.height,false);
+ const mobile=window.innerWidth<760;
+ // Compose the world beside the introduction on desktop and below it on mobile.
+ // Render the sky and petals edge to edge; an optical shift avoids a clipped canvas.
+ const stage={left:mobile?0:window.innerWidth<=1100?245:270,top:mobile?278:100,
+  width:mobile?viewport.width:viewport.width-(window.innerWidth<=1100?255:285),
+  height:viewport.height-(mobile?466:280)};
+ if(animated.focused&&!mobile){
+  stage.left=30;stage.top=100;stage.width=viewport.width-430;
+ }else if(animated.ride){
+  stage.left=0;stage.top=mobile?94:80;stage.width=viewport.width;stage.height=viewport.height-(mobile?290:260);
+ }
+ const stageAspect=stage.width/stage.height;
+ const stageFov=Math.max(mobile?56:43,THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(56)/2)/stageAspect)));
  camera.aspect=viewport.width/viewport.height;
- camera.fov=viewport.width<760?51:43;
+ camera.fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(stageFov)/2)*viewport.height/stage.height));
+ camera.setViewOffset(viewport.width,viewport.height,viewport.width/2-stage.left-stage.width/2,viewport.height/2-stage.top-stage.height/2,viewport.width,viewport.height);
  camera.updateProjectionMatrix();
 }
+
 function animateWorld(dt,now){
  if(animated.motion){
   const t=animated.clock+=dt;
   for(const train of trains){
    train.start=(train.start+train.speed*dt+1)%1;
-   train.cars.forEach((car,i)=>{
-    const k=(train.start-i*4.85/railLength+1)%1;
-    const p=railwayCurve.getPointAt(k),tan=railwayCurve.getTangentAt(k);
-    car.position.copy(p);car.position.y+=.24;
-    car.rotation.set(0,Math.atan2(tan.x,tan.z),0);
-    car.position.y+=Math.sin(t*9+i)*.015;
-   });
+   positionTrain(train);
   }
   const mesh=staticMeshes.petals;
   if(mesh){
@@ -767,7 +820,7 @@ function animateWorld(dt,now){
   camera.lookAt(ahead);camera.updateMatrixWorld();return;
  }
  // Exponential damping makes the camera settle naturally without feeling slippery.
- const damp=1-Math.exp(-4.6*Math.min(dt,.05));
+ const damp=reduced?1:1-Math.exp(-4.6*Math.min(dt,.05));
  look.center.lerp(look.target,damp);
  look.yaw=mix(look.yaw,look.targetYaw,damp);
  look.pitch=mix(look.pitch,look.targetPitch,damp);
@@ -777,19 +830,65 @@ function animateWorld(dt,now){
  camera.lookAt(look.center);
  camera.updateMatrixWorld();
 }
-function updateMarkers(){
- for(const marker of markerButtons){
-  const d=stationData[marker.dataset.station];
-  if(!d)continue;
-  const p=V(d.pos[0],9.8,d.pos[2]).project(camera);
-  const visible=p.z>-1&&p.z<1&&Math.abs(p.x)<1.17&&Math.abs(p.y)<1.15;
-  marker.classList.toggle("marker-hidden",!visible);
-  if(visible){
-   marker.style.left=(p.x*.5+.5)*viewport.width+"px";
-   marker.style.top=(-p.y*.5+.5)*viewport.height+"px";
+const trainLabels=Array.from(document.querySelectorAll(".train-label"));
+const projected=V(),cameraSpace=V();
+const labelSizes=new WeakMap();
+const labelObserver=new ResizeObserver(entries=>{
+ for(const entry of entries)labelSizes.set(entry.target,{width:entry.borderBoxSize[0].inlineSize,height:entry.borderBoxSize[0].blockSize});
+});
+for(const label of [...markerButtons,...trainLabels]){
+ label.hidden=false;
+ labelObserver.observe(label);
+}
+const overlaySelectors=[".global-nav",".world-intro",".station-line",".tiny-footer",".project-info.visible",".about-panel.open",".world-control-hint:not(.hidden)",".world-toast.visible"];
+function overlaps(a,b,gap=7){return a.left<b.right+gap&&a.right>b.left-gap&&a.top<b.bottom+gap&&a.bottom>b.top-gap}
+function projectAnchor(position){
+ cameraSpace.copy(position).applyMatrix4(camera.matrixWorldInverse);
+ projected.copy(position).project(camera);
+ if(cameraSpace.z>=0||projected.z< -1||projected.z>1||Math.abs(projected.x)>1||Math.abs(projected.y)>1)return null;
+ return {x:viewport.left+(projected.x*.5+.5)*viewport.width,y:viewport.top+(-projected.y*.5+.5)*viewport.height};
+}
+function placeLabel(label,point,occupied,lifts,slide=false){
+ const size=labelSizes.get(label);
+ let placed=null;
+ if(point&&size){
+  placement: for(const lift of lifts){
+   for(const shift of slide?[0,-size.width*.4,size.width*.4]:[0]){
+   const rect={left:point.x-size.width/2+shift,right:point.x+size.width/2+shift,top:point.y-size.height-lift,bottom:point.y-lift};
+   if(rect.left<8||rect.right>app.clientWidth-8||rect.top<8||rect.bottom>app.clientHeight-8)continue;
+   if(occupied.some(other=>overlaps(rect,other)))continue;
+   placed=rect;break placement;
+   }
   }
  }
+ // Visibility also removes offscreen signs from keyboard navigation.
+ label.classList.toggle("marker-hidden",!placed);
+ label.style.visibility=placed?"visible":"hidden";
+ if(placed){
+  label.style.left=placed.left+"px";label.style.top=placed.top+"px";
+  label.style.transform="none";
+  label.style.setProperty("--leader",(point.y-placed.bottom)+"px");
+  label.style.setProperty("--stem-x",(point.x-placed.left)+"px");
+  occupied.push(placed);
+ }
 }
+function updateMarkers(){
+ const appBounds=app.getBoundingClientRect();
+ const occupied=Array.from(document.querySelectorAll(overlaySelectors.join(",")))
+  .filter(el=>getComputedStyle(el).visibility!=="hidden")
+  .map(el=>{const r=el.getBoundingClientRect();return {left:r.left-appBounds.left,right:r.right-appBounds.left,top:r.top-appBounds.top,bottom:r.bottom-appBounds.top}});
+ // The roof point comes from the very same lead carriage that is rendered this frame.
+ // No independent CSS animation or route approximation can drift away from the train.
+ trains.forEach((train,i)=>{
+  const roof=train.cars[0].localToWorld(V(0,2.1,0));
+  placeLabel(trainLabels[i],projectAnchor(roof),occupied,[17,39,61]);
+ });
+ for(const marker of markerButtons){
+  const d=stationData[marker.dataset.station];
+  placeLabel(marker,projectAnchor(V(d.pos[0],9.8,d.pos[2])),occupied,[16,38,60,82],true);
+ }
+}
+
 function startWorld(){
  try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:"high-performance",preserveDrawingBuffer:false});
@@ -803,14 +902,14 @@ function startWorld(){
   resize();bindUI();
   resetOverview({animate:false});
   animated.overview=false;
-  look.targetPitch=.80;look.pitch=.80;look.targetDistance=116;look.distance=116;look.targetYaw=.14;look.yaw=.14;
+  look.targetPitch=.80;look.pitch=.80;look.targetDistance=window.innerWidth<760?110:102;look.distance=look.targetDistance;look.targetYaw=.14;look.yaw=.14;
   $("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";
   window.addEventListener("resize",resize,{passive:true});
   window.addEventListener("visibilitychange",()=>{lastFrame=performance.now()});
   const startupHash=window.location.hash.replace("#","");
   if(startupHash in stationData)focusStation(startupHash);
   else if(["about","contact","experience"].includes(startupHash)){
-    const panel=$("about-panel");panel.classList.add("open");panel.setAttribute("aria-hidden","false");
+    const panel=$("about-panel");panel.inert=false;panel.classList.add("open");panel.setAttribute("aria-hidden","false");panel.querySelector(".about-close").focus({preventScroll:true});
   }
   function tick(time){
    requestAnimationFrame(tick);
@@ -819,7 +918,8 @@ function startWorld(){
    if(document.hidden)return;
    animateWorld(dt,time);
    renderer.render(scene,camera);
-   if(frameCount++%2===0)updateMarkers();
+   updateMarkers();
+   frameCount++;
    if(frameCount===2){animated.sceneReady=true;$("world-loading").classList.add("done")}
   }
   requestAnimationFrame(tick);
