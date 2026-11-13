@@ -2,270 +2,101 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Run Kestrel's Go failure replay core in the browser through WebAssembly.">
-<title>Kestrel · Failure Lab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Kestrel: inspect a distributed Go request trace, inject latency, compare execution paths and replay recorded faults in WebAssembly.">
+<title>Kestrel — Trace investigation</title>
 <link rel="stylesheet" href="../demo.css">
-<link rel="stylesheet" href="../app-demo.css">
-<link rel="stylesheet" href="../showcase.css">
+<link rel="stylesheet" href="../product-labs.css">
 <script src="./wasm_exec.js"></script>
+<script src="./lab.js" defer></script>
 </head>
-<body class="theme-kestrel">
-<header class="shell site-bar">
-  <a class="identity" href="../../"><span class="identity-mark">YJ</span><span>YoungJun Ryu</span><span class="identity-project">/ Kestrel</span></a>
-  <nav class="site-nav"><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">Source</a><a href="../../#work">Portfolio</a></nav>
+<body class="pl-body pl-kestrel">
+<header class="pl-global">
+  <a class="pl-mark" href="../../" aria-label="YJ — return to YoungJun Ryu's portfolio">YJ</a>
+  <div class="pl-crumb"><a href="../../#work">Projects</a><span>/</span><strong>Kestrel</strong></div>
+  <nav aria-label="Project links"><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">GitHub repository ↗</a></nav>
 </header>
-
-<main>
-  <section class="shell demo-intro">
-    <h1>Kestrel</h1>
-    <p>Add a delay to <code>inventory/check</code>, run the request, and inspect the trace. Replay uses the same Go fault model compiled to WebAssembly.</p>
-    <div class="demo-intro-meta">
-      <span class="runtime-chip busy" id="runtimeChip"><i class="runtime-led"></i><strong>Go/WASM</strong><span id="runtimeText">loading Kestrel core</span></span>
-      <span class="runtime-chip"><strong>Target</strong><span>inventory/check</span></span>
-      <span class="runtime-chip"><strong>Timeout</strong><span>30 ms</span></span>
+<main class="pl-root">
+  <header class="pl-heading">
+    <div class="pl-heading-copy">
+      <h1>Kestrel <span class="pl-heading-suffix">/ traces</span></h1>
+      <p>Find where a distributed request breaks. Inject a delay at <code>inventory/check</code>, compare the traces, and verify that replay reproduces the failure.</p>
     </div>
-  </section>
+    <div class="pl-runtime" id="runtimeChip" role="status" aria-live="polite">
+      <span class="pl-led"></span>
+      <span id="runtimeText">Loading Go runtime…</span>
+    </div>
+  </header>
 
-  <section class="product-frame" aria-label="Kestrel interactive failure lab">
-    <div class="product-chrome">
-      <strong>Request trace</strong>
-      <span class="product-chrome-center">Go replay engine / WebAssembly</span>
-      <div class="product-chrome-actions"><a href="https://github.com/yjr28/kestrel-replay/tree/main/internal/browserdemo" target="_blank" rel="noreferrer">Adapter source</a><a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/replay/replay.go" target="_blank" rel="noreferrer">Replay source</a></div>
+  <section class="pl-window" aria-label="Kestrel trace investigation demo">
+    <div class="pl-window-head">
+      <div class="pl-window-path"><span>Trace Explorer</span><span>/</span><strong>create_order</strong></div>
+      <span class="pl-window-note">Go fault &amp; replay core · WebAssembly</span>
     </div>
 
-    <div class="kestrel-app">
-      <aside class="k-control">
-        <div class="app-section-title"><h2>Fault settings</h2><span>inventory/check</span></div>
-        <div class="k-control-stack">
-          <div class="app-field">
-            <label for="delayRange">Injected latency</label>
-            <input id="delayRange" type="range" min="5" max="120" step="5" value="75">
-            <div class="k-range-line"><span>5 ms</span><strong id="delayValue">75 ms</strong><span>120 ms</span></div>
-          </div>
+    <div class="k-control-bar">
+      <fieldset class="k-presets">
+        <legend>Try a scenario</legend>
+        <button type="button" class="k-preset" data-delay="15" data-jitter="0">Healthy</button>
+        <button type="button" class="k-preset active" data-delay="75" data-jitter="0">Timeout</button>
+        <button type="button" class="k-preset" data-delay="75" data-jitter="30">Jitter</button>
+        <button type="button" class="k-preset" data-delay="120" data-jitter="0">120 ms</button>
+      </fieldset>
+      <div class="k-fault-values">
+        <label for="delayRange">Injected latency <output id="delayValue" for="delayRange">75 ms</output></label>
+        <input type="range" id="delayRange" min="5" max="120" step="5" value="75">
+      </div>
+      <div class="k-fault-values">
+        <label for="jitterRange">Jitter <output id="jitterValue" for="jitterRange">0%</output></label>
+        <input type="range" id="jitterRange" min="0" max="50" step="5" value="0">
+      </div>
+      <details class="k-seed-details"><summary>Seed</summary><label for="seedInput">Deterministic seed</label><input id="seedInput" inputmode="numeric" value="20260903"></details>
+      <button class="pl-primary k-run" id="runButton" disabled>Loading…</button>
+    </div>
 
-          <div class="app-field">
-            <label for="jitterRange">Jitter</label>
-            <input id="jitterRange" type="range" min="0" max="50" step="5" value="0">
-            <div class="k-range-line"><span>0%</span><strong id="jitterValue">0%</strong><span>50%</span></div>
-          </div>
+    <div class="k-result-strip" aria-label="Latest run summary">
+      <div><span>Request result</span><strong id="outcomeValue">—</strong></div>
+      <div><span>First divergence</span><strong id="divergenceValue">—</strong></div>
+      <div><span>Recorded events</span><strong id="eventValue">—</strong></div>
+      <div><span>Replay check</span><strong id="replayValue">—</strong></div>
+    </div>
 
-          <div class="app-field">
-            <label for="seedInput">Seed</label>
-            <input id="seedInput" inputmode="numeric" value="20260903">
-          </div>
-
-          <div>
-            <div style="margin-bottom:7px;color:var(--faint);font:500 9px/1 var(--mono);text-transform:uppercase;letter-spacing:.06em">Presets</div>
-            <div class="k-presets">
-              <button class="k-preset" data-delay="15" data-jitter="0">Healthy</button>
-              <button class="k-preset active" data-delay="75" data-jitter="0">Timeout</button>
-              <button class="k-preset" data-delay="75" data-jitter="30">Jitter</button>
-              <button class="k-preset" data-delay="120" data-jitter="0">120 ms delay</button>
-            </div>
-          </div>
-
-          <button class="app-button k-run" id="runButton" disabled>Loading Go runtime…</button>
-          <p class="interaction-note">Run a preset, then select an event to see its fields.</p>
+    <div class="k-trace-toolbar">
+      <div>
+        <h2>Trace waterfall</h2>
+        <p id="phaseText" aria-live="polite">The first request runs when WebAssembly is ready.</p>
+      </div>
+      <div class="k-trace-actions">
+        <div class="k-view-tabs" role="group" aria-label="Select trace">
+          <button class="k-view" type="button" data-trace="healthy">Baseline</button>
+          <button class="k-view active" type="button" data-trace="failing">With fault</button>
+          <button class="k-view" type="button" data-trace="replayed">Replay</button>
         </div>
-      </aside>
-
-      <div class="k-workspace">
-        <div class="k-livebar">
-          <span id="phaseText">Runtime initialization</span>
-          <span id="runtimeHash">wasm checksum pending</span>
-        </div>
-
-        <div class="k-scene" id="scene">
-          <canvas id="kOrbitCanvas" class="k-orbit-canvas" tabindex="0" aria-label="Rotatable 3D schematic of Kestrel's ten logical services. Drag or use arrow keys to rotate; click a service to inspect its recorded events."></canvas>
-          <div class="k-orbit-hud"><div><strong>Service graph · 10 nodes</strong><small>Drag to rotate. Select a node to inspect it.</small></div>
-            <div class="orbit-coordinate"><button type="button" class="world-motion-toggle" id="kMotion">Reset view</button></div></div>
-          <div class="k-path" id="syncPath">
-            <div class="k-node" data-service="gateway"><div class="k-node-dot">GW</div><div class="k-node-label">gateway</div><div class="k-node-op">create_order</div></div>
-            <div class="k-node" data-service="auth"><div class="k-node-dot">AU</div><div class="k-node-label">auth</div><div class="k-node-op">authorize</div></div>
-            <div class="k-node" data-service="account"><div class="k-node-dot">AC</div><div class="k-node-label">account</div><div class="k-node-op">load_account</div></div>
-            <div class="k-node" data-service="order"><div class="k-node-dot">OR</div><div class="k-node-label">order</div><div class="k-node-op">create</div></div>
-            <div class="k-node" data-service="inventory"><div class="k-node-dot">IN</div><div class="k-node-label">inventory</div><div class="k-node-op">check</div></div>
-            <div class="k-node" data-service="pricing"><div class="k-node-dot">PR</div><div class="k-node-label">pricing</div><div class="k-node-op">quote</div></div>
-            <div class="k-node" data-service="payment"><div class="k-node-dot">PA</div><div class="k-node-label">payment</div><div class="k-node-op">authorize</div></div>
-          </div>
-
-          <div class="k-worker-row" id="workerRow">
-            <div class="k-worker-label">async order.completed</div>
-            <div class="k-worker" data-service="notification"><b>notification</b><span>consumer</span></div>
-            <div class="k-worker" data-service="audit"><b>audit</b><span>consumer</span></div>
-            <div class="k-worker" data-service="analytics"><b>analytics</b><span>consumer</span></div>
-          </div>
-
-          <div class="k-outcome">
-            <div class="k-outcome-cell"><b id="outcomeValue">—</b><span>Response</span></div>
-            <div class="k-outcome-cell"><b id="divergenceValue">—</b><span>First divergence</span></div>
-            <div class="k-outcome-cell"><b id="eventValue">—</b><span>Events</span></div>
-            <div class="k-outcome-cell"><b id="replayValue">—</b><span>Replay</span></div>
-          </div>
-        </div>
-
-        <div class="k-trace-wrap">
-          <div class="k-trace-header"><span>service</span><span>kind</span><span>operation / evidence</span><span>duration</span></div>
-          <div id="traceRows"><div class="empty-copy" style="padding:14px 15px">Run a request to see the event stream.</div></div>
-        </div>
+        <label class="pl-search" for="traceSearch"><span class="sr-only">Search events</span><input id="traceSearch" placeholder="Find a service…" type="search" autocomplete="off"></label>
+        <label class="pl-checkbox"><input type="checkbox" id="errorsOnly"> Anomalies only</label>
       </div>
     </div>
 
-    <div class="k-event-inspector" id="eventInspector">
-      <div><b>Selected event</b><span id="eventTitle">none</span></div>
-      <pre id="eventJSON">Select an event from the trace.</pre>
+    <div class="k-trace-grid">
+      <section class="k-trace-panel" aria-label="Trace event waterfall">
+        <p class="pl-table-hint">Swipe to inspect the full trace timeline →</p>
+        <div class="k-timeline-head"><span>Service / operation</span><span id="timelineScale">Elapsed time (ms)</span><span>Duration</span></div>
+        <div class="k-timeline-rows" id="traceRows">
+          <p class="pl-placeholder">Loading the Go replay engine…</p>
+        </div>
+        <div class="k-time-footer" id="timeAxis">Timing is relative to the first event in the selected trace.</div>
+      </section>
+      <aside class="k-inspector" aria-label="Selected event details">
+        <div class="k-inspector-head"><div><span class="pl-overline">EVENT INSPECTOR</span><h2 id="eventTitle">Select an event</h2></div><span id="eventBadge" class="pl-small-status">—</span></div>
+        <div id="eventSummary" class="k-inspector-summary">Choose a row in the waterfall to examine its attributes, IDs, status and duration.</div>
+        <details class="k-raw" open><summary>Raw event data</summary><pre id="eventJSON" tabindex="0" aria-label="Raw trace event JSON">No event selected.</pre></details>
+      </aside>
+    </div>
+    <div class="pl-footnote">
+      <span>Recorded timestamps and spans come from the repository's Go code. The browser adapter substitutes for local TCP sockets.</span>
+      <a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/replay/replay.go" target="_blank" rel="noreferrer">Read the replay implementation ↗</a>
     </div>
   </section>
 </main>
-
-<footer class="shell site-footer"><span>The browser adapter replaces local TCP sockets only; fault decisions, graph construction, event types, signatures, and replay equivalence come from Kestrel's Go packages.</span><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">Repository</a></footer>
-
-<script>
-const delayRange=document.getElementById("delayRange");
-const jitterRange=document.getElementById("jitterRange");
-const seedInput=document.getElementById("seedInput");
-const runButton=document.getElementById("runButton");
-const runtimeChip=document.getElementById("runtimeChip");
-const runtimeText=document.getElementById("runtimeText");
-const phaseText=document.getElementById("phaseText");
-const traceRows=document.getElementById("traceRows");
-const escapeHTML=value=>String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const nodeMap=new Map([...document.querySelectorAll("[data-service]")].map(el=>[el.dataset.service,el]));
-let runtimeReady=false;
-let running=false;
-
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-function updateControls(){
-  document.getElementById("delayValue").textContent=delayRange.value+" ms";
-  document.getElementById("jitterValue").textContent=jitterRange.value+"%";
-  document.querySelectorAll(".k-preset").forEach(btn=>btn.classList.toggle("active",btn.dataset.delay===delayRange.value && btn.dataset.jitter===jitterRange.value));
-}
-delayRange.addEventListener("input",updateControls);
-jitterRange.addEventListener("input",updateControls);
-document.querySelectorAll(".k-preset").forEach(btn=>btn.addEventListener("click",()=>{
-  delayRange.value=btn.dataset.delay;
-  jitterRange.value=btn.dataset.jitter;
-  document.querySelectorAll(".k-preset").forEach(x=>x.classList.toggle("active",x===btn));
-  updateControls();
-}));
-updateControls();
-
-function resetScene(){
-  nodeMap.forEach(n=>n.classList.remove("active","success","failed"));
-  document.querySelectorAll(".k-worker").forEach(n=>n.classList.remove("active","success","failed"));
-  window.kestrelRenderGraph?.();
-}
-function eventDescription(e){
-  if(e.kind==="fault")return (e.attributes?.["fault.kind"]||"fault")+" · +"+Math.round(Number(e.attributes?.delay_us||0)/1000)+" ms";
-  if(e.kind==="message")return e.operation+" · "+(e.attributes?.["message.action"]||"message");
-  return e.operation||"";
-}
-function eventDuration(e){
-  const us=Number(e.attributes?.duration_us||0);
-  return us?((us/1000).toFixed(us>=10000?0:1)+" ms"):"—";
-}
-function renderTrace(events){
-  if(!events.length){traceRows.innerHTML='<div class="empty-copy" style="padding:14px 15px">No events recorded.</div>';return}
-  traceRows.innerHTML=events.map((e,i)=>`
-    <div class="k-trace-row" role="button" tabindex="0" aria-label="Inspect event ${i+1}: ${escapeHTML(e.service||"system")}" data-event-index="${i}">
-      <span class="${e.status==="error"?"fault":e.kind==="fault"?"fault":"good"}">${escapeHTML(e.service||"system")}</span>
-      <span>${escapeHTML(e.kind)}</span>
-      <span>${escapeHTML(eventDescription(e))}</span>
-      <span>${escapeHTML(eventDuration(e))}</span>
-    </div>`).join("");
-  traceRows.querySelectorAll("[data-event-index]").forEach(row=>{
-    row.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();row.click();}});
-    row.addEventListener("click",()=>{
-    traceRows.querySelectorAll(".k-trace-row").forEach(x=>x.classList.toggle("selected",x===row));
-    const e=events[Number(row.dataset.eventIndex)];
-    document.getElementById("eventTitle").textContent=(e.service||"system")+" / "+e.kind;
-    document.getElementById("eventJSON").textContent=JSON.stringify(e,null,2);
-  });});
-}
-async function animateRun(events,label){
-  phaseText.textContent=label;
-  resetScene();
-  const seen=new Set();
-  for(const e of events){
-    if(!e.service||seen.has(e.service)&&e.kind!=="fault")continue;
-    const node=nodeMap.get(e.service);
-    if(!node)continue;
-    node.classList.add("active");
-    window.kestrelRenderGraph?.();
-    await sleep(110);
-    node.classList.remove("active");
-    if(e.kind==="fault"||e.status==="error")node.classList.add("failed");
-    else node.classList.add("success");
-    seen.add(e.service);
-    window.kestrelRenderGraph?.();
-  }
-}
-async function runKestrel(){
-  if(!runtimeReady||running)return;
-  running=true;runButton.disabled=true;runButton.textContent="Running Go…";
-  resetScene();
-  for(const id of ["outcomeValue","divergenceValue","eventValue","replayValue"]){document.getElementById(id).textContent="—";}
-  traceRows.innerHTML='<div class="empty-copy" style="padding:14px 15px">Executing Kestrel in WebAssembly…</div>';
-  try{
-    const seed=Number(seedInput.value)||20260903;
-    const input={delay_ms:Number(delayRange.value),seed,jitter:Number(jitterRange.value)/100};
-    const raw=window.runKestrelGo(JSON.stringify(input));
-    const result=JSON.parse(raw);
-    if(result.error)throw new Error(result.error);
-
-    await animateRun(result.failing.events,"Recording injected run");
-    renderTrace(result.failing.events);
-    const outcome=result.failing.outcome;
-    document.getElementById("outcomeValue").textContent=outcome.classification==="success"?"201 success":"504 inventory";
-    document.getElementById("divergenceValue").textContent=result.has_divergence?result.divergence.service+" / "+result.divergence.reason:"none";
-    document.getElementById("eventValue").textContent=String(result.failing.events.length);
-    document.getElementById("replayValue").textContent="replaying…";
-
-    await sleep(180);
-    await animateRun(result.replayed.events,"Replaying recorded fault schedule");
-    document.getElementById("replayValue").textContent=result.replay_match?"MATCH":"DIVERGED";
-    document.getElementById("replayValue").className=result.replay_match?"ok":"bad";
-    phaseText.textContent=result.replay_match?"Replay matched the original outcome":"Replay diverged";
-  }catch(err){
-    phaseText.textContent="Runtime error";
-    traceRows.innerHTML='<div class="empty-copy" style="padding:14px 15px;color:var(--danger)">'+String(err.message)+'</div>';
-  }finally{
-    running=false;runButton.disabled=false;runButton.textContent="Run and replay";
-  }
-}
-runButton.addEventListener("click",runKestrel);
-
-(async()=>{
-  try{
-    const [wasmResponse,hashResponse]=await Promise.all([
-      fetch("https://raw.githubusercontent.com/yjr28/kestrel-replay/main/web/kestrel.wasm",{cache:"no-store"}),
-      fetch("https://raw.githubusercontent.com/yjr28/kestrel-replay/main/web/kestrel.wasm.sha256",{cache:"no-store"})
-    ]);
-    if(!wasmResponse.ok)throw new Error("Kestrel WebAssembly artifact is unavailable");
-    const go=new Go();
-    const bytes=await wasmResponse.arrayBuffer();
-    const instance=await WebAssembly.instantiate(bytes,go.importObject);
-    go.run(instance.instance).catch(err=>console.error("Kestrel Go runtime exited",err));
-    for(let i=0;i<50&&!window.runKestrelGo;i++)await sleep(20);
-    if(!window.runKestrelGo)throw new Error("Go runtime did not expose runKestrelGo");
-    runtimeReady=true;
-    runtimeChip.classList.remove("busy");runtimeChip.classList.add("ready");
-    runtimeText.textContent="Kestrel Go core loaded";
-    phaseText.textContent="Ready to inject a request";
-    if(hashResponse.ok){
-      const hash=(await hashResponse.text()).trim().split(/\s+/)[0];
-      document.getElementById("runtimeHash").textContent="wasm "+hash.slice(0,12);
-    }
-    runButton.disabled=false;runButton.textContent="Run and replay";
-  }catch(err){
-    runtimeChip.classList.remove("busy");runtimeChip.classList.add("error");
-    runtimeText.textContent="runtime failed";
-    phaseText.textContent=err.message;
-    runButton.textContent="Go runtime unavailable";
-  }
-})();
-</script>
-<script src="../showcase.js"></script>
 </body>
 </html>

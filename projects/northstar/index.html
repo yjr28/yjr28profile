@@ -2,261 +2,107 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Operate a live NorthStar fleet console in the browser: telemetry, host status, command leasing, acknowledgement, and API audit.">
-<title>NorthStar · Fleet Console</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="NorthStar: an interactive Linux fleet control plane demo with simulated host health, command leasing and acknowledgement, and API activity.">
+<title>NorthStar — Fleet operations</title>
 <link rel="stylesheet" href="../demo.css">
-<link rel="stylesheet" href="../app-demo.css">
-<link rel="stylesheet" href="../showcase.css">
+<link rel="stylesheet" href="../product-labs.css">
+<script src="./lab.js" defer></script>
 </head>
-<body class="theme-northstar">
-<header class="shell site-bar">
-  <a class="identity" href="../../"><span class="identity-mark">YJ</span><span>YoungJun Ryu</span><span class="identity-project">/ NorthStar</span></a>
-  <nav class="site-nav"><a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Source</a><a href="../../#work">Portfolio</a></nav>
+<body class="pl-body pl-northstar">
+<header class="pl-global">
+  <a class="pl-mark" href="../../" aria-label="YJ — return to YoungJun Ryu's portfolio">YJ</a>
+  <div class="pl-crumb"><a href="../../#work">Projects</a><span>/</span><strong>NorthStar</strong></div>
+  <nav aria-label="Project links"><a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">GitHub repository ↗</a></nav>
 </header>
-
-<main>
-  <section class="shell demo-intro">
-    <h1>NorthStar</h1>
-    <p>Inspect four simulated Linux hosts. Choose one on the map, change its status, or queue a command to see how the agent leases and acknowledges it.</p>
-    <div class="demo-intro-meta">
-      <span class="runtime-chip ready"><i class="runtime-led"></i><strong>Browser demo</strong><span>Simulated telemetry</span></span>
-      <span class="runtime-chip"><strong>Online</strong><span>Heartbeat within 90 s</span></span>
+<main class="pl-root">
+  <header class="pl-heading">
+    <div class="pl-heading-copy">
+      <h1>NorthStar <span class="pl-heading-suffix">/ fleet</span></h1>
+      <p>Inspect a small Linux fleet. Simulate a missed heartbeat, queue a command, and watch the agent lease and acknowledge it.</p>
     </div>
-  </section>
+    <div class="pl-runtime ready"><span class="pl-led"></span><span>Browser simulation · no live hosts</span></div>
+  </header>
 
-  <section class="product-frame" aria-label="NorthStar interactive fleet console">
-    <div class="product-chrome">
-      <strong>Fleet operations</strong>
-      <span class="product-chrome-center">Browser simulation / Spring API contract</span>
-      <div class="product-chrome-actions"><a href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/api/HostController.java" target="_blank" rel="noreferrer">Controller source</a></div>
+  <section class="pl-window" aria-label="NorthStar simulated fleet control plane">
+    <div class="pl-window-head">
+      <div class="pl-window-path"><span>Infrastructure</span><span>/</span><strong>Machines</strong></div>
+      <span class="pl-window-note">Spring API contract · simulated agent</span>
     </div>
 
-    <div class="northstar-app">
-      <aside class="ns-fleet">
-        <div class="ns-pane-head"><b>Fleet</b><span id="fleetCount">4 hosts</span></div>
+    <div class="ns-topline">
+      <div><h2>Machines</h2><span id="fleetCount">4 hosts</span></div>
+      <div class="ns-agent-control">
+        <span id="agentLabel">Polling every 1.5 seconds</span>
+        <button type="button" class="ns-agent-toggle on" id="agentToggle" aria-pressed="true">Agent running</button>
+      </div>
+    </div>
+
+    <div class="ns-filterbar">
+      <label class="pl-search" for="hostSearch"><span class="sr-only">Search hosts</span><input id="hostSearch" type="search" placeholder="Search hosts, regions, versions…" autocomplete="off"></label>
+      <label class="ns-select-label">Status <select id="statusFilter"><option value="all">All hosts</option><option value="online">Online only</option><option value="offline">Offline only</option></select></label>
+      <span class="ns-list-caption">Select a machine to inspect it</span>
+    </div>
+
+    <div class="ns-split">
+      <section class="ns-hosts" aria-label="Searchable host inventory">
+        <p class="pl-table-hint">Swipe to see memory and machine state →</p>
+        <div class="ns-list-head"><span>Host</span><span>Region</span><span>CPU</span><span>Memory</span><span>State</span></div>
         <div id="hostList"></div>
-      </aside>
-
-      <section class="ns-main">
-        <div class="ns-overview">
-          <div class="ns-globe-stage" aria-label="Host map showing ATL, IAD, NRT and FRA regions">
-            <canvas id="nsGlobeCanvas" tabindex="0" aria-label="Interactive globe. Drag left or right to rotate, click a visible host pin to select it, or choose a host from the fleet list."></canvas>
-            <div class="ns-globe-top"><div>HOST LOCATIONS<b>Select a region</b></div><div>ATL · IAD · NRT · FRA<br>SIMULATED DATA</div></div>
-            <div class="ns-globe-legend"><button type="button" id="nsMotion" class="world-motion-toggle">Reset map</button><span>Drag to rotate · select a marker</span></div>
-          </div>
-          <div class="ns-host-title">
-            <div><h2 id="selectedHostName">edge-atl-01</h2><p id="selectedHostMeta">linux · amd64 · agent 0.3.0</p></div>
-            <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">
-              <button class="app-button secondary compact" id="heartbeatButton">Send heartbeat</button>
-              <button class="app-button secondary compact" id="offlineButton">Simulate offline</button>
-            </div>
-          </div>
-
-          <div class="ns-metric-grid">
-            <div class="ns-metric"><b id="cpuMetric">—</b><span>CPU</span></div>
-            <div class="ns-metric"><b id="memMetric">—</b><span>Memory</span></div>
-            <div class="ns-metric"><b id="loadMetric">—</b><span>Load 1m</span></div>
-            <div class="ns-metric"><b id="statusMetric">—</b><span>Status</span></div>
-          </div>
-
-          <div class="ns-chart" aria-label="Simulated CPU history">
-            <svg viewBox="0 0 700 120" preserveAspectRatio="none" role="img" aria-label="CPU percent over recent samples">
-              <path class="area" id="cpuArea" d=""></path>
-              <path id="cpuLine" d=""></path>
-            </svg>
-          </div>
-        </div>
-
-        <div class="ns-command-zone">
-          <div class="app-section-title"><h2>Send a command</h2><span>queue → lease → acknowledge</span></div>
-          <div class="ns-command-form">
-            <div class="app-field"><label for="commandType">Command</label><select id="commandType"><option>restart_service</option><option>collect_diagnostics</option><option>rotate_logs</option></select></div>
-            <div class="app-field"><label for="commandPayload">Payload (JSON)</label><input id="commandPayload" value='{"service":"api"}'></div>
-            <button class="app-button" id="queueButton">Queue command</button>
-          </div>
-
-          <p id="commandError" class="command-error" role="alert" hidden></p>
-          <div class="ns-command-list" id="commandList">
-            <div class="empty-copy" style="padding:16px 0">No commands yet. Queue one to see its status.</div>
-          </div>
-        </div>
       </section>
 
-      <aside class="ns-inspector">
-        <div class="ns-agent">
-          <div class="ns-agent-toggle">
-            <div><b style="font-size:12px">Host agent</b><div style="margin-top:3px;color:var(--faint);font:500 8px/1 var(--mono)" id="agentLabel">polling every 1.5 s</div></div>
-            <button class="ns-switch on" id="agentToggle" aria-label="Toggle simulated host agent" aria-pressed="true"></button>
-          </div>
-          <p>On: commands advance automatically. Off: commands stay queued.</p>
+      <aside class="ns-detail" aria-label="Selected host details">
+        <div class="ns-detail-top">
+          <span class="pl-overline">SELECTED MACHINE</span>
+          <h2 id="selectedHostName">edge-atl-01</h2>
+          <p id="selectedHostMeta">linux · amd64 · agent 0.3.0</p>
         </div>
-        <div class="ns-pane-head"><b>API activity</b><span>latest first</span></div>
-        <div class="ns-api-log" id="apiLog" tabindex="0" aria-label="Recent simulated API activity"></div>
+        <div class="ns-metric-grid">
+          <div><span>CPU</span><strong id="cpuMetric">—</strong></div>
+          <div><span>Memory</span><strong id="memMetric">—</strong></div>
+          <div><span>Load (1m)</span><strong id="loadMetric">—</strong></div>
+          <div><span>State</span><strong id="statusMetric">—</strong></div>
+        </div>
+        <div class="ns-chart-block">
+          <div><h3>CPU history</h3><span>Simulated · 1.5s samples</span></div>
+          <svg class="ns-chart" viewBox="0 0 700 120" preserveAspectRatio="none" role="img" aria-label="Simulated CPU percent over recent samples">
+            <path class="area" id="cpuArea" d=""></path>
+            <path id="cpuLine" d=""></path>
+          </svg>
+        </div>
+        <div class="ns-actions">
+          <button type="button" class="pl-secondary" id="heartbeatButton">Send heartbeat</button>
+          <button type="button" class="pl-secondary" id="offlineButton">Miss 100 s</button>
+        </div>
+        <form class="ns-command-form" id="commandForm" novalidate>
+          <h3>Queue a command</h3>
+          <label>Command
+            <select id="commandType"><option>restart_service</option><option>collect_diagnostics</option><option>rotate_logs</option></select>
+          </label>
+          <label>JSON payload
+            <input id="commandPayload" spellcheck="false" value='{"service":"api"}'>
+          </label>
+          <button type="submit" class="pl-primary" id="queueButton">Queue command</button>
+          <p id="commandError" class="pl-error" role="alert" hidden></p>
+        </form>
       </aside>
+    </div>
+
+    <div class="ns-activity">
+      <section aria-label="Recent commands for selected host">
+        <header><h2>Command history</h2><span>Queue → Lease → Acknowledge</span></header>
+        <div class="ns-command-list" id="commandList"><div class="pl-empty">No commands for this host.</div></div>
+      </section>
+      <section aria-label="Recent simulated API requests">
+        <header><h2>API activity</h2><span>Latest first</span></header>
+        <div class="ns-api-log" id="apiLog" tabindex="0" aria-label="Recent simulated API activity"></div>
+      </section>
+    </div>
+    <div class="pl-footnote">
+      <span>All hosts, telemetry, and commands here are simulated locally. The Java/PostgreSQL implementation lives in the repository.</span>
+      <a href="https://github.com/yjr28/NorthStar/blob/main/control-plane/src/main/java/dev/northstar/api/HostController.java" target="_blank" rel="noreferrer">Inspect the controller ↗</a>
     </div>
   </section>
 </main>
-
-<footer class="shell site-footer"><span>This page simulates the agent and telemetry. The Java/PostgreSQL implementation is in the repository.</span><a href="https://github.com/yjr28/NorthStar" target="_blank" rel="noreferrer">Repository</a></footer>
-
-<script>
-const now=()=>Date.now();
-let idSeq=100;
-const makeId=(prefix)=>prefix+"-"+(++idSeq).toString(16).padStart(4,"0");
-const hosts=[
-  {id:"h-atl-01",name:"edge-atl-01",region:"ATL",os:"linux",arch:"amd64",agent:"0.3.0",cpu:37,mem:56,load:1.2,lastSeen:now(),offline:false,phase:.2,telemetry:[]},
-  {id:"h-iad-02",name:"api-iad-02",region:"IAD",os:"linux",arch:"amd64",agent:"0.3.0",cpu:62,mem:71,load:2.4,lastSeen:now(),offline:false,phase:1.4,telemetry:[]},
-  {id:"h-nrt-01",name:"worker-nrt-01",region:"NRT",os:"linux",arch:"arm64",agent:"0.3.0",cpu:24,mem:48,load:.8,lastSeen:now(),offline:false,phase:2.8,telemetry:[]},
-  {id:"h-fra-03",name:"batch-fra-03",region:"FRA",os:"linux",arch:"amd64",agent:"0.2.8",cpu:79,mem:66,load:3.1,lastSeen:now(),offline:false,phase:4.1,telemetry:[]}
-];
-const commands=[];
-let selectedHostId=hosts[0].id;
-let agentOn=true;
-let tick=0;
-
-const hostList=document.getElementById("hostList");
-const apiLog=document.getElementById("apiLog");
-const commandList=document.getElementById("commandList");
-const agentToggle=document.getElementById("agentToggle");
-
-function hostOnline(h){return !h.offline && now()-h.lastSeen<=90000}
-window.northstarIsHostOnline=id=>{const host=hosts.find(h=>h.id===id);return Boolean(host&&hostOnline(host))};
-window.northstarSelectedHost=()=>selectedHostId;
-window.northstarSelectHost=id=>{if(hosts.some(h=>h.id===id)){selectedHostId=id;renderAll()}};
-function selectedHost(){return hosts.find(h=>h.id===selectedHostId)}
-function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function logAPI(method,path,status,detail){
-  const node=document.createElement("div");
-  node.className="ns-log";
-  node.innerHTML="<strong>"+esc(method+" "+path)+" <span class='"+(status<400?"status-ok":"status-warn")+"'>"+status+"</span></strong><span>"+esc(detail||"")+"</span>";
-  apiLog.prepend(node);
-  while(apiLog.children.length>14)apiLog.lastChild.remove();
-}
-function renderFleet(){
-  hostList.innerHTML=hosts.map(h=>`
-    <button class="ns-host ${h.id===selectedHostId?"active":""} ${hostOnline(h)?"":"offline"}" data-host="${h.id}">
-      <div class="ns-host-top"><span class="ns-host-name">${esc(h.name)}</span><span class="ns-host-state"><i class="ns-status-dot"></i>${hostOnline(h)?"online":"offline"}</span></div>
-      <div class="ns-host-metrics"><span>CPU ${h.cpu.toFixed(0)}%</span><span>MEM ${h.mem.toFixed(0)}%</span><span>${h.region}</span></div>
-    </button>`).join("");
-  hostList.querySelectorAll("[data-host]").forEach(btn=>btn.addEventListener("click",()=>{selectedHostId=btn.dataset.host;renderAll()}));
-}
-function chartPath(samples,key){
-  if(samples.length<2)return "";
-  const pts=samples.slice(-36);
-  return pts.map((s,i)=>((i===0?"M":"L")+" "+(i/(pts.length-1)*700).toFixed(1)+" "+(115-(s[key]/100)*105).toFixed(1))).join(" ");
-}
-function renderChart(h){
-  const samples=h.telemetry.length?h.telemetry:[{cpu:h.cpu},{cpu:h.cpu}];
-  const line=chartPath(samples,"cpu");
-  document.getElementById("cpuLine").setAttribute("d",line);
-  if(line){
-    const pts=samples.slice(-36);
-    const lastX=700;
-    const area=line+" L "+lastX+" 120 L 0 120 Z";
-    document.getElementById("cpuArea").setAttribute("d",area);
-  }
-}
-function renderHost(){
-  const h=selectedHost();
-  document.getElementById("selectedHostName").textContent=h.name;
-  document.getElementById("selectedHostMeta").textContent=h.os+" · "+h.arch+" · agent "+h.agent+" · "+h.region;
-  document.getElementById("cpuMetric").textContent=h.cpu.toFixed(0)+"%";
-  document.getElementById("memMetric").textContent=h.mem.toFixed(0)+"%";
-  document.getElementById("loadMetric").textContent=h.load.toFixed(2);
-  document.getElementById("statusMetric").textContent=hostOnline(h)?"ONLINE":"OFFLINE";
-  document.getElementById("statusMetric").className=hostOnline(h)?"ok":"bad";
-  renderChart(h);
-}
-function renderCommands(){
-  const rows=commands.filter(c=>c.hostId===selectedHostId).slice().reverse();
-  if(!rows.length){commandList.innerHTML='<div class="empty-copy" style="padding:16px 0">No commands yet. Queue one to see its status.</div>';return}
-  commandList.innerHTML=rows.map(c=>`
-    <div class="ns-command-row">
-      <div><b>${esc(c.type)}</b><span style="display:block;margin-top:4px">${esc(c.id)} · attempt ${c.attempts}</span></div>
-      <span>${new Date(c.createdAt).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span>
-      <span class="ns-command-state ${c.state}">${c.state}</span>
-    </div>`).join("");
-}
-function renderAll(){renderFleet();renderHost();renderCommands();window.northstarRenderMap?.()}
-function sampleTelemetry(){
-  tick++;
-  hosts.forEach((h,i)=>{
-    if(h.offline)return;
-    const wave=Math.sin(tick*.34+h.phase)*8+Math.sin(tick*.11+h.phase*2)*4;
-    h.cpu=Math.max(4,Math.min(96,h.cpu*.84+(38+i*8+wave)*.16));
-    h.mem=Math.max(20,Math.min(94,h.mem+Math.sin(tick*.08+h.phase)*.35));
-    h.load=Math.max(.1,h.cpu/28+Math.sin(tick*.2+h.phase)*.18);
-    h.lastSeen=now();
-    h.telemetry.push({at:now(),cpu:h.cpu,mem:h.mem,load:h.load});
-    if(h.telemetry.length>48)h.telemetry.shift();
-  });
-  renderAll();
-}
-function processAgent(){
-  if(!agentOn)return;
-  const t=now();
-  commands.forEach(c=>{
-    const host=hosts.find(h=>h.id===c.hostId);
-    if(!host||!hostOnline(host))return;
-    if(c.state==="QUEUED"&&t-c.updatedAt>900){
-      c.state="LEASED";c.updatedAt=t;c.leaseToken=makeId("lease");c.attempts++;
-      logAPI("POST","/api/v1/hosts/"+c.hostId+"/commands/lease",200,c.id+" leased for 30 s");
-    }else if(c.state==="LEASED"&&t-c.updatedAt>1100){
-      c.state="ACKNOWLEDGED";c.updatedAt=t;
-      logAPI("POST","/api/v1/commands/"+c.id+"/ack",200,"matching lease token acknowledged");
-    }
-  });
-  renderCommands();
-}
-
-document.getElementById("commandPayload").addEventListener("input",()=>{document.getElementById("commandError").hidden=true;});
-document.getElementById("queueButton").addEventListener("click",()=>{
-  const h=selectedHost();
-  let payload=document.getElementById("commandPayload").value.trim()||"{}";
-  const error=document.getElementById("commandError");
-  error.hidden=true;
-  try{JSON.parse(payload)}catch{
-    error.textContent="Enter valid JSON before queuing a command.";
-    error.hidden=false;
-    document.getElementById("commandPayload").focus();
-    logAPI("POST","/api/v1/commands",400,"payload must be valid JSON");return
-  }
-  const command={id:makeId("cmd"),hostId:h.id,type:document.getElementById("commandType").value,payload,state:"QUEUED",createdAt:now(),updatedAt:now(),attempts:0,leaseToken:null};
-  commands.push(command);
-  logAPI("POST","/api/v1/commands",201,command.id+" queued for "+h.name);
-  renderCommands();
-});
-document.getElementById("offlineButton").addEventListener("click",()=>{
-  const h=selectedHost();h.offline=true;h.lastSeen=now()-100000;
-  logAPI("GET","/api/v1/hosts/"+h.id+"/status",200,"online=false · ageSeconds=100");
-  renderAll();
-});
-document.getElementById("heartbeatButton").addEventListener("click",()=>{
-  const h=selectedHost();h.offline=false;h.lastSeen=now();
-  logAPI("POST","/api/v1/hosts/"+h.id+"/heartbeat",204,"agent heartbeat accepted");
-  renderAll();
-});
-agentToggle.addEventListener("click",()=>{
-  agentOn=!agentOn;
-  agentToggle.classList.toggle("on",agentOn);
-  agentToggle.setAttribute("aria-pressed",String(agentOn));
-  document.getElementById("agentLabel").textContent=agentOn?"polling every 1.5 s":"paused · commands stay queued";
-  logAPI("AGENT","poll loop",200,agentOn?"resumed":"paused");
-});
-
-hosts.forEach(h=>{
-  for(let i=0;i<26;i++){
-    const wave=Math.sin(i*.34+h.phase)*8;
-    h.telemetry.push({at:now()-(25-i)*1500,cpu:Math.max(4,Math.min(96,h.cpu+wave)),mem:h.mem,load:h.load});
-  }
-});
-logAPI("GET","/api/v1/hosts",200,"4 hosts returned");
-logAPI("GET","/api/v1/hosts/"+hosts[0].id+"/telemetry?limit=50",200,"26 samples returned");
-renderAll();
-setInterval(sampleTelemetry,1500);
-setInterval(processAgent,450);
-</script>
-<script src="../showcase.js"></script>
 </body>
 </html>
