@@ -462,24 +462,20 @@ function positionTrain(train){
 }
 function buildSkyObjects(){
  // The sky itself is a CSS gradient. The objects here cast real shadows and move through it.
- const stars=new Float32Array(185*3);
- for(let i=0;i<185;i++){stars[i*3]=range(-100,-11);stars[i*3+1]=range(22,78);stars[i*3+2]=range(-95,-35)}
- const sgeo=new THREE.BufferGeometry();sgeo.setAttribute("position",new THREE.BufferAttribute(stars,3));
- const smat=new THREE.PointsMaterial({color:0xe3f0ff,size:.23,sizeAttenuation:true,transparent:true,opacity:.8,depthWrite:false});
- const sp=new THREE.Points(sgeo,smat);scene.add(sp);staticMeshes.stars=sp;
- for(let i=0;i<8;i++){
+ // Continuous daylight: no night sky stars.
+ for(let i=0;i<7;i++){
   const g=new THREE.Group();
   const xx=range(-92,100),yy=range(24,46),zz=range(-95,-40);
   g.position.set(xx,yy,zz);scene.add(g);
-  const cloudMat=new THREE.MeshBasicMaterial({color:pick([0xf7fbf6,0xbfd9e8,0xe6d5d9]),transparent:true,opacity:range(.20,.43),depthWrite:false});
+  const cloudMat=new THREE.MeshBasicMaterial({color:pick([0xffffff,0xf7fbff,0xe9f7fc]),transparent:true,opacity:range(.44,.67),depthWrite:false});
   for(let j=0;j<5;j++){
    const puff=sphere(g,range(2.8,6.1),cloudMat,j*3.6-7,range(-1.0,1.1),range(-1.4,1.4),1);
-   puff.scale.y=.37;
+   puff.scale.y=.42;
    puff.castShadow=false;puff.receiveShadow=false;
   }
   clouds.push({g,speed:range(.07,.20),direction:i%2?-1:1});
  }
- const gulls=new THREE.Group();gulls.position.set(43,27,-39);world.add(gulls);
+ const gulls=new THREE.Group();gulls.position.set(45,19,-36);world.add(gulls);
  for(let j=0;j<6;j++){
   const bird=new THREE.Group();bird.position.set((j-2)*3,range(-1,4),range(-3,3));gulls.add(bird);
   for(const side of [-1,1]){
@@ -534,21 +530,21 @@ function buildWorld(){
  scene=new THREE.Scene();
  camera=new THREE.PerspectiveCamera(43,1,.15,550);
  world=new THREE.Group();scene.add(world);
- scene.add(new THREE.HemisphereLight(0xe5f5fb,0x294d51,1.65));
- scene.add(new THREE.AmbientLight(0x8db5d7,.55));
- const sun=new THREE.DirectionalLight(0xffe3bd,2.65);sun.position.set(65,93,45);sun.castShadow=true;
+ scene.add(new THREE.HemisphereLight(0xf8fdff,0x80aa9a,1.85));
+ scene.add(new THREE.AmbientLight(0xc4e8f4,.68));
+ const sun=new THREE.DirectionalLight(0xfff3dd,2.65);sun.position.set(65,93,45);sun.castShadow=true;
  sun.shadow.mapSize.set(2048,2048);
  sun.shadow.camera.left=-115;sun.shadow.camera.right=115;sun.shadow.camera.top=115;sun.shadow.camera.bottom=-115;
  sun.shadow.camera.near=2;sun.shadow.camera.far=240;sun.shadow.normalBias=.03;sun.shadow.bias=-.00015;
  scene.add(sun);
- const cityLight=new THREE.PointLight(0x7599ff,43,78,1.7);cityLight.position.set(-35,25,-8);scene.add(cityLight);
- const warm=new THREE.PointLight(0xffc49e,26,55,1.7);warm.position.set(15,23,20);scene.add(warm);
+ const cityLight=new THREE.PointLight(0x83bde9,12,78,1.7);cityLight.position.set(-35,25,-8);scene.add(cityLight);
+ const warm=new THREE.PointLight(0xffe1b6,12,55,1.7);warm.position.set(15,23,20);scene.add(warm);
  buildWater();
  mountainGroup();
  // The districts share visual rules but are not repeats of the same building.
  nightCity();workshop();zenGarden();observatory();campus();
  buildRailway();buildSkyObjects();buildPetals();
- scene.fog=new THREE.FogExp2(0x7b9fae,.0015);
+ scene.fog=new THREE.FogExp2(0xb6dfe9,.0013);
 }
 
 let toastTimeout=null,frameCount=0,lastFrame=0,lastHover=0;
@@ -805,7 +801,7 @@ function animateWorld(dt,now){
    if(p.kind==="rotate")p.object.rotation.y+=dt*p.speed;
    if(p.kind==="rotateZ")p.object.rotation.z+=dt*p.speed;
    if(p.kind==="sweep")p.object.rotation.y=Math.sin(t*p.speed*4)*.5;
-   if(p.kind==="birds"){p.object.position.x+=Math.sin(t*.25)*dt*.2;p.object.position.y=27+Math.sin(t*.4)*1.7}
+   if(p.kind==="birds"){p.object.position.x+=Math.sin(t*.25)*dt*.2;p.object.position.y=19+Math.sin(t*.4)*1.7}
    if(p.kind==="glimmer")p.object.scale.setScalar(.83+.17*Math.sin(t*2+p.phase));
   }
   waterRipples.forEach(p=>{p.o.material.opacity=.08+.05*(1+Math.sin(t*.7+p.phase))});
@@ -902,7 +898,8 @@ function startWorld(){
   resize();bindUI();
   resetOverview({animate:false});
   animated.overview=false;
-  look.targetPitch=.80;look.pitch=.80;look.targetDistance=window.innerWidth<760?110:102;look.distance=look.targetDistance;look.targetYaw=.14;look.yaw=.14;
+  // About 12% closer on the initial landing; all other camera presets remain unchanged.
+  look.targetPitch=.80;look.pitch=.80;look.targetDistance=window.innerWidth<760?98:90;look.distance=look.targetDistance;look.targetYaw=.14;look.yaw=.14;
   $("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";
   window.addEventListener("resize",resize,{passive:true});
   window.addEventListener("visibilitychange",()=>{lastFrame=performance.now()});
