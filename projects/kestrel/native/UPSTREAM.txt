@@ -1,0 +1,1 @@
+Jaeger UI v2.23.0 — upstream Apache-2.0 release. Kestrel bridge: ../jaeger-bridge.js

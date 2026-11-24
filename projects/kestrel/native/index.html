@@ -1,1 +1,133 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jaeger integration</title></head><body><main><h1>Jaeger trace viewer</h1><p>The upstream release is not installed yet. Return to Kestrel to use the working replay and OTLP export.</p><a href="../">Return to Kestrel</a></main></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- prevent caching of this HTML by any server, Go or otherwise -->
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+
+    <!-- The document MUST have a <base> element, see ./README.md -->
+    <script>
+      (function () {
+        var knownSubPaths = [
+          '/deep-dependencies',
+          '/dependencies',
+          '/quality-metrics',
+          '/plexus-demo',
+          '/monitor',
+          '/search',
+          '/trace/',
+          '/trace',
+        ];
+        var path = window.location.pathname || '/';
+        var bestIdx = -1;
+        for (var i = 0; i < knownSubPaths.length; i++) {
+          var idx = path.lastIndexOf(knownSubPaths[i]);
+          if (idx !== -1 && idx > bestIdx) bestIdx = idx;
+        }
+        var prefix =
+          bestIdx !== -1
+            ? path.slice(0, bestIdx + 1) || '/'
+            : path.slice(0, path.lastIndexOf('/') + 1) || '/';
+        if (prefix[prefix.length - 1] !== '/') prefix += '/';
+        // The prefix comes from the URL, so anyone who sends a link can choose it.
+        // Use its path only if the browser would resolve that path to this origin.
+        // A path such as //evil.example/ is scheme-relative and would load the UI's
+        // scripts from that host.
+        var basePath = '/';
+        try {
+          var page = new URL(window.location.href);
+          var candidate = new URL(prefix, page).pathname;
+          if (new URL(candidate, page).origin === page.origin) basePath = candidate;
+        } catch (ignored) {
+          // Keep the root base, e.g. on a page URL that cannot be a base.
+        }
+        // Set the attribute through the DOM so the path is never parsed as HTML.
+        var base = document.createElement('base');
+        base.setAttribute('href', basePath);
+        base.setAttribute('data-inject-target', 'BASE_URL');
+        document.currentScript.after(base);
+        // Delay the check: React 18 createRoot().render() is async (concurrent mode),
+        // so the root is empty at DOMContentLoaded even when the app loaded successfully.
+        // Only show the error if the root is still empty after a generous timeout.
+        document.addEventListener('DOMContentLoaded', function () {
+          setTimeout(function () {
+            var root = document.getElementById('jaeger-ui-root');
+            if (root && !root.hasChildNodes()) {
+              root.textContent = 'Jaeger UI did not load. Unknown or invalid path: ' + path;
+            }
+          }, 3000);
+        });
+      })();
+    </script>
+    <link rel="shortcut icon" href="./static/favicon-BxcVf0am.ico" />
+    <title>Jaeger UI</title>
+    <script>
+      // Jaeger UI config data is embedded by Jaeger backend via search-replace.
+      // Please see ./README.md#configuration for details.
+
+      // TODO the JSON/JS bifurcation below could be avoided by using a single template function like:
+      // function getJaegerUiConfig() { return null; }
+
+      // Important! Do not alter the following line; Jaeger looks for that exact pattern.
+      // JAEGER_CONFIG_JS
+
+      function getJaegerUiConfig() {
+        if (typeof window.UIConfig === 'function') {
+          return UIConfig();
+        }
+        const DEFAULT_CONFIG = null;
+        // Important! Do not alter the following line; Jaeger looks for that exact pattern.
+        const JAEGER_CONFIG = DEFAULT_CONFIG;
+        return JAEGER_CONFIG;
+      }
+      // Legacy storage-only capabilities injection used by older Jaeger backends.
+      // Kept as a private helper so existing search-replace on the
+      // JAEGER_STORAGE_CAPABILITIES pattern still works; new code reads
+      // getJaegerBackendCapabilities() below.
+      function _getJaegerStorageCapabilities() {
+        const DEFAULT_STORAGE_CAPABILITIES = { archiveStorage: false, metricsStorage: false };
+        // Important! Do not alter the following line; Jaeger looks for that exact pattern.
+        const JAEGER_STORAGE_CAPABILITIES = DEFAULT_STORAGE_CAPABILITIES;
+        return JAEGER_STORAGE_CAPABILITIES;
+      }
+      // Unified backend capabilities, embedded by the query-service via search-replace.
+      // Composes the legacy storage flags with newer capability fields (e.g. aiAssistant)
+      // so a legacy backend that only injects JAEGER_STORAGE_CAPABILITIES still produces
+      // a sensible result here.
+      function getJaegerBackendCapabilities() {
+        const DEFAULT_BACKEND_CAPABILITIES = { ..._getJaegerStorageCapabilities(), aiAssistant: false };
+        // Important! Do not alter the following line; Jaeger looks for that exact pattern.
+        const JAEGER_BACKEND_CAPABILITIES = DEFAULT_BACKEND_CAPABILITIES;
+        return JAEGER_BACKEND_CAPABILITIES;
+      }
+      // Jaeger version data is embedded by Jaeger backend via search/replace.
+      function getJaegerVersion() {
+        const DEFAULT_VERSION = { gitCommit: '', gitVersion: '', buildDate: '' };
+        // Important! Do not alter the following line; Jaeger looks for that exact pattern.
+        const JAEGER_VERSION = DEFAULT_VERSION;
+        return JAEGER_VERSION;
+      }
+
+      // Workaround some legacy NPM dependencies that assume this is always defined.
+      window.global = {};
+    </script>
+    <script type="module" crossorigin src="./static/index-DhZlRD_g.js"></script>
+    <link rel="modulepreload" crossorigin href="./static/schemas-hm98w7NF.js">
+    <link rel="modulepreload" crossorigin href="./static/debounce-BdENcevr.js">
+    <link rel="modulepreload" crossorigin href="./static/withRouteProps-B1twQXx9.js">
+    <link rel="modulepreload" crossorigin href="./static/NewWindowIcon-D1wfK3-F.js">
+    <link rel="modulepreload" crossorigin href="./static/useTraceDiscovery-Dmlm3NJx.js">
+    <link rel="stylesheet" crossorigin href="./static/debounce--v0Ml6ON.css">
+    <link rel="stylesheet" crossorigin href="./static/NewWindowIcon-rK39kcF_.css">
+    <link rel="stylesheet" crossorigin href="./static/index-xbA5g-m_.css">
+  </head>
+  <body>
+    <div id="jaeger-ui-root"></div>
+  <script src="../jaeger-bridge.js"></script>
+</body>
+</html>
