@@ -70,7 +70,7 @@ try {
   const page=await context.newPage();
   page.on('pageerror',e=>errors.push(name+': '+e.message));
   page.on('console',m=>{if(m.type()==='error')errors.push(name+': '+m.text());});
-  await page.route('**/japan-world.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text())+instrumentation});});
+  await page.route('**/japan-world.js*',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text())+instrumentation});});
   await ready(page);
   assert.equal(await page.locator('h1').count(),1);
   assert.match(await page.locator('h1').innerText(),/^The Japan Line/);
@@ -170,7 +170,7 @@ try {
  }
  const reducedContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
  const reducedPage=await reducedContext.newPage();reducedPage.on('pageerror',e=>errors.push(e.message));
- await reducedPage.route('**/japan-world.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text())+instrumentation});});
+ await reducedPage.route('**/japan-world.js*',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text())+instrumentation});});
  await ready(reducedPage);const still=await reducedPage.evaluate(()=>window.__japanTest.snapshot());
  assert.equal(still.motion,false);assert.notDeepEqual(still.trains[0].world,still.trains[1].world);assert.equal(still.trains.filter(t=>t.visible).length,2);
  await reducedPage.waitForTimeout(400);assert.deepEqual((await reducedPage.evaluate(()=>window.__japanTest.snapshot())).trains,still.trains);

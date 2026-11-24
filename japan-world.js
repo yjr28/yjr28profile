@@ -1,5 +1,5 @@
 import * as THREE from "./assets/three.module.js";
-import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js";
+import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=centered-20261124-2";
 
 /* THE JAPAN LINE.
    Every part of this world is generated as real 3D geometry, not a flat image.
@@ -586,6 +586,7 @@ function startWorld(){
   console.error("The Japan Line could not initialize:",error);
   $("world-loading").classList.add("done");
   $("no-webgl").hidden=false;
+  $("startup-error").textContent=error instanceof Error?error.message:"Unexpected initialization error";
  }
 }
 startWorld();
