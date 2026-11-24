@@ -7,19 +7,22 @@
 <title>Kestrel — Trace investigation</title>
 <link rel="stylesheet" href="../demo.css">
 <link rel="stylesheet" href="../product-labs.css">
+<link rel="stylesheet" href="./jaeger-span-bar.css">
+<link rel="stylesheet" href="./jaeger-span-row.css">
+<link rel="stylesheet" href="./trace-workspace.css">
 <script src="./wasm_exec.js"></script>
 <script src="./lab.js" defer></script>
 </head>
 <body class="pl-body pl-kestrel">
 <header class="pl-global">
-  <a class="pl-mark" href="../../" aria-label="YJ — return to YoungJun Ryu's portfolio">YJ</a>
+  <a class="k-brand" href="../../" aria-label="Return to portfolio"><span aria-hidden="true">⌁</span> Kestrel</a>
   <div class="pl-crumb"><a href="../../#work">Projects</a><span>/</span><strong>Kestrel</strong></div>
   <nav aria-label="Project links"><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">GitHub repository ↗</a></nav>
 </header>
 <main class="pl-root">
   <header class="pl-heading">
     <div class="pl-heading-copy">
-      <h1>Kestrel <span class="pl-heading-suffix">/ traces</span></h1>
+      <h1>Trace investigation <span class="pl-heading-suffix">/ create_order</span></h1>
       <p>Find where a distributed request breaks. Inject a delay at <code>inventory/check</code>, compare the traces, and verify that replay reproduces the failure.</p>
     </div>
     <div class="pl-runtime" id="runtimeChip" role="status" aria-live="polite">
@@ -31,7 +34,7 @@
   <section class="pl-window" aria-label="Kestrel trace investigation demo">
     <div class="pl-window-head">
       <div class="pl-window-path"><span>Trace Explorer</span><span>/</span><strong>create_order</strong></div>
-      <span class="pl-window-note">Go fault &amp; replay core · WebAssembly</span>
+      <div class="k-window-actions"><span class="pl-window-note">Go fault &amp; replay core · WebAssembly</span><button type="button" class="pl-secondary" id="exportTrace" disabled>Export events JSON</button></div>
     </div>
 
     <div class="k-control-bar">
@@ -77,12 +80,13 @@
       </div>
     </div>
 
+    <div class="k-service-legend" id="serviceLegend" aria-label="Service color legend"></div>
     <div class="k-trace-grid">
       <section class="k-trace-panel" aria-label="Trace event waterfall">
         <p class="pl-table-hint">Swipe to inspect the full trace timeline →</p>
         <div class="k-timeline-head"><span>Service / operation</span><span id="timelineScale">Elapsed time (ms)</span><span>Duration</span></div>
         <div class="k-timeline-rows" id="traceRows">
-          <p class="pl-placeholder">Loading the Go replay engine…</p>
+          <div class="k-loading"><h3>Initializing the Go replay engine</h3><p>Fetching and verifying the WebAssembly binary. The trace will populate when the runtime is ready.</p><p><a href="https://github.com/yjr28/kestrel-replay">Inspect the real Go implementation ↗</a></p></div>
         </div>
         <div class="k-time-footer" id="timeAxis">Timing is relative to the first event in the selected trace.</div>
       </section>
@@ -97,6 +101,7 @@
       <a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/replay/replay.go" target="_blank" rel="noreferrer">Read the replay implementation ↗</a>
     </div>
   </section>
+<footer class="k-credit">Trace bar and span-row styles from <a href="https://github.com/jaegertracing/jaeger-ui/blob/2aed7b530aed5ed5e494c56974ad09a73d0b7782/packages/jaeger-ui/src/components/TracePage/TraceTimelineViewer/SpanBar.css">Jaeger UI</a> · <a href="../licenses/jaeger.txt">Apache-2.0</a>. Kestrel uses its own Go event adapter, controls and replay semantics.</footer>
 </main>
 </body>
 </html>

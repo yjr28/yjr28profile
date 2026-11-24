@@ -76,6 +76,12 @@ function selectEvent(index) {
   ).join("");
   $("eventJSON").textContent = JSON.stringify(e, null, 2);
 }
+const serviceColors=["#168b85","#4386ba","#8262a7","#bd772b","#c75662","#478b55","#6e7894","#a45d8d","#907f32","#3e90a5"];
+function serviceColor(name){let h=0;for(const ch of String(name))h=(h*31+ch.charCodeAt(0))>>>0;return serviceColors[h%serviceColors.length]}
+function eventDepth(event,spanMap){let depth=0,id=event.parent_span_id;const seen=new Set();while(id&&spanMap.has(id)&&!seen.has(id)&&depth<8){seen.add(id);depth++;id=spanMap.get(id).parent_span_id}return depth}
+function updateLegend(events){const root=$("serviceLegend");root.replaceChildren();const services=[...new Set(events.map(e=>e.service||"system"))];for(const name of services){const label=document.createElement("span"),dot=document.createElement("i");dot.style.setProperty("--svc",serviceColor(name));label.append(dot,document.createTextNode(name));root.append(label)}}
+$("exportTrace").addEventListener("click",()=>{if(!result)return;const blob=new Blob([JSON.stringify({kind:activeTrace,events:currentEvents},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="kestrel-"+activeTrace+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});
+
 function renderTrace() {
   if(!result) return;
   const events = result[activeTrace]?.events || [];
@@ -86,6 +92,9 @@ function renderTrace() {
     return (!errorsOnly || anomalous(e)) && (!search || [e.service,e.operation,e.kind,e.status].some(x => (x||"").toLowerCase().includes(search)));
   });
   currentEvents = events;
+  updateLegend(events);
+  $("exportTrace").disabled=!events.length;
+  const spanMap=new Map(events.filter(e=>e.kind==="span"&&e.span_id).map(e=>[e.span_id,e]));
   const suffix = activeTrace === "healthy" ? "Baseline" : activeTrace === "failing" ? "Injected run" : "Replay";
   $("timelineScale").textContent = suffix + " · " + end.toFixed(1) + " ms";
   $("timeAxis").textContent = "0 ms  —  " + (end/2).toFixed(1) + " ms  —  " + end.toFixed(1) + " ms    ·    Relative to the first recorded event";
@@ -103,11 +112,12 @@ function renderTrace() {
     const label = e.service || "system";
     const ms = eventDurationMs(e);
     const problem = anomalous(e);
-    return '<button type="button" class="k-trace-row' + (problem?' is-anomaly':'') + '"'
-      + ' data-index="' + i + '" aria-pressed="false">'
-      + '<span class="k-trace-name"><b>' + escapeHTML(label) + '</b><small>' + escapeHTML(eventLabel(e)) + '</small>'
+    const color=serviceColor(label), depth=eventDepth(e,spanMap);
+    return '<button type="button" class="k-trace-row span-row' + (problem?' is-anomaly':'') + '"'
+      + ' data-index="' + i + '" aria-pressed="false" style="--svc:'+color+';--depth:'+depth+'">'
+      + '<span class="k-trace-name span-name-wrapper"><i class="k-svc-dot" aria-hidden="true"></i><b class="span-svc-name">' + escapeHTML(label) + '</b><small class="endpoint-name">' + escapeHTML(eventLabel(e)) + '</small>'
       + (problem?'<em>issue</em>':'') + '</span>'
-      + '<span class="k-timeline-track"><i class="k-timeline-bar" style="--from:' + start + ';--length:' + duration + '"></i></span>'
+      + '<span class="k-timeline-track span-view"><span class="SpanBar--wrapper"><i class="SpanBar--bar" style="--from:' + start + ';--length:' + duration + '"></i></span></span>'
       + '<span class="k-trace-ms">' + (ms ? ms.toFixed(ms>=10?1:2) + ' ms' : '—') + '</span></button>';
   }).join("");
   traceRows.querySelectorAll("[data-index]").forEach(button => button.addEventListener("click", () => {
@@ -167,33 +177,38 @@ async function runKestrel() {
 runButton.addEventListener("click",runKestrel);
 
 (async()=>{
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),20000);
   try{
-    const [wasmResponse,hashResponse]=await Promise.all([
-      fetch("https://raw.githubusercontent.com/yjr28/kestrel-replay/main/web/kestrel.wasm",{cache:"no-store"}),
-      fetch("https://raw.githubusercontent.com/yjr28/kestrel-replay/main/web/kestrel.wasm.sha256",{cache:"no-store"})
-    ]);
-    if(!wasmResponse.ok)throw new Error("WebAssembly artifact is unavailable");
-    const go=new Go();
+    const wasmResponse=await fetch("https://raw.githubusercontent.com/yjr28/kestrel-replay/2c18bd9aaf2818b9f5d71a6c0ded091c2115fd5c/web/kestrel.wasm",{signal:controller.signal});
+    if(!wasmResponse.ok)throw new Error("WebAssembly artifact is unavailable (HTTP "+wasmResponse.status+")");
     const bytes=await wasmResponse.arrayBuffer();
+    clearTimeout(timer);
+    if(!crypto.subtle)throw new Error("A secure browser context is required to verify WebAssembly.");
+    const digest=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",bytes)),b=>b.toString(16).padStart(2,"0")).join("");
+    if(digest!=="9a51b9734d356031c9311bcc07e770aa992c869770d4564426803b5ad73d05e9")throw new Error("The WebAssembly checksum does not match the pinned source.");
+    const go=new Go();
     const instance=await WebAssembly.instantiate(bytes,go.importObject);
     go.run(instance.instance).catch(error=>console.error("Go runtime exited",error));
     for(let i=0;i<100&&!window.runKestrelGo;i++)await sleep(20);
     if(!window.runKestrelGo)throw new Error("Go runtime did not initialize");
     runtimeReady=true;
     $("runtimeChip").classList.add("ready");
-    $("runtimeText").textContent="Go/WASM ready";
+    $("runtimeText").textContent="Go/WASM verified";
+    $("runtimeChip").title="Verified SHA-256: "+digest;
     runButton.disabled=false;
     runButton.textContent="Run replay";
-    if(hashResponse.ok) {
-      const hash=(await hashResponse.text()).trim().split(/\s+/)[0];
-      $("runtimeChip").title="WebAssembly SHA-256: "+hash;
-    }
     await runKestrel();
   }catch(error){
     $("runtimeChip").classList.add("failed");
     $("runtimeText").textContent="Go/WASM unavailable";
-    $("phaseText").textContent=String(error.message||error);
-    traceRows.innerHTML='<div class="pl-empty error">The Go engine could not load. The source code is linked above.</div>';
+    $("phaseText").textContent=error.name==="AbortError"?"Runtime download timed out.":String(error.message||error);
+    traceRows.replaceChildren();
+    const box=document.createElement("div");box.className="k-runtime-error";
+    const title=document.createElement("strong");title.textContent="The real Go engine could not initialize.";
+    const desc=document.createElement("p");desc.textContent="No trace is fabricated. Retry the download or inspect the implementation.";
+    const retry=document.createElement("button");retry.type="button";retry.className="pl-secondary";retry.textContent="Retry runtime";retry.addEventListener("click",()=>location.reload());
+    box.append(title,desc,retry);traceRows.append(box);
     runButton.disabled=true;runButton.textContent="Runtime unavailable";
-  }
+  }finally{clearTimeout(timer)}
 })();

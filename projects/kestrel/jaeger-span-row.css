@@ -1,0 +1,330 @@
+/*
+Copyright (c) 2017 Uber Technologies, Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
+
+.SpanBarRow--pillWrap {
+  /* Sit above .span-name::after so hover tooltips receive pointer events. */
+  display: inline-flex;
+  max-width: 100%;
+  position: relative;
+  vertical-align: middle;
+  z-index: 1;
+}
+
+.SpanBarRow--pill {
+  background: var(--surface-component-background);
+  border: 1px solid var(--border-default);
+  /* text-overflow: ellipsis does not reliably apply inside a flex formatting
+     context (antd's Tag otherwise renders as display: flex here) - it hard-clips
+     the text with no ellipsis marker instead. inline-block keeps the ellipsis
+     working since the truncated content is plain text with no icon/flex children. */
+  display: inline-block;
+  font-size: 0.85em;
+  line-height: 1.2;
+  margin-left: 0.25rem;
+  /* Unlike http.status_code (always 3 fixed digits), values like
+     gen_ai.request.model are unbounded-length strings. Without a cap here,
+     .span-name's overflow: hidden can clip this pill entirely once the
+     preceding service/operation-name text already fills the row, so it
+     disappears with no indication it exists. Capping width and ellipsizing
+     the pill's own text keeps it visible (if truncated); SpanPill's Tooltip
+     surfaces the full label and value on hover. */
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* The row already shows the pointer cursor, so the cursor cannot tell a pill from its row, and a
+   hovered pill changes colour instead. */
+.SpanBarRow--pillWrap:hover .SpanBarRow--pill:not(.is-error),
+.SpanBarRow--pillWrap:focus-visible .SpanBarRow--pill:not(.is-error) {
+  background: var(--surface-component-background-hover);
+  border-color: var(--interactive-primary);
+  color: var(--interactive-primary);
+}
+
+.SpanBarRow--pillWrap:hover .SpanBarRow--pill.is-error,
+.SpanBarRow--pillWrap:focus-visible .SpanBarRow--pill.is-error {
+  background: color-mix(in srgb, var(--feedback-error) 28%, var(--surface-primary));
+}
+
+.SpanBarRow--pillHint {
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
+.SpanBarRow--pill.is-error {
+  background: color-mix(in srgb, var(--feedback-error) 12%, var(--surface-primary));
+  border-color: var(--feedback-error-text);
+  color: var(--feedback-error-text);
+}
+
+.span-row.is-matching-filter {
+  background-color: var(--trace-emphasis-highlight);
+}
+
+.span-row.is-selected .span-name-wrapper {
+  background-color: var(--interactive-primary-light);
+}
+
+.span-row.is-selected .span-view {
+  background-color: var(--interactive-primary-light);
+  outline: 1px solid var(--interactive-primary);
+}
+
+.span-name-column {
+  position: relative;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.span-name-column:hover {
+  z-index: 1;
+}
+
+.span-row.clipping-left .span-name-column::before {
+  content: ' ';
+  height: 100%;
+  position: absolute;
+  width: 6px;
+  background-image: linear-gradient(to right, rgba(25, 25, 25, 0.25), rgba(32, 32, 32, 0));
+  left: 100%;
+  z-index: -1;
+}
+
+.span-name-wrapper {
+  background: var(--surface-secondary);
+  line-height: 27px;
+  overflow: hidden;
+  display: flex;
+}
+
+.span-name-wrapper.is-matching-filter {
+  background-color: var(--trace-emphasis-highlight);
+}
+
+.span-name-wrapper:hover {
+  border-right: 1px solid var(--border-default);
+  float: left;
+  min-width: calc(100% + 1px);
+  overflow: visible;
+}
+
+.span-row:hover .span-name-wrapper {
+  background: var(--surface-secondary);
+  background: linear-gradient(
+    90deg,
+    var(--surface-tertiary),
+    var(--surface-secondary) 75%,
+    var(--surface-secondary)
+  );
+}
+
+.span-row.is-matching-filter:hover .span-name-wrapper {
+  background: var(--trace-emphasis-highlight);
+}
+
+.span-row.is-expanded .span-name-wrapper {
+  background: var(--surface-secondary);
+  box-shadow: 0 1px 0 var(--border-default);
+}
+
+.span-row.is-expanded .span-name-wrapper.is-matching-filter {
+  background: var(--trace-emphasis-highlight);
+}
+
+.span-name {
+  color: var(--text-primary);
+  cursor: pointer;
+  flex: 1 1 auto;
+  outline: none;
+  overflow: hidden;
+  padding-right: 0.25em;
+  position: relative;
+  text-overflow: ellipsis;
+}
+
+/* This is so the hit area of the span-name extends the rest of the width of the span-name column */
+.span-name::after {
+  background: transparent;
+  bottom: 0;
+  content: ' ';
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1000px;
+}
+
+.span-name:focus {
+  text-decoration: none;
+}
+
+.endpoint-name {
+  color: var(--text-secondary);
+}
+
+.span-name:hover > .endpoint-name {
+  color: var(--text-primary);
+}
+
+.span-svc-name {
+  padding: 0 0.25rem 0 0.5rem;
+  font-size: 1.05em;
+}
+
+.span-svc-name.is-children-collapsed,
+.endpoint-name.is-children-collapsed {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.span-view {
+  position: relative;
+}
+
+.span-row:hover .span-view {
+  background-color: var(--surface-secondary);
+  outline: 1px solid var(--border-default);
+}
+
+.span-row.is-matching-filter:hover .span-view {
+  background-color: var(--trace-emphasis-highlight);
+  outline: 1px solid var(--border-default);
+}
+
+.span-row.is-expanded .span-view {
+  background: var(--surface-secondary);
+  outline: 1px solid var(--border-default);
+}
+
+.span-row.is-expanded.is-matching-filter .span-view {
+  background: var(--trace-emphasis-highlight);
+  outline: 1px solid var(--border-default);
+}
+
+.span-row.is-expanded:hover .span-view {
+  background: var(--surface-secondary);
+}
+
+.span-row.is-expanded.is-matching-filter:hover .span-view {
+  background: var(--trace-emphasis-highlight);
+}
+
+/* Keep selection highlight when the row is also hovered or expanded. */
+.span-row.is-selected:hover .span-name-wrapper,
+.span-row.is-selected.is-expanded .span-name-wrapper {
+  background-color: var(--interactive-primary-light);
+}
+
+.span-row.is-selected:hover .span-view,
+.span-row.is-selected.is-expanded .span-view {
+  background-color: var(--interactive-primary-light);
+  outline: 1px solid var(--interactive-primary);
+}
+
+.span-row.clipping-right .span-view::before {
+  content: ' ';
+  height: 100%;
+  position: absolute;
+  width: 6px;
+  background-image: linear-gradient(to left, rgba(25, 25, 25, 0.25), rgba(32, 32, 32, 0));
+  right: 0%;
+  z-index: 1;
+}
+
+.SpanBarRow--errorIcon {
+  background: var(--feedback-error);
+  border-radius: 6.5px;
+  color: var(--text-inverse);
+  font-size: 0.85em;
+  margin-right: 0.25rem;
+  padding: 1px;
+}
+
+/* Hollow variant for bubbled errors from collapsed children */
+.SpanBarRow--errorIcon--hollow {
+  background: transparent;
+  border: 1.5px solid var(--feedback-error);
+  color: var(--feedback-error);
+  font-weight: bold;
+  padding: 0px;
+  /* Adjust padding since border adds 1.5px */
+}
+
+.SpanBarRow--rpcColorMarker {
+  border-radius: 6.5px;
+  display: inline-block;
+  font-size: 0.85em;
+  height: 1em;
+  margin-right: 0.25rem;
+  padding: 1px;
+  width: 1em;
+  vertical-align: middle;
+}
+
+.SpanBarRow--arrowForwardIcon {
+  vertical-align: middle;
+}
+
+/* The connector glyph marks a row whose parent is hidden, so it was lifted to the nearest
+   visible ancestor. It is muted because it is a hint, not an alarm. It is raised above the
+   hit-area pseudo-element of the span-name link, which otherwise takes the hover that opens the
+   tooltip. */
+.SpanBarRow--liftedGlyph {
+  color: var(--text-secondary);
+  cursor: help;
+  margin-right: 0.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* The tooltips of the glyph and the badge list spans, so they read smaller than the row and wrap a
+   long span name under its bullet. */
+.ant-tooltip.SpanBarRow--spanListTip {
+  max-width: 360px;
+}
+
+.SpanBarRow--spanListTip .ant-tooltip-inner {
+  font-size: 12px;
+}
+
+.SpanBarRow--spanList ul {
+  margin: 0.25em 0 0;
+  padding-left: 1.25em;
+  overflow-wrap: anywhere;
+}
+
+.SpanBarRow--spanListMore {
+  font-style: italic;
+  list-style: none;
+  margin-left: -1.25em;
+}
+
+/* Visually hide content while keeping it accessible to screen readers. */
+.SpanBarRow--visuallyHidden {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  white-space: nowrap;
+}
+
+/* The hidden-errors badge credits the errors of hidden descendants to their nearest visible
+   ancestor, in lift mode, where no pruned placeholder row exists to report them. */
+.SpanBarRow--hiddenErrors {
+  color: var(--feedback-error-text);
+  cursor: help;
+  font-size: 0.85em;
+  margin-left: 0.25rem;
+  position: relative;
+  vertical-align: middle;
+  white-space: nowrap;
+  z-index: 1;
+}
