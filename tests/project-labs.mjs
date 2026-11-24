@@ -57,7 +57,7 @@ try{
   await page.setViewportSize({width:390,height:844});await noOverflow(page);await screenshot(page,"kestrel-mobile");
  });
  await test("axon",async page=>{
-  await visit(page,"axon");await page.locator("#start").click();await page.locator("#running").waitFor({state:"visible"});
+  await visit(page,"axon");await page.locator("#results").waitFor({state:"visible"});await page.locator("#ad-start").click();await page.locator("#start").click();await page.locator("#running").waitFor({state:"visible"});
   for(let i=0;i<10;i++){await waitText(page,"#trialCounter",(i+1)+" / 10");await page.waitForTimeout(150);await page.locator("#options button").first().click()}
   await page.locator("#results").waitFor({state:"visible"});const score=Number(await page.locator("#score").textContent());assert.ok(score>=0&&score<=1000);
   assert.equal(await page.locator("#historyRows tr").count(),1);assert.match(await page.locator("#historyRows").textContent(),/Processing speed/);

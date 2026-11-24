@@ -1,0 +1,29 @@
+name: AXON dashboard acceptance
+on:
+  push:
+    branches: [main]
+    paths: ['projects/axon/**', 'tests/axon-dashboard.mjs', '.github/workflows/axon-dashboard.yml']
+  workflow_dispatch:
+jobs:
+  axon:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --prefix /tmp/axon-browser playwright@1.56.1
+      - run: /tmp/axon-browser/node_modules/.bin/playwright install --with-deps chromium
+      - run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/axon-server.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          exit 1
+      - run: node tests/axon-dashboard.mjs
+        env:
+          PLAYWRIGHT_MODULE: /tmp/axon-browser/node_modules/playwright/index.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: axon-dashboard-screenshots
+          path: /tmp/axon-review
