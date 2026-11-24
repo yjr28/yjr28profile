@@ -1,0 +1,52 @@
+name: Vendor upstream Jaeger UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/vendor-jaeger.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Fetch and verify the official release
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --output /tmp/jaeger-assets.tar.gz https://github.com/jaegertracing/jaeger-ui/releases/download/v2.23.0/assets.tar.gz
+          echo '67ba4100efe0c24f59a776e2e843eae39a4a5b1b8ee6f141e9a6801c8e51141c  /tmp/jaeger-assets.tar.gz' | sha256sum -c -
+          mkdir /tmp/jaeger-release
+          tar -xzf /tmp/jaeger-assets.tar.gz -C /tmp/jaeger-release --no-same-owner --no-same-permissions
+          index="$(find /tmp/jaeger-release -type f -name index.html -print -quit)"
+          test -n "$index"
+          grep -q jaeger-ui-root "$index"
+          dest=projects/kestrel/native
+          mkdir -p "$dest"
+          cp -a "$(dirname "$index")/." "$dest/"
+          test -f "$dest/index.html"
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('projects/kestrel/native/index.html')
+          s=p.read_text()
+          assert 'jaeger-ui-root' in s
+          assert '</body>' in s
+          p.write_text(s.replace('</body>', '<script src="../jaeger-bridge.js"></script>\n</body>'))
+          PY
+          cp projects/licenses/jaeger.txt "$dest/LICENSE"
+          printf '%s\n' 'Jaeger UI v2.23.0 — upstream Apache-2.0 release. Kestrel bridge: ../jaeger-bridge.js' > "$dest/UPSTREAM.txt"
+      - name: Commit vendored release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add projects/kestrel/native
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Vendor verified Jaeger UI v2.23.0 release'
+          git push origin HEAD:main

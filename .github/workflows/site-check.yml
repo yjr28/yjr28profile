@@ -20,7 +20,7 @@ jobs:
           node --check wafu-scene.js
           node --check tests/homepage.mjs
           node --check tests/project-labs.mjs
-          find projects -name '*.js' ! -name 'wasm_exec.js' -print0 | xargs -0 -n1 node --check
+          find projects -path 'projects/kestrel/native' -prune -o -name '*.js' ! -name 'wasm_exec.js' -print0 | xargs -0 -n1 node --check
           node tests/axon-engine.mjs
       - name: Check site files, nested references, and inline JavaScript
         run: |
@@ -49,6 +49,8 @@ jobs:
           broken = []
           script_failures = []
           for html in root.rglob('*.html'):
+              if 'projects/kestrel/native/' in str(html):
+                  continue  # Upstream prebuilt release; its own build validates the bundle.
               text = html.read_text(encoding='utf-8')
               for ref in re.findall(r'(?:href|src)="([^"]+)"', text):
                   if ref.startswith(('http:', 'https:', 'mailto:', '#', 'data:', 'javascript:')):

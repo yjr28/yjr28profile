@@ -1,0 +1,8 @@
+/* Kestrel adapter; upstream Jaeger UI assets are unmodified apart from this script include. */
+(function(){
+const key="kestrel-native-jaeger";let pending;try{pending=JSON.parse(sessionStorage.getItem(key)||"null")}catch{return}
+if(!pending?.data)return;
+function inject(){const input=document.querySelector('input[type="file"][accept*="json"]');if(!input)return false;const transfer=new DataTransfer();transfer.items.add(new File([JSON.stringify(pending.data)],"kestrel-"+pending.kind+".otlp.json",{type:"application/json"}));input.files=transfer.files;input.dispatchEvent(new Event("change",{bubbles:true}));sessionStorage.removeItem(key);return true}
+function start(){const button=document.createElement("button");button.type="button";button.textContent="Load Kestrel trace";button.style.cssText="position:fixed;bottom:16px;right:16px;z-index:10000;padding:10px 14px;background:#1677ff;color:white;border:0;border-radius:4px;cursor:pointer;font:14px Arial";button.onclick=()=>{if(inject()){button.remove();return}const data=new Blob([JSON.stringify(pending.data)],{type:"application/json"}),url=URL.createObjectURL(data),a=document.createElement("a");a.href=url;a.download="kestrel-"+pending.kind+".otlp.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);button.textContent="Trace downloaded — import using Jaeger";};document.body.append(button);let attempts=0;const timer=setInterval(()=>{if(inject()){clearInterval(timer);button.remove()}else if(++attempts>=40)clearInterval(timer)},250)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
+})();

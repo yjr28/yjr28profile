@@ -38,3 +38,6 @@ Acceptance: capture side-by-side browser screenshots of each chosen reference an
 
 ## Direct-screen pass
 Aster uses the actual PEV2 component full-screen; ranking is a separate workspace. AXON has separate Brilliant-style selection, Human Benchmark-style focus and Aimlabs-style results screens, using only measured results. NorthStar adopts Cockpit's Usage render structure with PatternFly progress bars and retains its simulated backend. Kestrel exports recorded spans in OTLP JSON for Jaeger file upload; full upstream frontend is not yet embedded. Study Hub now opens the real product and retains its case study separately. These changes are not verified pixel-identical ports. Homepage files unchanged.
+
+### Native Jaeger release integration
+The vendor workflow fetches official Jaeger UI v2.23.0 and verifies the GitHub-published SHA-256 before installing the built interface under kestrel/native. The bridge uses the upstream file uploader to import local Kestrel OTLP spans, without sending traces to an external backend. The existing raw event workbench is retained. Until the vendor job and Pages deployment complete, the native path displays an honest fallback. The upstream bundle has not yet been visually verified.

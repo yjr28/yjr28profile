@@ -66,6 +66,7 @@ try {
   const context=await browser.newContext({viewport,hasTouch:mobile,deviceScaleFactor:1});
   // Assert navigation to the real external destination without running the unrelated site.
   await context.route('https://lastride.jp/en/',route=>route.fulfill({contentType:'text/html',body:'<title>LastRide navigation target</title>'}));
+  await context.route('https://waseda-study-hub.vercel.app/',route=>route.fulfill({contentType:'text/html',body:'<title>Official Study Hub navigation target</title>'}));
   const page=await context.newPage();
   page.on('pageerror',e=>errors.push(name+': '+e.message));
   page.on('console',m=>{if(m.type()==='error')errors.push(name+': '+m.text());});
@@ -137,7 +138,7 @@ try {
    assert.equal(await page.locator('#project-info').getAttribute('aria-hidden'),'false');
    await checkLayout(page,name+' '+id);
    if(i===0)await screenshot(page,name+'-project');
-   await page.locator('#info-primary').click();await page.waitForURL('**/projects/'+id+'/');
+   await page.locator('#info-primary').click();await page.waitForURL(id==='studyhub'?'https://waseda-study-hub.vercel.app/':'**/projects/'+id+'/');
    assert.equal((await page.request.get(page.url())).status(),200);
    record(name+' '+id+' destination');
    await ready(page);

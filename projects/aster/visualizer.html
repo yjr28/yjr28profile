@@ -10,7 +10,7 @@
   -&gt;  Seq Scan on employees  (cost=0.00..10.00 rows=1000 width=0)</textarea>
   <p>Initial example: PEV2 documentation sample, not a measured Aster candidate. Paste your own JSON plan to import its estimates.</p>
   <div class="controls"><button id="visualize" class="btn btn-primary btn-sm" type="button">Visualize plan</button><select id="candidate" class="form-select form-select-sm" aria-label="Candidate receiving estimates"><option value="0">PostgreSQL default</option><option value="1">Index join</option><option value="2">Nested loop</option></select><button type="button" id="import" class="btn btn-outline-primary btn-sm">Import estimates into ranker</button></div>
-  <div id="status" role="status" aria-live="polite">Loading PEV2…</div></details>
+  </details><div id="status" role="status" aria-live="polite">Loading PEV2…</div>
 </section>
 <div id="app" class="d-flex flex-column"><p class="p-3">Loading Dalibo plan visualization…</p></div>
 <script src="https://cdn.jsdelivr.net/npm/vue@3.5.44/dist/vue.global.prod.js"></script>
