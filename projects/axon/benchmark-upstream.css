@@ -1,0 +1,76 @@
+:root {
+  --primary-color: #2b87d1;
+  --content-color: #ffffff;
+  --red-color: #ce2636;
+  --green-color: #4bdb6a;
+}
+
+@font-face {
+  font-family: "Lato Bold";
+  src: url(https://raw.githubusercontent.com/yassinejoundi/reactiontime/main/assets/css/fonts/Lato-Bold.ttf);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  font-weight: 400;
+  font-family: "Lato Bold";
+  outline: 0;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  /*disable text selection*/
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.StartScreen,
+.WaitScreen,
+.ClickScreen,
+.ResultScreen,
+.FinalScreen {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.StartScreen,
+.ResultScreen,
+.FinalScreen {
+  background-color: var(--primary-color);
+}
+
+.WaitScreen {
+  background-color: var(--red-color);
+}
+
+.ClickScreen {
+  background-color: var(--green-color);
+}
+
+.componentIcon svg {
+  width: 140px;
+  height: 140px;
+  margin: 20px auto;
+}
+
+.componentIcon svg path {
+  fill: var(--content-color) !important;
+}
+
+.componentHeadline {
+  font-size: 70px;
+  font-weight: 600;
+  color: var(--content-color);
+  padding: 10px 40px;
+}
+
+.componentSubline {
+  font-size: 20px;
+  color: var(--content-color);
+  padding: 10px 20px;
+}
