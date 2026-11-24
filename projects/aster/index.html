@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="../product-labs.css">
 <script src="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"></script>
 <script src="./lab.js" defer></script>
+<script src="./explorer.js" defer></script>
+<link rel="stylesheet" href="./explorer.css">
 </head>
 <body class="pl-body pl-aster">
 <header class="pl-global">
@@ -20,14 +22,18 @@
   <header class="pl-heading">
     <div class="pl-heading-copy">
       <h1>Aster <span class="pl-heading-suffix">/ plan analysis</span></h1>
-      <p>Compare PostgreSQL plan candidates using the actual Python ranker. Change the cost estimates, then see why Aster selects a plan or keeps the database default.</p>
+      <p>Explore a PostgreSQL EXPLAIN plan with Dalibo PEV2, then compare candidate estimates using the actual Python ranker and its uncertainty gate.</p>
     </div>
     <div class="pl-runtime" id="runtimeChip" role="status" aria-live="polite">
       <span class="pl-led"></span><span id="runtimeText">Loading Python…</span>
     </div>
   </header>
 
-  <section class="pl-window" aria-label="Aster interactive plan comparison">
+  <nav class="aster-workspaces" aria-label="Aster workspace"><button type="button" id="showExplorer" aria-pressed="true">Plan explorer</button><button type="button" id="showRanker" aria-pressed="false">Candidate ranking</button><a href="https://github.com/dalibo/pev2" target="_blank" rel="noopener noreferrer">Powered by Dalibo PEV2 ↗</a></nav>
+<section id="explorerPane" aria-label="PostgreSQL execution plan visualizer">
+  <iframe id="pevFrame" src="./visualizer.html" title="Dalibo PostgreSQL execution plan visualizer" loading="eager"></iframe>
+</section>
+<section id="rankerPane" hidden class="pl-window" aria-label="Aster interactive plan comparison">
     <div class="pl-window-head">
       <div class="pl-window-path"><span>Query Analysis</span><span>/</span><strong>Plan comparison</strong></div>
       <span class="pl-window-note">Real aster_ranker.py · Pyodide</span>
@@ -103,6 +109,7 @@ WHERE a.region = 'APAC'
       <a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer">Review the ranker source ↗</a>
     </div>
   </section>
+<p class="aster-credit">Plan explorer uses <a href="https://github.com/dalibo/pev2">Dalibo PEV2</a> under the <a href="../licenses/pev2.txt">PostgreSQL license</a>. Aster ranking is separate and uses the repository Python prototype. Input is processed in your browser; avoid pasting sensitive query data.</p>
 </main>
 </body>
 </html>
