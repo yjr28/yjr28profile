@@ -62,7 +62,7 @@ try{
   await page.locator("#results").waitFor({state:"visible"});const score=Number(await page.locator("#score").textContent());assert.ok(score>=0&&score<=1000);
   assert.equal(await page.locator("#historyRows tr").count(),1);assert.match(await page.locator("#historyRows").textContent(),/Processing speed/);
   await noOverflow(page);await screenshot(page,"axon-results-desktop");
-  await page.locator("#again").click();await page.locator("[data-family=spatial_rotation]").click();await page.locator("#start").click();await page.locator("#running").waitFor({state:"visible"});assert.equal(await page.locator("#options button").count(),4);await page.locator("#cancel").click();
+  await page.locator("#ad-exit").click();await page.locator("[data-family=spatial_rotation]").click();await page.locator("#start").click();await page.locator("#running").waitFor({state:"visible"});assert.equal(await page.locator("#options button").count(),4);await page.locator("#cancel").click();
   await page.setViewportSize({width:390,height:844});await noOverflow(page);await screenshot(page,"axon-mobile");
  });
  await test("studyhub",async page=>{

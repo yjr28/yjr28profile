@@ -22,6 +22,7 @@ jobs:
           node --check tests/project-labs.mjs
           find projects -path 'projects/kestrel/native' -prune -o -name '*.js' ! -name 'wasm_exec.js' -print0 | xargs -0 -n1 node --check
           node tests/axon-engine.mjs
+          node tests/axon-analytics.mjs
       - name: Check site files, nested references, and inline JavaScript
         run: |
           python - <<'PY'
