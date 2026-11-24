@@ -1,0 +1,49 @@
+/* Reference-led wa-fu sign illustrations and parchment railway navigation.
+   Buttons remain real DOM controls, projected from the moving 3D world. */
+:root{--day-ink:#102e44;--day-muted:#234760;--rail:#ac3027;--cream:#faf0df}
+.sky-backdrop{background:linear-gradient(180deg,#82c4ee 0%,#b1def4 36%,#92cbe8 72%,#9bd1eb 100%)}
+.sky-haze{background:radial-gradient(ellipse 25% 22% at 84% 19%,#fff6c9a5,transparent 88%),radial-gradient(ellipse at 15% 30%,#d8eef451,transparent 57%)}
+.sky-sun{width:clamp(52px,5vw,83px);height:clamp(52px,5vw,83px);top:12.5%;right:12.5%;background:#fff4c4;box-shadow:0 0 38px 12px #fff0c28f,0 0 80px 30px #ffe4bb45}
+.sky-cloud{display:none}
+.global-nav{padding-top:clamp(15px,2.5vh,27px)}
+.brand-seal{background:#9f2a24;box-shadow:inset 0 0 0 3px #9f2a24,inset 0 0 0 4px #e7b684;color:#fff7e6}
+.world-intro{top:clamp(145px,22vh,225px);width:clamp(200px,17vw,258px)}
+.intro-route>span:last-child{font-size:clamp(26px,2.2vw,38px);font-weight:600;letter-spacing:-.05em}
+.intro-route{gap:12px;margin-bottom:31px}
+.route-kanji{font-weight:700;color:#a33128}
+.world-intro>p:not(.intro-route){font-size:clamp(15px,1.16vw,19px);line-height:1.7}
+.intro-explore{font-size:clamp(15px,1.1vw,18px)}
+.world-marker,.world-marker:hover,.world-marker[aria-pressed=true],.train-label,.train-label:hover,.train-label-green,.train-label-green:hover{--art:url("assets/wafu-northstar.svg");width:clamp(134px,12.6vw,221px);height:clamp(58px,5.6vw,98px);min-height:0;display:flex;justify-content:center;align-items:center;gap:0;border:0!important;border-radius:0!important;background:var(--art) center/100% 100% no-repeat!important;box-shadow:none!important;filter:drop-shadow(0 2px 2px #50361e60);color:#553521;padding:0!important;outline:none}
+.world-marker[data-station=northstar]{--art:url("assets/wafu-northstar.svg");color:#fff0ba}
+.world-marker[data-station=axon]{--art:url("assets/wafu-axon.svg")}
+.world-marker[data-station=aster]{--art:url("assets/wafu-aster.svg");color:#7c302d}
+.world-marker[data-station=kestrel]{--art:url("assets/wafu-kestrel.svg");color:#24405e}
+.world-marker[data-station=studyhub]{--art:url("assets/wafu-studyhub.svg");color:#52371f}
+.train-label,.train-label:hover,.train-label-green,.train-label-green:hover{--art:url("assets/wafu-lastride.svg");color:#ffe7a5;width:clamp(142px,13vw,230px);height:clamp(62px,5.8vw,102px)}
+.marker-emblem,.train-service{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden;display:block;border:0;margin:0;padding:0}
+.marker-text,.train-destination{display:flex;flex-direction:column;align-items:center;justify-content:center;white-space:nowrap;gap:2px;font:700 clamp(15px,1.65vw,28px)/1.05 var(--type-editorial);text-shadow:0 1px 0 #fff3d335;letter-spacing:-.035em;padding:0;margin:0}
+.marker-text small,.train-destination small{display:block;font:600 clamp(7px,.69vw,11px)/1.4 var(--type-editorial);color:inherit;letter-spacing:-.025em}
+.world-marker[data-station=northstar] .marker-text,.world-marker[data-station=axon] .marker-text,.train-destination{margin-left:21%;margin-top:4%}
+.world-marker[data-station=aster] .marker-text{margin-top:1%}
+.world-marker[data-station=kestrel] .marker-text{margin-top:2%;margin-left:3%}
+.world-marker[data-station=studyhub] .marker-text{margin-top:14%}
+.train-destination{font-style:italic}
+.world-marker::after,.train-label::after{left:var(--stem-x,50%);top:100%;height:var(--leader,12px);border-left:2px solid #997145;box-shadow:1px 0 #5d483c70}
+.world-marker:hover,.train-label:hover,.world-marker:focus-visible,.train-label:focus-visible{filter:drop-shadow(0 0 5px #fff4bb) drop-shadow(0 3px 4px #5b351b85)}
+.station-line{bottom:7.3vh;min-height:clamp(103px,13.6vh,134px);border-top:4px solid #a72e27;border-bottom:2px solid #b99354;background:#f8efdf;box-shadow:0 5px 0 #946d3d45,0 12px 30px #24516d35}
+.station-line:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 0 0,#dfbd7c5c,transparent 15%),radial-gradient(ellipse at 100% 100%,#dfbd7c60,transparent 17%);opacity:.85}
+.station-line-heading{min-width:clamp(145px,11.6vw,191px);position:relative}
+.station-line-heading:before,.station-lastride:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.38;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='24'%3E%3Cg fill='none' stroke='%23cead70' stroke-width='1.5'%3E%3Cpath d='M-24 24Q0-16 24 24M-16 24Q0-5 16 24M-8 24Q0 8 8 24M0 24Q24-16 48 24M8 24Q24-5 40 24M16 24Q24 8 32 24M24 24Q48-16 72 24M32 24Q48-5 64 24M40 24Q48 8 56 24'/%3E%3C/g%3E%3C/svg%3E");mask-image:radial-gradient(ellipse at left top,#000,transparent 70%)}
+.station-lastride:after{mask-image:radial-gradient(ellipse at right bottom,#000,transparent 70%)}
+.station-line-heading strong,.station strong{font-weight:700;font-size:clamp(16px,1.45vw,24px)}
+.heading-tiny{color:#a62f25;font-weight:700}
+.station-track{left:clamp(166px,13.3vw,218px);background:#54616c;height:2px}
+.station[data-station] .station-dot{border-color:#92612f;background:#fff7e9}
+.station[data-station]::before{background:#92774f}
+.station small{color:#33485a;font-size:clamp(11px,.91vw,15px)}
+.station-lastride strong{color:#9f2c25}
+.station-lastride .station-no{background:#ad3027;border:1px solid #c99b51;border-radius:3px;box-shadow:0 0 0 1px #843426;color:#fff6dc}
+.tiny-footer{bottom:1.2vh;font-size:clamp(11px,.9vw,14px)}
+@media(max-width:1100px){.world-intro{width:200px}.station-line-heading{min-width:135px}.station-track{left:155px}.station strong{font-size:16px}}
+@media(max-width:760px){.world-intro{top:98px;width:calc(100% - 36px)}.intro-route{margin-bottom:12px}.intro-route>span:last-child{font-size:27px}.world-intro>p:not(.intro-route){font-size:14px;line-height:1.45;margin-bottom:7px}.world-marker,.world-marker:hover,.world-marker[aria-pressed=true]{width:106px;height:47px}.train-label,.train-label:hover,.train-label-green,.train-label-green:hover{width:116px;height:52px}.marker-text,.train-destination{font-size:14px}.marker-text small,.train-destination small{display:none}.station-line{bottom:49px;min-height:103px}.tiny-footer{bottom:3px}.station-track{left:155px}.world-intro .intro-explore{min-height:33px}}
+@media(prefers-reduced-motion:reduce){.world-marker,.train-label{transition:none}}

@@ -17,6 +17,7 @@ jobs:
         run: |
           node --check app.js
           node --check japan-world.js
+          node --check wafu-scene.js
           node --check tests/homepage.mjs
           node --check tests/project-labs.mjs
           find projects -name '*.js' ! -name 'wasm_exec.js' -print0 | xargs -0 -n1 node --check

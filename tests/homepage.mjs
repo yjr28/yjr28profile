@@ -28,6 +28,7 @@ function record(name, data = {}) { results.push({ name, ...data }); console.log(
 async function ready(page) {
  await page.goto(base);
  await page.locator('#world-loading.done').waitFor({state:'attached'});
+ assert.equal(await page.locator('#no-webgl').isVisible(),false,'WebGL renderer initialized');
  await page.evaluate(() => document.fonts.ready);
  await page.waitForTimeout(850);
 }

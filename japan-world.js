@@ -1,4 +1,5 @@
 import * as THREE from "./assets/three.module.js";
+import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js";
 
 /* THE JAPAN LINE.
    Every part of this world is generated as real 3D geometry, not a flat image.
@@ -10,11 +11,11 @@ const canvas = $("world-canvas");
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const app = $("world-app");
 const stationData = {
-  northstar:{number:"1",name:"NorthStar",place:"東京・秋葉原 / Tokyo after dark",tagline:"Control the fleet. Understand the failure.",description:"A hybrid-cloud server management system with native Linux telemetry, a C++ agent, and a Java/Spring control plane. Try the interactive command lifecycle: make a host go offline, queue work, and bring the agent back.",meta:["C++ agent","Spring / Java","PostgreSQL","Telemetry"],url:"projects/northstar/",source:"https://github.com/yjr28/NorthStar",pos:[-35,2,-3],camera:[-27,22,28]},
-  axon:{number:"2",name:"AXON",place:"認知訓練 / Cognitive training lab",tagline:"Train. Measure. Improve.",description:"A competitive cognitive training application built with Expo, Go, PostgreSQL, Redis and Python. Play a timed exercise using the actual client task engine and inspect your results.",meta:["Expo / Go","PostgreSQL / Redis","Python","Seeded tasks"],url:"projects/axon/",source:"https://github.com/yjr28/Axon",pos:[-19,2,18],camera:[-13,20,42]},
-  aster:{number:"3",name:"Aster",place:"京都・庭園 / Kyoto gardens",tagline:"Choose a plan. Know when to abstain.",description:"A PostgreSQL query-plan ranking prototype that scores candidate plans while enforcing uncertainty and decision-margin thresholds. The demo runs its Python ranker inside your browser.",meta:["PostgreSQL","Python","Query planning","Confidence gates"],url:"projects/aster/",source:"https://github.com/yjr28/aster-pg-optimizer",pos:[0,2,-19],camera:[12,21,16]},
-  kestrel:{number:"4",name:"Kestrel",place:"富士山 / The Fuji observatory",tagline:"Find the first divergence, not the loudest symptom.",description:"A Go distributed-systems flight recorder with causal traces and replayable seeded faults. Inject latency and follow the events through a ten-service request using the actual Go core compiled to WebAssembly.",meta:["Go / WebAssembly","Causal traces","Fault injection","Replay"],url:"projects/kestrel/",source:"https://github.com/yjr28/kestrel-replay",pos:[30,2,-18],camera:[34,25,21]},
-  studyhub:{number:"5",name:"Waseda Study Hub",place:"早稲田・東京 / Waseda campus",tagline:"Build campus software with a trust boundary.",description:"A student discovery and study-buddy product with verified university sign-in, private conversations, and AI-assisted matching. Explore the authorization and ranking decisions in its case study.",meta:["Next.js","Firebase","Auth / privacy","AI matching"],url:"projects/studyhub/",source:"https://github.com/Waseda-Study-Hub/frontend",pos:[29,2,18],camera:[29,22,49]}
+  northstar:{number:"1",name:"NorthStar",place:"東京・秋葉原 / Tokyo after dark",tagline:"Control the fleet. Understand the failure.",description:"A hybrid-cloud server management system with native Linux telemetry, a C++ agent, and a Java/Spring control plane. Try the interactive command lifecycle: make a host go offline, queue work, and bring the agent back.",meta:["C++ agent","Spring / Java","PostgreSQL","Telemetry"],url:"projects/northstar/",source:"https://github.com/yjr28/NorthStar",pos:[-34,2,-4],camera:[-27,22,28]},
+  axon:{number:"2",name:"AXON",place:"認知訓練 / Cognitive training lab",tagline:"Train. Measure. Improve.",description:"A competitive cognitive training application built with Expo, Go, PostgreSQL, Redis and Python. Play a timed exercise using the actual client task engine and inspect your results.",meta:["Expo / Go","PostgreSQL / Redis","Python","Seeded tasks"],url:"projects/axon/",source:"https://github.com/yjr28/Axon",pos:[-14,2,20],camera:[-13,20,42]},
+  aster:{number:"3",name:"Aster",place:"京都・庭園 / Kyoto gardens",tagline:"Choose a plan. Know when to abstain.",description:"A PostgreSQL query-plan ranking prototype that scores candidate plans while enforcing uncertainty and decision-margin thresholds. The demo runs its Python ranker inside your browser.",meta:["PostgreSQL","Python","Query planning","Confidence gates"],url:"projects/aster/",source:"https://github.com/yjr28/aster-pg-optimizer",pos:[-7,2,-20],camera:[12,21,16]},
+  kestrel:{number:"4",name:"Kestrel",place:"富士山 / The Fuji observatory",tagline:"Find the first divergence, not the loudest symptom.",description:"A Go distributed-systems flight recorder with causal traces and replayable seeded faults. Inject latency and follow the events through a ten-service request using the actual Go core compiled to WebAssembly.",meta:["Go / WebAssembly","Causal traces","Fault injection","Replay"],url:"projects/kestrel/",source:"https://github.com/yjr28/kestrel-replay",pos:[20,2,-22],camera:[34,25,21]},
+  studyhub:{number:"5",name:"Waseda Study Hub",place:"早稲田・東京 / Waseda campus",tagline:"Build campus software with a trust boundary.",description:"A student discovery and study-buddy product with verified university sign-in, private conversations, and AI-assisted matching. Explore the authorization and ranking decisions in its case study.",meta:["Next.js","Firebase","Auth / privacy","AI matching"],url:"projects/studyhub/",source:"https://github.com/Waseda-Study-Hub/frontend",pos:[39,2,-2],camera:[29,22,49]}
 };
 const LASTRIDE = "https://lastride.jp/en/";
 const clamp = THREE.MathUtils.clamp;
@@ -42,7 +43,7 @@ const material = {
   lantern:glow(0xffd2a0,0xf4a764,1.7),warmWindow:glow(0xffe0a7,0xd99353,1.2),
   rail:matte(0xdce0db,.36,.43),railTie:matte(0x52666c)
 };
-let renderer,scene,camera,world,raycaster;
+let renderer,scene,camera,world,raycaster,waWater;
 const interactables=[],petals=[],trains=[],swayers=[],clouds=[],pulses=[],waterRipples=[],fireflies=[];
 const staticMeshes={};
 const animated={clock:0,motion:!reduced,lite:false,focused:null,overview:false,sceneReady:false,railHovered:false,ride:false};
@@ -74,148 +75,6 @@ function getInteraction(object){
   while(o){if(o.userData.route)return {route:o.userData.route};if(o.userData.station)return {station:o.userData.station};o=o.parent}
   return null;
 }
-function signTexture(text,{background="#e9deca",foreground="#273b40",height=128,width=512,secondary=""}={}){
-  const el=document.createElement("canvas");el.width=width;el.height=height;
-  const c=el.getContext("2d");c.fillStyle=background;c.fillRect(0,0,width,height);
-  c.fillStyle=foreground;c.textAlign="center";c.textBaseline="middle";
-  c.font="700 "+Math.round(height*.37)+"px sans-serif";c.fillText(text,width/2,height*.48,width*.92);
-  if(secondary){c.font="500 "+Math.round(height*.14)+"px sans-serif";c.fillText(secondary,width/2,height*.81)}
-  const t=new THREE.CanvasTexture(el);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t;
-}
-function signPlane(parent,text,w,h,x,y,z,background,foreground,secondary=""){
- const mat=new THREE.MeshBasicMaterial({map:signTexture(text,{background,foreground,secondary}),side:THREE.DoubleSide,transparent:false});
- return add(parent,new THREE.PlaneGeometry(w,h),mat,x,y,z,false);
-}
-
-// Detail meshes use local deterministic variation and shared instancing, so the
-// original route, camera, moving trains, and layout random sequence are unchanged.
-const detailObject=new THREE.Object3D();
-const detailRockGeometry=new THREE.IcosahedronGeometry(1,1);
-const detailBlossomGeometry=new THREE.IcosahedronGeometry(1,1);
-const detailRockMaterial=matte(0xffffff,.97);
-const detailBlossomMaterial=matte(0xffffff,.85);
-function detailRandom(seed){let n=seed>>>0;return()=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296}}
-function instanceDetail(mesh,i,x,y,z,sx,sy,sz,rx,ry,rz,color){
- detailObject.position.set(x,y,z);detailObject.scale.set(sx,sy,sz);detailObject.rotation.set(rx,ry,rz);detailObject.updateMatrix();
- mesh.setMatrixAt(i,detailObject.matrix);if(color!==undefined)mesh.setColorAt(i,new THREE.Color(color));
-}
-function buildStoneTerrace(parent,rx,rz,seed){
- const rng=detailRandom(seed),perRing=window.innerWidth<760?42:74,rings=2;
- const stones=new THREE.InstancedMesh(detailRockGeometry,detailRockMaterial,perRing*rings);stones.castShadow=false;stones.receiveShadow=true;
- const shades=[0x79776e,0x949087,0xb1a99a,0x777d76,0xaca69c,0x888276];
- for(let j=0;j<rings;j++)for(let i=0;i<perRing;i++){
-  const a=(i+j*.5)/perRing*Math.PI*2,r=1+.035*Math.sin(a*7+rx)+.03*Math.cos(a*11+rz),x=Math.cos(a)*rx*r,z=Math.sin(a)*rz*r;
-  instanceDetail(stones,j*perRing+i,x,-.27+j*.88,z,.62+rng()*.5,.42+rng()*.27,.61+rng()*.42,(rng()-.5)*.3,-a,(rng()-.5)*.2,shades[Math.floor(rng()*shades.length)]);
- }
- stones.instanceMatrix.needsUpdate=true;stones.instanceColor.needsUpdate=true;parent.add(stones);
-}
-function addBlossomDetail(group,seed){
- const rng=detailRandom(seed),count=window.innerWidth<760?46:86;
- const mesh=new THREE.InstancedMesh(detailBlossomGeometry,detailBlossomMaterial,count);
- const palette=[0xffdce6,0xf5a1b8,0xfac3d3,0xffeef0,0xe58da7,0xf0b3c7];
- mesh.castShadow=false;mesh.receiveShadow=true;
- for(let i=0;i<count;i++){const a=rng()*Math.PI*2,r=Math.sqrt(rng())*2.12,y=3.34+(rng()-.5)*1.75+(.5-r/4),s=.18+rng()*.31;
-  instanceDetail(mesh,i,Math.cos(a)*r,y,Math.sin(a)*r,s,s*(.75+rng()*.32),s,rng(),rng()*6.28,rng(),palette[Math.floor(rng()*palette.length)]);
- }
- mesh.instanceMatrix.needsUpdate=true;mesh.instanceColor.needsUpdate=true;group.add(mesh);
-}
-function sculptFuji(parent){
- const radial=104,levels=52,positions=[],colors=[],indices=[];
- const rock=new THREE.Color(0x62758d),shadow=new THREE.Color(0x405d78),snow=new THREE.Color(0xf7fbfc),snowShadow=new THREE.Color(0xb3c9d9),out=new THREE.Color(),c=new THREE.Color();
- for(let j=0;j<=levels;j++){
-  const t=j/levels,baseR=1.3+22*Math.pow(1-t,1.64)+.9*Math.sin(Math.PI*t);
-  for(let i=0;i<=radial;i++){const a=i/radial*Math.PI*2,fold=(Math.sin(a*13+1.8*t)+.48*Math.sin(a*23-4*t)+.35*Math.cos(a*7+3*t))/1.83;
-   const taper=Math.sin(Math.PI*t)*.8+.12, r=baseR*(1+fold*.11*taper),y=24*t+fold*.55*Math.sin(Math.PI*t);
-   positions.push(Math.cos(a)*r,y,Math.sin(a)*r*.86);
-   const snowline=.70+.055*Math.sin(a*9)+.043*Math.sin(a*17+.8)+.035*fold;
-   out.copy(rock).lerp(shadow,THREE.MathUtils.clamp(.35-fold*.36,0,1));
-   c.copy(snow).lerp(snowShadow,THREE.MathUtils.clamp(.15-fold*.46,0,.85));
-   out.lerp(c,THREE.MathUtils.smoothstep(t,snowline-.024,snowline+.038));
-   colors.push(out.r,out.g,out.b);
-  }
- }
- for(let j=0;j<levels;j++)for(let i=0;i<radial;i++){const a=j*(radial+1)+i,b=a+radial+1;indices.push(a,b,a+1,b,b+1,a+1)}
- const geometry=new THREE.BufferGeometry();geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();
- const mat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.98,side:THREE.DoubleSide});
- const mountain=add(parent,geometry,mat,0,0,0,false);mountain.receiveShadow=true;
- const cap=add(parent,new THREE.CircleGeometry(1.31,48),material.snow,0,24.01,0,false);cap.rotation.x=-Math.PI/2;cap.scale.y=.86;
-}
-function pagodaRoof(parent,width,depth,y){
- const pos=[],indices=[],ring=[[.52,.52,0],[.45,.45,.20],[.31,.31,.68],[.12,.12,1.02]];
- const perimeter=[[-1,-1],[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0]];
- for(const [sx,sz,h] of ring)for(const [x,z] of perimeter){const corner=Math.abs(x)+Math.abs(z)===2;pos.push(x*width*sx,h+(corner?.14*(1-h):0),z*depth*sz)}
- for(let k=0;k<ring.length-1;k++)for(let i=0;i<8;i++){const a=k*8+i,b=k*8+(i+1)%8;indices.push(a,b,a+8,b,b+8,a+8)}
- const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));geo.setIndex(indices);geo.computeVertexNormals();
- const m=new THREE.MeshStandardMaterial({color:0x465b59,roughness:.7,side:THREE.DoubleSide});
- add(parent,geo,m,0,y,0);
- box(parent,width*.26,.15,depth*.26,material.roof,0,y+1.03,0);
- // Fine parallel eave lines, created as one instanced mesh per tier.
- const count=24,tiles=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),material.roof,count*4);
- for(let side=0;side<4;side++)for(let i=0;i<count;i++){const f=(i+.5)/count-.5,angle=side*Math.PI/2;const x=side%2===0?f*width:Math.sign(side===1?1:-1)*width*.50,z=side%2===0?(side===0?depth*.50:-depth*.50):f*depth;
-  instanceDetail(tiles,side*count+i,x,y+.04,z,.07,.105,.25,0,angle,0);
- }
- tiles.instanceMatrix.needsUpdate=true;tiles.castShadow=false;tiles.receiveShadow=true;parent.add(tiles);
-}
-
-function createIsland(key,x,z,rx,rz,grass,soil=material.dirt){
- const holder=new THREE.Group();holder.position.set(x,0,z);holder.name=key+" island";holder.userData.station=key;world.add(holder);
- const shape=new THREE.Shape();
- const total=36;
- for(let i=0;i<total;i++){
-  const a=(i/total)*Math.PI*2;
-  const irregular=1+.045*Math.sin(a*7+rx)+.04*Math.cos(a*11+rz)+range(-.035,.035);
-  const px=Math.cos(a)*rx*irregular,pz=Math.sin(a)*rz*irregular;
-  if(i===0)shape.moveTo(px,pz);else shape.lineTo(px,pz);
- }
- shape.closePath();
- const geo=new THREE.ExtrudeGeometry(shape,{steps:1,depth:2,bevelEnabled:true,bevelThickness:.25,bevelSize:.25,bevelSegments:1,curveSegments:2});
- geo.rotateX(-Math.PI/2);
- const mesh=add(holder,geo,[grass,soil],0,-.53,0);mesh.receiveShadow=true;
- buildStoneTerrace(holder,rx,rz,Math.abs(x*1031+z*2137)+1);
- for(let i=0;i<23;i++){
-  const a=range(0,Math.PI*2),radius=range(.86,1.04),px=Math.cos(a)*rx*radius,pz=Math.sin(a)*rz*radius;
-  const rock=sphere(holder,range(.3,.75),pick([material.stone,material.stoneDark,soil]),px,1.45,pz,0);
-  rock.scale.set(range(.8,1.3),range(.4,.85),range(.6,1.4));
- }
- return holder;
-}
-function createStonePath(parent,positions,width=.9,mat=material.stone){
- for(let i=0;i<positions.length-1;i++){
-  const [x1,z1]=positions[i],[x2,z2]=positions[i+1];
-  const dx=x2-x1,dz=z2-z1,dist=Math.hypot(dx,dz),count=Math.max(1,Math.ceil(dist/.9));
-  for(let n=0;n<count;n++){
-   const t=(n+.5)/count,p=box(parent,width,.10,dist/count*.88,mat,x1+dx*t,1.52,z1+dz*t);
-   p.rotation.y=Math.atan2(dx,dz);
-  }
- }
-}
-function createGrass(parent,rx,rz,count=50){
- for(let i=0;i<count;i++){
-  const a=range(0,6.283),r=Math.sqrt(random())*.9;
-  const x=Math.cos(a)*rx*r,z=Math.sin(a)*rz*r;
-  const tuft=add(parent,new THREE.ConeGeometry(range(.16,.29),range(.4,.85),3),pick([material.bamboo,material.templeGrass,material.fujiGrass]),x,1.75,z,false);
-  tuft.rotation.z=range(-.2,.2);
- }
-}
-function cherryTree(parent,x,z,s=1,palette=null){
- const g=new THREE.Group();g.position.set(x,1.55,z);g.scale.setScalar(s);parent.add(g);
- cyl(g,.19,.30,2.7,material.bark,0,1.32,0,7);
- const branches=[[.75,3.1,.1],[-.85,2.8,.2],[.2,3.6,-.6]];
- for(const [bx,by,bz] of branches){
-  const start=V(0,2.2,0),end=V(bx,by,bz),d=end.clone().sub(start);
-  const b=cyl(g,.075,.12,d.length(),material.bark,...start.clone().add(end).multiplyScalar(.5).toArray(),6);
-  b.quaternion.setFromUnitVectors(V(0,1,0),d.normalize());
- }
- const flowers=palette||[material.sakura1,material.sakura2,material.sakura3];
- for(let i=0;i<9;i++){
-  const a=range(0,6.283),r=range(.4,1.7);
-  const leaf=sphere(g,range(.75,1.25),pick(flowers),Math.cos(a)*r,range(2.9,4.2),Math.sin(a)*r,1);
-  leaf.scale.set(range(.85,1.3),range(.55,.95),range(.85,1.35));
- }
- addBlossomDetail(g,Math.abs(Math.round((x+parent.position.x)*1139+(z+parent.position.z)*7919))+71);
- swayers.push({g,phase:range(0,6.28),scale:range(.006,.026)});
- return g;
-}
 function lantern(parent,x,z,s=1){
  const g=new THREE.Group();g.position.set(x,1.55,z);g.scale.setScalar(s);parent.add(g);
  cyl(g,.10,.16,2.4,material.roof,0,1.2,0,6);
@@ -224,238 +83,11 @@ function lantern(parent,x,z,s=1){
  box(g,1.08,.16,1.08,material.roof,0,2.0,0);
  return g;
 }
-function torii(parent,x,z,s=1){
- const g=new THREE.Group();g.position.set(x,1.57,z);g.scale.setScalar(s);parent.add(g);
- for(const dx of [-1.5,1.5])cyl(g,.22,.27,4.2,material.vermillion,dx,2.1,0,8);
- box(g,4.5,.44,.69,material.vermillion,-0,4.18,0);
- box(g,3.6,.28,.42,material.red,0,3.38,0);
- box(g,4.85,.14,.84,material.roof,0,4.47,0);
- return g;
-}
-function pagoda(parent,x,z,s=1){
- const g=new THREE.Group();g.position.set(x,1.55,z);g.scale.setScalar(s);parent.add(g);
- cyl(g,3.7,3.9,.38,material.stone,0,.18,0,8);
- for(let i=0;i<5;i++){
-  const y=.5+i*1.70,f=1-i*.12;
-  box(g,4.15*f,1.36,3.86*f,material.cream,0,y+.68,0);
-  for(const dx of [-1,1])for(const dz of [-1,1])cyl(g,.10,.11,1.45,material.vermillion,dx*1.65*f,y+.74,dz*1.54*f,8);
-  for(const side of [-1,1]){
-   for(const x of [-1.08,0,1.08]){
-    box(g,.67*f,.80,.08,material.warmWindow,x*f,y+.70,side*1.96*f,false);
-    box(g,.07*f,.82,.10,material.red,x*f,y+.70,side*2.01*f,false);
-   }
-   box(g,4.35*f,.15,.19,material.vermillion,0,y+.20,side*2.02*f);
-  }
-  box(g,4.45*f,.13,4.16*f,material.roof,0,y+1.29,0);
-  pagodaRoof(g,5.7*f,5.3*f,y+1.36);
- }
- cyl(g,.07,.11,2.0,material.gold,0,9.66,0,12);
- for(let i=0;i<6;i++)add(g,new THREE.TorusGeometry(.33-i*.027,.045,6,16),material.gold,0,8.95+i*.22,0,false).rotation.x=Math.PI/2;
- sphere(g,.15,material.gold,0,10.76,0,1);
- return g;
-}
-function bench(parent,x,z,rot=0){
- const g=new THREE.Group();g.position.set(x,1.55,z);g.rotation.y=rot;parent.add(g);
- box(g,2.4,.23,.8,material.bark,0,.73,0);
- box(g,2.4,.23,.3,material.bark,0,1.35,-.31);
- for(const dx of [-.94,.94])box(g,.15,.73,.55,material.stoneDark,dx,.36,0);
- return g;
-}
-
-function drawWindows(parent,x,z,w,d,h,rows,cols,color=material.warmWindow){
- for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-  const lit=(r+c)%5!==0;
-  const y=2.35+r*((h-1.25)/Math.max(1,rows));
-  const px=x-w/2+(c+.5)*(w/cols);
-  const front=box(parent,w/cols*.46,h/rows*.43,.085,lit?color:material.nightFacade,px,y,z+d/2+.04,false);
-  front.castShadow=false;
-  if(c%2===0){
-   const back=box(parent,w/cols*.46,h/rows*.43,.085,lit?color:material.nightFacade,px,y,z-d/2-.04,false);
-   back.castShadow=false;
-  }
- }
-}
-function nightCity(){
- const x=-35,z=-3, g=createIsland("northstar",x,z,17,13,material.nightGrass,material.stoneDark);
- // An illuminated intersection between real blocky towers.
- box(g,25,.09,3.0,material.stoneDark,0,1.62,0,false);
- box(g,3.5,.1,21,material.stoneDark,2,1.62,0,false);
- const buildings=[
-  [-11,-5,3.3,4,7.5],[-7,-7,3.5,4.3,12],[-1,-8,5,4.5,15], [7,-7,3.8,4,9],
-  [11,-3,3.4,3.8,11],[-11,5,4.2,4.5,8],[-6,7,4.2,4,10.5],[9,6,4.2,4.8,13]
- ];
- for(let i=0;i<buildings.length;i++){
-  const [bx,bz,w,d,h]=buildings[i];
-  box(g,w,h,d,pick([material.slate,material.deepBlue,material.nightFacade]),bx,1.55+h/2,bz);
-  box(g,w+.35,.25,d+.35,material.roof,bx,1.55+h+.14,bz);
-  drawWindows(g,bx,bz,w,d,h,Math.max(3,Math.floor(h/1.6)),Math.max(2,Math.floor(w/1.08)),i%2?material.neonBlue:material.warmWindow);
- }
- const facade=box(g,7,8.6,4.4,material.deepBlue,-3,5.85,4);
- drawWindows(g,-3,4,7,4.4,8.6,4,4,material.neonBlue);
- signPlane(g,"NORTHSTAR",6.5,1.18,-3,10,6.28,"#152b4c","#bfeef6","fleet control / telemetry");
- signPlane(g,"秋葉原",3.1,1.35,10,5.3,9.0,"#bb315e","#ffe9eb","AKIHABARA");
- // Antenna and rotating radar ring, showing this is the live fleet district.
- const radar=new THREE.Group();radar.position.set(-3,10.25,4);g.add(radar);
- cyl(radar,.13,.18,1.8,material.rail,0,.9,0,6);
- const dish=add(radar,new THREE.CylinderGeometry(1.25,.3,.39,16),material.rail,0,2,0);
- dish.rotation.z=.32;
- const light=sphere(radar,.23,material.neonPink,0,3.13,0,0);
- pulses.push({object:radar,kind:"rotate",speed:.21});
- for(let i=0;i<5;i++)lantern(g,range(-13,13),pick([-2,2,11]),.6);
- for(const [tx,tz,s] of [[-13,9,.65],[13,9,.72],[12,-10,.7],[-14,-11,.75]])cherryTree(g,tx,tz,s);
- // Elevated city signage.
- torii(g,12,0,.63);
- createGrass(g,16,13,36);
- mark(g,"station","northstar");
- return g;
-}
-function workshop(){
- const x=-19,z=18,g=createIsland("axon",x,z,15,12,material.workGrass);
- box(g,22,.13,3,material.stone,0,1.64,-3,false);
- const hall=new THREE.Group();hall.position.set(0,1.55,1);g.add(hall);
- box(hall,11,5.2,7.6,material.cream,0,2.6,-1);
- box(hall,11.8,.35,8.5,material.roofGreen,0,5.3,-1);
- // Sloped roof with an intentional industrial silhouette.
- const pitch1=box(hall,6,.38,8.7,material.roof,2.65,6.1,-1);pitch1.rotation.z=.39;
- const pitch2=box(hall,6,.38,8.7,material.roof,-2.65,6.1,-1);pitch2.rotation.z=-.39;
- box(hall,6.3,4.1,.17,material.deepBlue,0,2.55,2.85);
- for(let i=0;i<4;i++){box(hall,.16,4.15,.19,material.stone,(-2.4+i*1.6),2.56,2.97)}
- signPlane(hall,"AXON",5.2,1.24,0,5.1,3.04,"#1d4b42","#f4dfb2","cognitive training");
- // Freight crates and spools play the role of tangible tool nodes.
- for(let i=0;i<7;i++){
-  const bx=range(-12,12),bz=range(-10,10),size=range(.7,1.6);
-  if(Math.abs(bx)<6&&Math.abs(bz)<5)continue;
-  box(g,size,size,size,pick([material.red,material.cream,material.stoneDark,material.roofGreen]),bx,1.55+size/2,bz);
- }
- for(const dx of [-8.2,8.2]){
-  const scaffold=box(g,.34,6.6,.4,material.vermillion,dx,4.9,4.5);
-  box(g,3.3,.35,.7,material.roof,dx,8.1,4.5);
-  lantern(g,dx,8.8,.55);
- }
- const gear=new THREE.Group();gear.position.set(-10,3.6,-1.5);g.add(gear);
- add(gear,new THREE.TorusGeometry(1.45,.34,8,12),material.gold);
- for(let i=0;i<8;i++){const a=i*Math.PI/4,teeth=box(gear,.55,.76,.6,material.gold,Math.sin(a)*1.62,Math.cos(a)*1.62,0);teeth.rotation.z=-a}
- pulses.push({object:gear,kind:"rotateZ",speed:.28});
- for(const [tx,tz,s] of [[-11,8,.8],[11,8,.78],[-11,-7,.9],[12,-6,.67]])cherryTree(g,tx,tz,s);
- createStonePath(g,[[-9,-9],[-7,-3],[0,-2],[9,-2]],1.3);
- bench(g,-3,9,.1);bench(g,4,9,-.2);
- createGrass(g,15,12,50);
- mark(g,"station","axon");return g;
-}
-function zenGarden(){
- const x=0,z=-19,g=createIsland("aster",x,z,17,14,material.templeGrass);
- const garden=box(g,17,.12,10,material.cream,1,1.6,3);
- // Raked gravel arcs: readable from the aerial camera.
- for(let r=2.3;r<7.5;r+=1.2){
-  const pts=[];
-  for(let i=0;i<=32;i++){
-   const a=Math.PI*.14+i/32*Math.PI*.72;
-   pts.push(V(1+Math.cos(a)*r,1.72,3+Math.sin(a)*r*.46));
-  }
-  const line=add(g,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,.045,4,false),material.stone,false,false,false,false);
-  line.castShadow=false;
- }
- pagoda(g,-8,-5,1);
- torii(g,10,-7,.82);
- const pond=add(g,new THREE.CircleGeometry(4.5,28),new THREE.MeshStandardMaterial({color:0x6c9b9d,roughness:.21,metalness:.3,transparent:true,opacity:.94}),8,1.63,5,false);
- pond.rotation.x=-Math.PI/2;pond.scale.set(1.3,.8,1);
- for(let i=0;i<6;i++){
-  const pebble=sphere(g,range(.35,.7),material.stone,range(-6,10),1.63,range(0,10),0);
-  pebble.scale.y=.24;
- }
- for(let i=0;i<8;i++){
-  const a=i/8*Math.PI*2;
-  const rock=sphere(g,range(.55,.85),pick([material.stone,material.stoneDark]),Math.cos(a)*6,1.7,Math.sin(a)*5,0);
-  rock.scale.y=.34;
- }
- for(const [cx,cz,s] of [[-14,0,.88],[-13,9,1],[13,9,.84],[14,-4,.88],[-3,11,.96],[6,-11,.78],[11,-10,.73]])cherryTree(g,cx,cz,s);
- for(let i=0;i<4;i++)lantern(g,-4+i*2.6,11,.65);
- signPlane(g,"ASTER",4.5,1.1,2,4.1,-7.5,"#f2ecdb","#305448","the query garden");
- createGrass(g,16,14,28);
- mark(g,"station","aster");return g;
-}
-function mountainGroup(){
- const g=new THREE.Group();g.position.set(39,-1.6,-55);world.add(g);
- // Fuji is behind the islands, layered in the perspective rather than pasted onto the sky.
- sculptFuji(g);
- for(let i=0;i<11;i++){
-  const a=i/11*6.283;
-  const peak=add(g,new THREE.ConeGeometry(range(1.9,3.5),range(5,9),5),matte(pick([0x70949e,0x6c879b,0x829cb1])),Math.cos(a)*17,2,Math.sin(a)*12);
-  peak.rotation.y=range(0,6.28);
- }
- return g;
-}
-function observatory(){
- const x=30,z=-18,g=createIsland("kestrel",x,z,18,14,material.fujiGrass);
- createStonePath(g,[[-12,5],[-7,3],[-3,0],[3,-2],[10,-7]],1.15,material.stone);
- const hub=box(g,9,4,7.5,material.cream,1,3.55,-3);
- const roof=box(g,10,.5,8.6,material.roofGreen,1,5.8,-3);
- signPlane(g,"KESTREL",6,1.05,1,4.4,1.01,"#243d4c","#e6edf0","traces / replay");
- // An actual radial observing dish, aimed toward Fuji.
- const tower=cyl(g,.43,.68,9,material.stoneDark,-8,6.05,-6,8);
- const dish=new THREE.Group();dish.position.set(-8,11.1,-6);g.add(dish);
- const dishBody=add(dish,new THREE.CylinderGeometry(3,.4,1.1,18),material.rail,0,.2,0);
- dishBody.rotation.z=-.38;
- cyl(dish,.10,.10,3,material.roof,0,2,0,8);
- sphere(dish,.28,material.neonBlue,0,3.55,0,0);
- pulses.push({object:dish,kind:"sweep",speed:.13});
- // Signal traces: the legend is physical light hopping between nodes.
- const nodes=[[5,5],[-3,7],[12,3],[7,-10]];
- for(let i=0;i<nodes.length;i++){
-  const [nx,nz]=nodes[i],beacon=cyl(g,.14,.2,3.4,material.stoneDark,nx,3.3,nz);
-  const dot=sphere(g,.35,material.neonBlue,nx,5.35,nz,1);
-  pulses.push({object:dot,kind:"glimmer",phase:i*1.1});
- }
- torii(g,12,-7,.66);
- pagoda(g,-10,8,.62);
- for(const [tx,tz,s] of [[-14,0,.85],[-12,11,.84],[11,10,.88],[14,4,.75],[-5,-10,.72]])cherryTree(g,tx,tz,s);
- for(let i=0;i<8;i++){
-  const px=range(-14,14),pz=range(-10,10);
-  const pine=new THREE.Group();pine.position.set(px,1.55,pz);g.add(pine);
-  cyl(pine,.13,.18,2.7,material.bark,0,1.25,0,6);
-  for(let n=0;n<3;n++)add(pine,new THREE.ConeGeometry(1.35-n*.22,1.9,6),material.roofGreen,0,2.4+n*.72,0);
- }
- createGrass(g,18,14,35);
- mark(g,"station","kestrel");return g;
-}
-function campus(){
- const x=29,z=18,g=createIsland("studyhub",x,z,17,13,material.campusGrass);
- const main=new THREE.Group();main.position.set(0,1.55,-2);g.add(main);
- const front=box(main,15,5.8,6.2,matte(0xa65c55),0,3.05,0);
- for(const xx of [-5.2,-2.5,0,2.5,5.2]){
-  box(main,1.45,2.1,.12,material.deepBlue,xx,3.8,3.19);
-  box(main,1.65,.12,.19,material.cream,xx,2.7,3.31);
-  box(main,.1,2.1,.2,material.cream,xx,3.8,3.34);
- }
- box(main,16,.45,7.4,material.roofGreen,0,6.15,0);
- for(let i=0;i<5;i++)box(main,.22,6,.6,material.cream,-6.2+i*3.1,3.12,3.4);
- const clockTower=box(main,3.3,9.1,3.3,material.cream,0,9.5,-2.1);
- const clock=add(main,new THREE.CircleGeometry(.93,32),material.cream,0,10.7,-.40,false);
- const bezel=add(main,new THREE.TorusGeometry(.94,.065,8,32),material.gold,0,10.7,-.35,false);
- const handH=box(main,.09,.55,.09,material.deepBlue,0,10.90,-.29,false);handH.rotation.z=-.37;
- const handM=box(main,.07,.72,.09,material.deepBlue,.18,10.68,-.28,false);handM.rotation.z=.90;
- sphere(main,.11,material.gold,0,10.7,-.25,0);
- signPlane(main,"早稲田",5.8,1.1,0,5,3.55,"#8b4146","#f8e8d3","WASEDA / STUDY HUB");
- box(main,4.3,.28,4.4,material.roofGreen,0,14.15,-2.1);
- add(main,new THREE.ConeGeometry(2.7,2,4),material.roofGreen,0,15.1,-2.1).rotation.y=Math.PI/4;
- // A landscaped central path and study benches.
- createStonePath(g,[[0,10],[0,7],[0,3],[0,1]],2);
- const quad=add(g,new THREE.CircleGeometry(5,24),material.stone,0,1.57,8,false);quad.rotation.x=-Math.PI/2;
- for(const [px,pz,s] of [[-13,7,.98],[13,8,1],[-11,-7,.92],[12,-7,.94],[-7,11,.8],[7,11,.8]])cherryTree(g,px,pz,s);
- for(let i=0;i<4;i++)bench(g,-5+i*3.3,9.6,i%2?Math.PI:0);
- for(let i=0;i<4;i++)lantern(g,-8+i*5,6,.55);
- createGrass(g,17,13,37);
- mark(g,"station","studyhub");return g;
-}
 
 let railwayCurve,railLength,railCollision;
 function buildRailway(){
  // This is the shared LastRide express line. Even the distant bridges are clickable.
- const nodes=[
-  [-47,-7],[-42,-10],[-32,-8],[-25,4],[-21,15],[-12,22],
-  [0,22],[16,19],[28,16],[39,7],[38,-8],[31,-17],
-  [22,-23],[8,-25],[-5,-24],[-18,-19],[-31,-14],[-44,-8]
- ];
+ const nodes=routeNodes;
  railwayCurve=new THREE.CatmullRomCurve3(nodes.map(([x,z])=>V(x,3.65,z)),true,"catmullrom",.35);
  railLength=railwayCurve.getLength();
  const N=500;
@@ -482,13 +114,7 @@ function buildRailway(){
   dummy.rotation.set(0,Math.atan2(tan.x,tan.z),0);dummy.scale.setScalar(1);dummy.updateMatrix();sleepers.setMatrixAt(i,dummy.matrix);
  }
  sleepers.instanceMatrix.needsUpdate=true;
- for(let i=0;i<53;i++){
-  const t=i/53,p=railwayCurve.getPointAt(t),tan=railwayCurve.getTangentAt(t);
-  if(i%2===0){
-   const pillar=cyl(world,.26,.42,4.5,material.stoneDark,p.x,.85,p.z,8);
-   box(world,2.2,.4,1.5,material.stone,p.x,3.05,p.z).rotation.y=Math.atan2(tan.x,tan.z);
-  }
- }
+ buildViaduct(world,railwayCurve,railLength);
  // Deliberately contrasting cream shinkansen that remain animated even when the camera rests.
  function addTrain(start,accent){
   const cars=[];
@@ -497,7 +123,8 @@ function buildRailway(){
    const body=box(g,1.98,1.78,4.5,material.cream,0,1.02,0);
    box(g,2.05,.21,4.58,accent,0,1.89,0);
    for(const side of [-1,1]){
-    box(g,.09,.45,3.6,material.deepBlue,side*1.01,1.2,0,false);
+    box(g,.09,.72,4.22,accent,side*1.01,1.2,0,false);
+    box(g,.09,.08,4.4,material.gold,side*1.04,.83,0,false);
     for(let j=0;j<4;j++){
      const window=box(g,.13,.33,.61,material.warmWindow,side*1.04,1.2,-1.32+j*.88,false);
      window.castShadow=false;
@@ -507,17 +134,18 @@ function buildRailway(){
    for(const side of [-1,1])for(const z of [-1.52,1.52]){const wheel=add(g,new THREE.CylinderGeometry(.33,.33,.16,16),material.stoneDark,side*.82,.20,z,false);wheel.rotation.z=Math.PI/2;}
    box(g,1.35,.14,3.5,material.roof,0,1.99,0,false);
    if(k===0){
-    const nose=add(g,new THREE.ConeGeometry(.97,2.1,8),material.cream,0,1.0,2.8);nose.rotation.x=Math.PI/2;
-    box(g,1.18,.32,.18,material.lantern,0,1.12,3.5,false);
+    const nose=sphere(g,1,material.cream,0,.98,2.18,3);nose.scale.set(.99,.88,1.17);
+    const windshield=sphere(g,.65,material.deepBlue,0,1.31,2.88,2);windshield.scale.set(1.18,.47,.40);
+    for(const x of [-.55,.55]){const l=sphere(g,.15,material.lantern,x,.74,3.15,2);l.scale.set(1,.7,.65);}
    }
    cars.push(g);
   }
-  const train={cars,start,speed:accent===material.vermillion?.011:-.0095};
+  const train={cars,start,speed:start<.6?.011:-.0095};
   trains.push(train);
   positionTrain(train);
  }
- addTrain(.29,material.vermillion);
- addTrain(.74,material.roofGreen);
+ addTrain(.39,material.vermillion);
+ addTrain(.84,material.vermillion);
  // Architectural train platforms, placed along the route near the islands.
  for(const t of [.06,.23,.37,.55,.76]){
   const p=railwayCurve.getPointAt(t),dir=railwayCurve.getTangentAt(t),lateral=V(-dir.z,0,dir.x);
@@ -537,31 +165,6 @@ function positionTrain(train){
   car.position.copy(p);car.position.y+=.24;
   car.rotation.set(0,Math.atan2(tan.x*direction,tan.z*direction),0);
  });
-}
-function buildSkyObjects(){
- // The sky itself is a CSS gradient. The objects here cast real shadows and move through it.
- // Continuous daylight: no night sky stars.
- for(let i=0;i<7;i++){
-  const g=new THREE.Group();
-  const xx=range(-92,100),yy=range(24,46),zz=range(-95,-40);
-  g.position.set(xx,yy,zz);scene.add(g);
-  const cloudMat=new THREE.MeshBasicMaterial({color:pick([0xffffff,0xf7fbff,0xe9f7fc]),transparent:true,opacity:range(.44,.67),depthWrite:false});
-  for(let j=0;j<5;j++){
-   const puff=sphere(g,range(2.8,6.1),cloudMat,j*3.6-7,range(-1.0,1.1),range(-1.4,1.4),1);
-   puff.scale.y=.42;
-   puff.castShadow=false;puff.receiveShadow=false;
-  }
-  clouds.push({g,speed:range(.07,.20),direction:i%2?-1:1});
- }
- const gulls=new THREE.Group();gulls.position.set(45,19,-36);world.add(gulls);
- for(let j=0;j<6;j++){
-  const bird=new THREE.Group();bird.position.set((j-2)*3,range(-1,4),range(-3,3));gulls.add(bird);
-  for(const side of [-1,1]){
-   const wing=box(bird,1.1,.06,.09,material.deepBlue,side*.54,0,0,false);
-   wing.rotation.z=side*.22;
-  }
- }
- pulses.push({object:gulls,kind:"birds",phase:0});
 }
 function buildPetals(){
  const count=window.innerWidth<650?185:350;
@@ -587,42 +190,22 @@ function buildPetals(){
  }
  fmesh.instanceMatrix.needsUpdate=true;staticMeshes.fireflies=fmesh;
 }
-function buildWater(){
- const geo=new THREE.PlaneGeometry(360,270,1,1);
- // A soft sea edge avoids a rectangular horizon when orbiting or riding the train.
- const fade=document.createElement("canvas");fade.width=fade.height=64;
- const ctx=fade.getContext("2d"),gradient=ctx.createRadialGradient(32,32,10,32,32,32);
- gradient.addColorStop(0,"white");gradient.addColorStop(1,"black");
- ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);
- const mat=new THREE.MeshBasicMaterial({color:0x65a9bf,transparent:true,opacity:.13,alphaMap:new THREE.CanvasTexture(fade),depthWrite:false});
- const plane=add(world,geo,mat,0,-2.85,0,false);plane.rotation.x=-Math.PI/2;
- for(const p of [[-35,-3,16,13],[-19,18,15,12],[0,-19,17,14],[30,-18,18,14],[29,18,17,13]]){
-  for(let k=0;k<2;k++){
-   const shape=add(world,new THREE.RingGeometry(p[2]+1.8+k*1.05,p[2]+1.89+k*1.05,48),new THREE.MeshBasicMaterial({color:0xaad8d8,transparent:true,opacity:.13,side:THREE.DoubleSide,depthWrite:false}),p[0],-2.57,p[1],false);
-   shape.rotation.x=-Math.PI/2;shape.scale.y=p[3]/p[2];
-   waterRipples.push({o:shape,phase:k*2});
-  }
- }
-}
 function buildWorld(){
  scene=new THREE.Scene();
  camera=new THREE.PerspectiveCamera(43,1,.15,550);
  world=new THREE.Group();scene.add(world);
- scene.add(new THREE.HemisphereLight(0xf8fdff,0x80aa9a,1.85));
- scene.add(new THREE.AmbientLight(0xc4e8f4,.68));
- const sun=new THREE.DirectionalLight(0xfff3dd,2.65);sun.position.set(65,93,45);sun.castShadow=true;
- sun.shadow.mapSize.set(2048,2048);
- sun.shadow.camera.left=-115;sun.shadow.camera.right=115;sun.shadow.camera.top=115;sun.shadow.camera.bottom=-115;
- sun.shadow.camera.near=2;sun.shadow.camera.far=240;sun.shadow.normalBias=.03;sun.shadow.bias=-.00015;
+ scene.add(new THREE.HemisphereLight(0xfff3df,0x486b82,1.17));
+ scene.add(new THREE.AmbientLight(0xbcdfff,.22));
+ const sun=new THREE.DirectionalLight(0xffdfac,3.0);sun.position.set(55,60,16);sun.castShadow=true;
+ sun.shadow.mapSize.set(window.innerWidth<760?1024:2048,window.innerWidth<760?1024:2048);
+ sun.shadow.camera.left=-82;sun.shadow.camera.right=82;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;
+ sun.shadow.camera.near=2;sun.shadow.camera.far=210;sun.shadow.normalBias=.08;sun.shadow.bias=-.0003;sun.shadow.radius=3;
  scene.add(sun);
- const cityLight=new THREE.PointLight(0x83bde9,12,78,1.7);cityLight.position.set(-35,25,-8);scene.add(cityLight);
- const warm=new THREE.PointLight(0xffe1b6,12,55,1.7);warm.position.set(15,23,20);scene.add(warm);
- buildWater();
- mountainGroup();
- // The districts share visual rules but are not repeats of the same building.
- nightCity();workshop();zenGarden();observatory();campus();
- buildRailway();buildSkyObjects();buildPetals();
- scene.fog=new THREE.FogExp2(0xb6dfe9,.0013);
+ const fill=new THREE.DirectionalLight(0xc0dfff,1.1);fill.position.set(-45,24,-45);scene.add(fill);
+ buildScenery({world,mark,swayers,pulses});
+ buildRailway();addClouds(scene,clouds);buildPetals();
+ waWater=buildWaterSurface(world,scene,renderer,camera);
+ scene.fog=new THREE.FogExp2(0xa7cbe2,.0022);
 }
 
 let toastTimeout=null,frameCount=0,lastFrame=0,lastHover=0;
@@ -825,9 +408,9 @@ function resize(){
  const mobile=window.innerWidth<760;
  // Compose the world beside the introduction on desktop and below it on mobile.
  // Render the sky and petals edge to edge; an optical shift avoids a clipped canvas.
- const stage={left:mobile?0:window.innerWidth<=1100?245:270,top:mobile?278:100,
-  width:mobile?viewport.width:viewport.width-(window.innerWidth<=1100?255:285),
-  height:viewport.height-(mobile?466:280)};
+ const stage={left:mobile?0:window.innerWidth<=1100?245:270,top:mobile?278:61,
+  width:mobile?viewport.width:viewport.width-(window.innerWidth<=1100?250:255),
+  height:viewport.height-(mobile?466:205)};
  if(animated.focused&&!mobile){
   stage.left=30;stage.top=100;stage.width=viewport.width-430;
  }else if(animated.ride){
@@ -955,11 +538,11 @@ function updateMarkers(){
  // No independent CSS animation or route approximation can drift away from the train.
  trains.forEach((train,i)=>{
   const roof=train.cars[0].localToWorld(V(0,2.1,0));
-  placeLabel(trainLabels[i],projectAnchor(roof),occupied,[17,39,61]);
+  placeLabel(trainLabels[i],projectAnchor(roof),occupied,[9,25,45]);
  });
  for(const marker of markerButtons){
   const d=stationData[marker.dataset.station];
-  placeLabel(marker,projectAnchor(V(d.pos[0],9.8,d.pos[2])),occupied,[16,38,60,82],true);
+  placeLabel(marker,projectAnchor(V(...anchors[marker.dataset.station])),occupied,[9,25,43,62,82],true);
  }
 }
 
@@ -967,7 +550,7 @@ function startWorld(){
  try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:"high-performance",preserveDrawingBuffer:false});
   renderer.outputColorSpace=THREE.SRGBColorSpace;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
   renderer.setClearColor(0x000000,0);
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,window.innerWidth<760?1.5:2));
@@ -977,7 +560,7 @@ function startWorld(){
   resetOverview({animate:false});
   animated.overview=false;
   // About 12% closer on the initial landing; all other camera presets remain unchanged.
-  look.targetPitch=.80;look.pitch=.80;look.targetDistance=window.innerWidth<760?98:90;look.distance=look.targetDistance;look.targetYaw=.14;look.yaw=.14;
+  look.target.set(2,3,-3);look.center.copy(look.target);look.targetPitch=.60;look.pitch=.60;look.targetDistance=window.innerWidth<760?110:96;look.distance=look.targetDistance;look.targetYaw=.035;look.yaw=.035;
   $("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";
   window.addEventListener("resize",resize,{passive:true});
   window.addEventListener("visibilitychange",()=>{lastFrame=performance.now()});
@@ -992,6 +575,7 @@ function startWorld(){
    lastFrame=time;
    if(document.hidden)return;
    animateWorld(dt,time);
+   waWater?.update(animated.clock,animated.lite);
    renderer.render(scene,camera);
    updateMarkers();
    frameCount++;
