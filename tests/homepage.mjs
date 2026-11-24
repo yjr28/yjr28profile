@@ -73,7 +73,10 @@ try {
   await page.route('**/japan-world.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text())+instrumentation});});
   await ready(page);
   assert.equal(await page.locator('h1').count(),1);
-  assert.equal(await page.locator('h1').innerText(),'YoungJun Ryu — Engineering projects on the Japan Line');
+  assert.match(await page.locator('h1').innerText(),/^The Japan Line/);
+  assert.equal(await page.locator('.global-nav .brand').count(),0);
+  assert.equal(await page.locator('#begin-exploring').count(),0);
+  assert.ok(await page.locator('.world-intro').evaluate(el=>el.getBoundingClientRect().top>innerHeight*.65),'Intro is a compact bottom caption');
   assert.equal(await page.locator('nav.station-line').count(),0);
   assert.equal(await page.locator('.world-marker .pixel-click-hand').count(),5);
   assert.equal(await page.locator('.train-label .pixel-click-hand').count(),2);
@@ -143,14 +146,14 @@ try {
    record(name+' '+id+' destination');
    await ready(page);
   }
-  await page.locator('#begin-exploring').click();assert.equal(await page.locator('#info-title').innerText(),'NorthStar');
+  await page.keyboard.press('1');assert.equal(await page.locator('#info-title').innerText(),'NorthStar');
   await page.keyboard.press('Escape');assert.equal(await page.locator('#project-info').evaluate(el=>el.inert),true);
   await page.keyboard.press('3');assert.equal(await page.locator('#info-title').innerText(),'Aster');
   await page.keyboard.press('Escape');assert.equal(await page.locator('#project-info').evaluate(el=>el.inert),true);
   await page.locator('.archive-link').focus();await page.keyboard.press('Enter');await page.waitForURL('**/projects.html');await ready(page);
   await page.locator('.about-toggle').click();assert.equal(await page.locator('#about-panel').evaluate(el=>el.inert),false);
   await page.keyboard.press('Escape');assert.equal(await page.locator('#about-panel').evaluate(el=>el.inert),true);
-  record(name+' keyboard, intro CTA, panel focus and dismissal');
+  record(name+' keyboard, panel focus and dismissal');
   await page.locator('#ride-toggle').click();await page.waitForTimeout(900);
   const ride1=await page.evaluate(()=>window.__japanTest.snapshot());await page.waitForTimeout(400);const ride2=await page.evaluate(()=>window.__japanTest.snapshot());
   assert.equal(ride1.ride,true);assert.notDeepEqual(ride1.camera,ride2.camera);

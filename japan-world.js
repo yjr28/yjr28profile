@@ -272,7 +272,7 @@ function focusStation(id){
  // Details and links are available before the camera settles.
 }
 function toggleMap(){
- if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";look.targetPitch=.83;look.targetDistance=window.innerWidth<760?110:102;return}
+ if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";look.target.set(1,5,-1);look.targetYaw=.035;look.targetPitch=.60;look.targetDistance=128;return}
  resetOverview();
 }
 function bindUI(){
@@ -284,7 +284,6 @@ function bindUI(){
  });
  // Project signs are native links. Clicking a 3D landmark or using 1–5 still opens its camera/detail view.
  $("info-close").addEventListener("click",closeInfo);
- $("begin-exploring").addEventListener("click",()=>focusStation("northstar"));
  $("overview-toggle").addEventListener("click",toggleMap);
  document.querySelectorAll("[data-about]").forEach(b=>b.addEventListener("click",()=>{
   const panel=$("about-panel");
@@ -406,11 +405,12 @@ function resize(){
  if(!renderer)return;
  renderer.setSize(viewport.width,viewport.height,false);
  const mobile=window.innerWidth<760;
- // Compose the world beside the introduction on desktop and below it on mobile.
- // Render the sky and petals edge to edge; an optical shift avoids a clipped canvas.
- const stage={left:mobile?0:window.innerWidth<=1100?245:270,top:mobile?278:61,
-  width:mobile?viewport.width:viewport.width-(window.innerWidth<=1100?250:255),
-  height:viewport.height-(mobile?350:125)};
+ // The diorama is the hero: equal side margins and a small reserved footer.
+ // Keep the sky, water and particles full bleed; no desktop sidebar offset.
+ const margin=mobile?8:Math.max(24,viewport.width*.035);
+ const stage={left:margin,top:mobile?70:76,
+  width:Math.max(1,viewport.width-2*margin),
+  height:Math.max(1,viewport.height-(mobile?195:174))};
  if(animated.focused&&!mobile){
   stage.left=30;stage.top=100;stage.width=viewport.width-430;
  }else if(animated.ride){
@@ -559,8 +559,8 @@ function startWorld(){
   resize();bindUI();
   resetOverview({animate:false});
   animated.overview=false;
-  // About 12% closer on the initial landing; all other camera presets remain unchanged.
-  look.target.set(2,3,-3);look.center.copy(look.target);look.targetPitch=.60;look.pitch=.60;look.targetDistance=window.innerWidth<760?110:96;look.distance=look.targetDistance;look.targetYaw=.035;look.yaw=.035;
+  // Center the complete diorama, including Fuji and the outer rail curve.
+  look.target.set(1,5,-1);look.center.copy(look.target);look.targetPitch=.60;look.pitch=.60;look.targetDistance=window.innerWidth<760?128:128;look.distance=look.targetDistance;look.targetYaw=.035;look.yaw=.035;
   $("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";
   window.addEventListener("resize",resize,{passive:true});
   window.addEventListener("visibilitychange",()=>{lastFrame=performance.now()});

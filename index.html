@@ -28,10 +28,6 @@
   <canvas id="world-canvas" aria-label="Interactive 3D model of Japan with project districts, cherry blossoms and moving trains. Drag to explore; use the floating project links or the Projects archive to navigate without using the canvas."></canvas>
 
   <header class="global-nav">
-    <a class="brand" href="./" aria-label="YoungJun Ryu home">
-      <span class="brand-seal">柳</span>
-      <span class="brand-name"><strong>YoungJun Ryu</strong><small>柳栄俊 / software engineer</small></span>
-    </a>
     <nav class="nav-actions" aria-label="Portfolio navigation">
       <button id="overview-toggle" class="nav-map" type="button" aria-pressed="false"><span class="nav-compass" aria-hidden="true">⌖</span><span id="overview-label">Map view</span></button>
       <button id="ride-toggle" class="nav-ride" type="button" aria-pressed="false">Ride the line</button>
@@ -42,16 +38,14 @@
   </header>
 
   <section class="world-intro" aria-labelledby="site-title">
-    <p class="intro-route"><span class="route-kanji" lang="ja">日本縦断</span><span>The Japan Line</span></p>
-    <h1 id="site-title" class="visually-hidden">YoungJun Ryu — Engineering projects on the Japan Line</h1>
-    <p><span class="intro-greeting">I'm YoungJun.</span> I build backend systems, infrastructure and products. Click a station sign or follow the tracks.</p>
-    <button class="intro-explore" id="begin-exploring" type="button">Visit the first stop <span aria-hidden="true">↘</span></button>
+    <h1 id="site-title">The Japan Line <span lang="ja">日本縦断</span></h1>
+    <p>Six projects spanning distributed systems, databases and software products.</p>
   </section>
 
 
   <div class="world-control-hint" id="control-hint">
     <span class="hint-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9.5v5.6a6 6 0 0 0 12 0v-5.6a6 6 0 0 0-12 0Zm6 0v3.7m0-9v3m0 10v3M2 12h2m16 0h2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    <span><strong>Make yourself at home.</strong><small>Drag to orbit, scroll to zoom, tap a destination</small></span>
+    <span><small>Drag to rotate · Scroll to zoom · Select a sign</small></span>
     <button class="hint-dismiss" id="dismiss-hint" aria-label="Dismiss controls hint" type="button">×</button>
   </div>
 
@@ -82,7 +76,7 @@
     <div class="about-top"><span lang="ja">旅の途中</span><button class="about-close" type="button" data-about aria-label="Close about panel">×</button></div>
     <p class="about-index">A little about the builder</p>
     <h2 id="about-title">YoungJun<br>Ryu.</h2>
-    <p>I'm a computer science student at Waseda University, currently on exchange at Georgia Tech. I build software where performance, reliability and product decisions can be tested.</p>
+    <p>I study computer science and communications engineering at Waseda University and am currently on exchange at Georgia Tech. My work spans distributed systems, backend infrastructure, databases and software products.</p>
     <div class="about-links">
       <a href="resume.html">View résumé <span aria-hidden="true">↗</span></a>
       <a href="experience.html">Experience <span aria-hidden="true">↗</span></a>
