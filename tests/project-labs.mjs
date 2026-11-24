@@ -36,7 +36,7 @@ try{
   await frame.locator("#app").locator("button").first().waitFor({timeout:30000});
   await screenshot(page,"aster-explorer-desktop");
   const plan=[{Plan:{"Node Type":"Aggregate","Total Cost":12.51,"Plan Rows":1,Plans:[{"Node Type":"Seq Scan","Total Cost":10,"Plan Rows":1000}]}}];
-  await frame.locator("#plan").fill(JSON.stringify(plan));await frame.locator("#candidate").selectOption("0");await frame.locator("#import").click();
+  await frame.locator(".editor summary").click();await frame.locator("#plan").fill(JSON.stringify(plan));await frame.locator("#candidate").selectOption("0");await frame.locator("#import").click();
   await page.locator("#rankerPane").waitFor({state:"visible"});
   assert.equal(await page.locator("#candidateTable [data-key=postgres_cost]").first().inputValue(),"12.51");
   assert.equal(await page.locator("#candidateTable [data-key=seq_scans]").first().inputValue(),"1");
@@ -66,7 +66,7 @@ try{
   await page.setViewportSize({width:390,height:844});await noOverflow(page);await screenshot(page,"axon-mobile");
  });
  await test("studyhub",async page=>{
-  await visit(page,"studyhub");assert.ok(await page.locator('a[href="https://waseda-study-hub.vercel.app/"]').count()>=2);
+  await page.goto(base+"/projects/studyhub/case-study.html",{waitUntil:"domcontentloaded"});assert.ok(await page.locator('a[href="https://waseda-study-hub.vercel.app/"]').count()>=2);
   assert.ok(await page.locator('a[href="https://github.com/Waseda-Study-Hub/frontend"]').count());
   assert.ok(await page.locator('a[href="https://github.com/Waseda-Study-Hub/backend"]').count());
   await noOverflow(page);await screenshot(page,"studyhub-desktop");

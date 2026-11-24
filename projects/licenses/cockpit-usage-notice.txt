@@ -1,0 +1,2 @@
+Usage layout adapted from Cockpit pkg/systemd/overview-cards/usageCard.jsx. Copyright (C) 2019 Red Hat, Inc. SPDX-License-Identifier: LGPL-2.1-or-later. Source: https://github.com/cockpit-project/cockpit/blob/main/pkg/systemd/overview-cards/usageCard.jsx
+NorthStar uses simulated metrics; adaptation source: projects/northstar/index.html, lab.js, cockpit.css.

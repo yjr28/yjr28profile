@@ -72,6 +72,7 @@ function renderHost(){
   document.getElementById("selectedHostMeta").textContent=h.os+" · "+h.arch+" · agent "+h.agent+" · "+h.region;
   document.getElementById("cpuMetric").textContent=h.cpu.toFixed(0)+"%";
   document.getElementById("memMetric").textContent=h.mem.toFixed(0)+"%";
+  for(const [id,value] of [["cpuMetric",h.cpu],["memMetric",h.mem]]){const p=document.getElementById(id+"Progress");p.setAttribute("aria-valuenow",String(Math.round(value)));p.querySelector(".pf-v5-c-progress__indicator").style.width=value+"%";p.closest(".pf-v5-c-progress").classList.toggle("pf-m-danger",value>90)}
   document.getElementById("loadMetric").textContent=h.load.toFixed(2);
   document.getElementById("statusMetric").textContent=hostOnline(h)?"ONLINE":"OFFLINE";
   document.getElementById("statusMetric").className=hostOnline(h)?"ok":"bad";

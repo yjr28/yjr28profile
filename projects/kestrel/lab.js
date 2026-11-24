@@ -94,6 +94,8 @@ function renderTrace() {
   currentEvents = events;
   updateLegend(events);
   $("exportTrace").disabled=!events.length;
+  $("exportOTLP").disabled=!events.some(e=>e.kind==="span");
+  window.kestrelJaegerEvents=()=>({kind:activeTrace,events:currentEvents});
   const spanMap=new Map(events.filter(e=>e.kind==="span"&&e.span_id).map(e=>[e.span_id,e]));
   const suffix = activeTrace === "healthy" ? "Baseline" : activeTrace === "failing" ? "Injected run" : "Replay";
   $("timelineScale").textContent = suffix + " · " + end.toFixed(1) + " ms";

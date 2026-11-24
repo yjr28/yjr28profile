@@ -13,21 +13,9 @@
 <link rel="stylesheet" href="./explorer.css">
 </head>
 <body class="pl-body pl-aster">
-<header class="pl-global">
-  <a class="pl-mark" href="../../" aria-label="YJ — return to YoungJun Ryu's portfolio">YJ</a>
-  <div class="pl-crumb"><a href="../../#work">Projects</a><span>/</span><strong>Aster</strong></div>
-  <nav aria-label="Project links"><a href="https://github.com/yjr28/aster-pg-optimizer" target="_blank" rel="noreferrer">GitHub repository ↗</a></nav>
-</header>
+<header class="pl-global aster-native-header"><a href="../../" aria-label="Back to portfolio">←</a><strong>Aster</strong><nav><a href="https://github.com/yjr28/aster-pg-optimizer">Source ↗</a></nav></header>
 <main class="pl-root">
-  <header class="pl-heading">
-    <div class="pl-heading-copy">
-      <h1>Aster <span class="pl-heading-suffix">/ plan analysis</span></h1>
-      <p>Explore a PostgreSQL EXPLAIN plan with Dalibo PEV2, then compare candidate estimates using the actual Python ranker and its uncertainty gate.</p>
-    </div>
-    <div class="pl-runtime" id="runtimeChip" role="status" aria-live="polite">
-      <span class="pl-led"></span><span id="runtimeText">Loading Python…</span>
-    </div>
-  </header>
+  <div class="pl-runtime" id="runtimeChip" role="status"><span class="pl-led"></span><span id="runtimeText">Loading Python…</span></div>
 
   <nav class="aster-workspaces" aria-label="Aster workspace"><button type="button" id="showExplorer" aria-pressed="true">Plan explorer</button><button type="button" id="showRanker" aria-pressed="false">Candidate ranking</button><a href="https://github.com/dalibo/pev2" target="_blank" rel="noopener noreferrer">Powered by Dalibo PEV2 ↗</a></nav>
 <section id="explorerPane" aria-label="PostgreSQL execution plan visualizer">

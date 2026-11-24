@@ -35,3 +35,6 @@ Use one actual reference screen per workflow. Keep its component geometry, spaci
 - Study Hub: use the official deployed product and its own frontend components, not a lookalike student dashboard. Keep public source/case-study links and the existing authentication boundary.
 
 Acceptance: capture side-by-side browser screenshots of each chosen reference and the implementation, and check actual interactions. A design is not accepted merely because static checks pass.
+
+## Direct-screen pass
+Aster uses the actual PEV2 component full-screen; ranking is a separate workspace. AXON has separate Brilliant-style selection, Human Benchmark-style focus and Aimlabs-style results screens, using only measured results. NorthStar adopts Cockpit's Usage render structure with PatternFly progress bars and retains its simulated backend. Kestrel exports recorded spans in OTLP JSON for Jaeger file upload; full upstream frontend is not yet embedded. Study Hub now opens the real product and retains its case study separately. These changes are not verified pixel-identical ports. Homepage files unchanged.

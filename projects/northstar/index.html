@@ -58,13 +58,8 @@
           <h2 id="selectedHostName">edge-atl-01</h2>
           <p id="selectedHostMeta">linux · amd64 · agent 0.3.0</p>
         </div>
-        <div class="ns-metric-grid">
-          <div><span>CPU</span><strong id="cpuMetric">—</strong></div>
-          <div><span>Memory</span><strong id="memMetric">—</strong></div>
-          <div><span>Load (1m)</span><strong id="loadMetric">—</strong></div>
-          <div><span>State</span><strong id="statusMetric">—</strong></div>
-        </div>
-        <div class="ns-chart-block">
+        <section class="pf-v5-c-card system-usage"><div class="pf-v5-c-card__title">Usage</div><div class="pf-v5-c-card__body"><table class="pf-v5-c-table pf-m-grid-md pf-m-compact"><tbody><tr><th scope="row" id="cpuMetricLabel">CPU</th><td><div class="pf-v5-c-progress pf-m-sm"><div class="pf-v5-c-progress__status"><span class="pf-v5-c-progress__measure" id="cpuMetric">—</span></div><div class="pf-v5-c-progress__bar" role="progressbar" aria-labelledby="cpuMetricLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="cpuMetricProgress"><div class="pf-v5-c-progress__indicator" style="width:0%"></div></div></div></td></tr><tr><th scope="row" id="memMetricLabel">Memory</th><td><div class="pf-v5-c-progress pf-m-sm"><div class="pf-v5-c-progress__status"><span class="pf-v5-c-progress__measure" id="memMetric">—</span></div><div class="pf-v5-c-progress__bar" role="progressbar" aria-labelledby="memMetricLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="memMetricProgress"><div class="pf-v5-c-progress__indicator" style="width:0%"></div></div></div></td></tr></tbody></table></div><div class="pf-v5-c-card__footer"><a href="#cpu-history" class="pf-v5-c-button pf-m-link pf-m-inline">View metrics and history</a></div></section><dl class="host-facts"><div><dt>Load (1m)</dt><dd id="loadMetric">—</dd></div><div><dt>State</dt><dd id="statusMetric">—</dd></div></dl>
+        <div id="cpu-history" class="ns-chart-block">
           <div><h3>CPU history</h3><span>Simulated · 1.5s samples</span></div>
           <svg class="ns-chart" viewBox="0 0 700 120" preserveAspectRatio="none" role="img" aria-label="Simulated CPU percent over recent samples">
             <path class="area" id="cpuArea" d=""></path>
@@ -106,6 +101,6 @@
   </section>
 </main>
 </div>
-<footer class="ns-attribution">Interface components: <a href="https://www.patternfly.org/">PatternFly</a> · <a href="../licenses/patternfly.txt">MIT license</a>. NorthStar is an independent project.</footer>
+<footer class="ns-attribution">Usage layout adapted from <a href="https://github.com/cockpit-project/cockpit/blob/main/pkg/systemd/overview-cards/usageCard.jsx">Cockpit</a> (<a href="../licenses/cockpit-lgpl.txt">LGPL-2.1-or-later</a>); interface components: <a href="https://www.patternfly.org/">PatternFly</a> · <a href="../licenses/patternfly.txt">MIT license</a>. NorthStar is an independent project.</footer>
 </body>
 </html>
