@@ -43,15 +43,9 @@ function renderFleet(){
     ?hosts.length+" hosts":visible.length+" of "+hosts.length+" hosts";
   hostList.innerHTML=visible.length?visible.map(h=>{
     const online=hostOnline(h),active=h.id===selectedHostId;
-    return '<button type="button" class="ns-host'+(active?' active':'')+(online?'':' offline')+'"'
-      +' data-host="'+esc(h.id)+'" aria-pressed="'+active+'">'
-      +'<span class="ns-host-main"><b>'+esc(h.name)+'</b><small>linux · '+esc(h.arch)+' · agent '+esc(h.agent)+'</small></span>'
-      +'<span class="ns-host-region">'+esc(h.region)+'</span>'
-      +'<span class="ns-host-value">'+h.cpu.toFixed(0)+'%</span>'
-      +'<span class="ns-host-value">'+h.mem.toFixed(0)+'%</span>'
-      +'<span class="ns-host-state"><i class="ns-status-dot"></i>'+(online?'Online':'Offline')+'</span>'
-      +'</button>';
-  }).join(""):'<div class="pl-empty">No hosts match these filters.</div>';
+    return '<tr class="'+(active?'ns-selected':'')+'"><th scope="row"><button type="button" class="pf-v5-c-button pf-m-link ns-host-link" data-host="'+esc(h.id)+'" aria-pressed="'+active+'">'+esc(h.name)+'</button><small class="ns-host-meta">Linux · '+esc(h.arch)+' · '+esc(h.agent)+'</small></th>'
+      +'<td>'+esc(h.region)+'</td><td>'+h.cpu.toFixed(0)+'%</td><td>'+h.mem.toFixed(0)+'%</td><td><span class="pf-v5-c-label '+(online?'pf-m-green':'pf-m-red')+'"><span class="pf-v5-c-label__content">'+(online?'Online':'Offline')+'</span></span></td></tr>';
+  }).join(""):'<tr><td colspan="5">No hosts match these filters.</td></tr>';
   hostList.querySelectorAll("[data-host]").forEach(btn=>btn.addEventListener("click",()=>{
     selectedHostId=btn.dataset.host;renderAll();
   }));
