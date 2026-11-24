@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Kestrel: inspect a distributed Go request trace, inject latency, compare execution paths and replay recorded faults in WebAssembly.">
+<title>Kestrel — Trace investigation</title>
+<link rel="stylesheet" href="../demo.css">
+<link rel="stylesheet" href="../product-labs.css">
+<link rel="stylesheet" href="./jaeger-span-bar.css">
+<link rel="stylesheet" href="./jaeger-span-row.css">
+<link rel="stylesheet" href="./trace-workspace.css">
+<script src="./wasm_exec.js"></script>
+<script src="./lab.js" defer></script><script src="./jaeger-export.js" defer></script>
+</head>
+<body class="pl-body pl-kestrel">
+<header class="pl-global">
+  <a class="k-brand" href="../../" aria-label="Return to portfolio"><span aria-hidden="true">⌁</span> Kestrel</a>
+  <div class="pl-crumb"><a href="../../#work">Projects</a><span>/</span><strong>Kestrel</strong></div>
+  <nav aria-label="Project links"><a href="https://github.com/yjr28/kestrel-replay" target="_blank" rel="noreferrer">GitHub repository ↗</a></nav>
+</header>
+<main class="pl-root">
+  <header class="pl-heading">
+    <div class="pl-heading-copy">
+      <h1>Trace investigation <span class="pl-heading-suffix">/ create_order</span></h1>
+      <p>Find where a distributed request breaks. Inject a delay at <code>inventory/check</code>, compare the traces, and verify that replay reproduces the failure.</p>
+    </div>
+    <div class="pl-runtime" id="runtimeChip" role="status" aria-live="polite">
+      <span class="pl-led"></span>
+      <span id="runtimeText">Loading Go runtime…</span>
+    </div>
+  </header>
+
+  <section class="pl-window" aria-label="Kestrel trace investigation demo">
+    <div class="pl-window-head">
+      <div class="pl-window-path"><span>Trace Explorer</span><span>/</span><strong>create_order</strong></div>
+      <div class="k-window-actions"><span class="pl-window-note">Go fault &amp; replay core · WebAssembly</span><button type="button" class="pl-secondary" id="exportTrace" disabled>Export events JSON</button><button type="button" class="pl-secondary" id="exportOTLP" disabled>Export for Jaeger</button><button type="button" class="pl-secondary" id="nativeJaeger" disabled>Inspect in Jaeger ↗</button></div>
+    </div>
+
+    <div class="k-control-bar">
+      <fieldset class="k-presets">
+        <legend>Try a scenario</legend>
+        <button type="button" class="k-preset" data-delay="15" data-jitter="0">Healthy</button>
+        <button type="button" class="k-preset active" data-delay="75" data-jitter="0">Timeout</button>
+        <button type="button" class="k-preset" data-delay="75" data-jitter="30">Jitter</button>
+        <button type="button" class="k-preset" data-delay="120" data-jitter="0">120 ms</button>
+      </fieldset>
+      <div class="k-fault-values">
+        <label for="delayRange">Injected latency <output id="delayValue" for="delayRange">75 ms</output></label>
+        <input type="range" id="delayRange" min="5" max="120" step="5" value="75">
+      </div>
+      <div class="k-fault-values">
+        <label for="jitterRange">Jitter <output id="jitterValue" for="jitterRange">0%</output></label>
+        <input type="range" id="jitterRange" min="0" max="50" step="5" value="0">
+      </div>
+      <details class="k-seed-details"><summary>Seed</summary><label for="seedInput">Deterministic seed</label><input id="seedInput" inputmode="numeric" value="20260903"></details>
+      <button class="pl-primary k-run" id="runButton" disabled>Loading…</button>
+    </div>
+
+    <div class="k-result-strip" aria-label="Latest run summary">
+      <div><span>Request result</span><strong id="outcomeValue">—</strong></div>
+      <div><span>First divergence</span><strong id="divergenceValue">—</strong></div>
+      <div><span>Recorded events</span><strong id="eventValue">—</strong></div>
+      <div><span>Replay check</span><strong id="replayValue">—</strong></div>
+    </div>
+
+    <div class="k-trace-toolbar">
+      <div>
+        <h2>Trace waterfall</h2>
+        <p id="phaseText" aria-live="polite">The first request runs when WebAssembly is ready.</p>
+      </div>
+      <div class="k-trace-actions">
+        <div class="k-view-tabs" role="group" aria-label="Select trace">
+          <button class="k-view" type="button" data-trace="healthy">Baseline</button>
+          <button class="k-view active" type="button" data-trace="failing">With fault</button>
+          <button class="k-view" type="button" data-trace="replayed">Replay</button>
+        </div>
+        <label class="pl-search" for="traceSearch"><span class="sr-only">Search events</span><input id="traceSearch" placeholder="Find a service…" type="search" autocomplete="off"></label>
+        <label class="pl-checkbox"><input type="checkbox" id="errorsOnly"> Anomalies only</label>
+      </div>
+    </div>
+
+    <div class="k-service-legend" id="serviceLegend" aria-label="Service color legend"></div>
+    <div class="k-trace-grid">
+      <section class="k-trace-panel" aria-label="Trace event waterfall">
+        <p class="pl-table-hint">Swipe to inspect the full trace timeline →</p>
+        <div class="k-timeline-head"><span>Service / operation</span><span id="timelineScale">Elapsed time (ms)</span><span>Duration</span></div>
+        <div class="k-timeline-rows" id="traceRows">
+          <div class="k-loading"><h3>Initializing the Go replay engine</h3><p>Fetching and verifying the WebAssembly binary. The trace will populate when the runtime is ready.</p><p><a href="https://github.com/yjr28/kestrel-replay">Inspect the real Go implementation ↗</a></p></div>
+        </div>
+        <div class="k-time-footer" id="timeAxis">Timing is relative to the first event in the selected trace.</div>
+      </section>
+      <aside class="k-inspector" aria-label="Selected event details">
+        <div class="k-inspector-head"><div><span class="pl-overline">EVENT INSPECTOR</span><h2 id="eventTitle">Select an event</h2></div><span id="eventBadge" class="pl-small-status">—</span></div>
+        <div id="eventSummary" class="k-inspector-summary">Choose a row in the waterfall to examine its attributes, IDs, status and duration.</div>
+        <details class="k-raw" open><summary>Raw event data</summary><pre id="eventJSON" tabindex="0" aria-label="Raw trace event JSON">No event selected.</pre></details>
+      </aside>
+    </div>
+    <div class="pl-footnote">
+      <span>Recorded timestamps and spans come from the repository's Go code. The browser adapter substitutes for local TCP sockets.</span>
+      <a href="https://github.com/yjr28/kestrel-replay/blob/main/internal/replay/replay.go" target="_blank" rel="noreferrer">Read the replay implementation ↗</a>
+    </div>
+  </section>
+<footer class="k-credit">Trace bar and span-row styles from <a href="https://github.com/jaegertracing/jaeger-ui/blob/2aed7b530aed5ed5e494c56974ad09a73d0b7782/packages/jaeger-ui/src/components/TracePage/TraceTimelineViewer/SpanBar.css">Jaeger UI</a> · <a href="../licenses/jaeger.txt">Apache-2.0</a>. Kestrel uses its own Go event adapter, controls and replay semantics.</footer>
+</main>
+</body>
+</html>

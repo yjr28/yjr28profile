@@ -31,7 +31,7 @@ try{
   await page.setViewportSize({width:390,height:844});await noOverflow(page);await screenshot(page,"northstar-mobile");
  });
  await test("aster",async page=>{
-  await visit(page,"aster");const frame=page.frameLocator("#pevFrame");
+  await page.goto(base+"/projects/aster/ranker.html");const frame=page.frameLocator("#pevFrame");
   await frame.locator("#status").filter({hasText:"Plan loaded for visualization"}).waitFor({timeout:90000});
   await frame.locator("#app").locator("button").first().waitFor({timeout:30000});
   await screenshot(page,"aster-explorer-desktop");
@@ -46,7 +46,7 @@ try{
   await page.setViewportSize({width:390,height:844});await noOverflow(page);await screenshot(page,"aster-ranker-mobile");
  });
  await test("kestrel",async page=>{
-  await visit(page,"kestrel");await waitText(page,"#runtimeText","Go/WASM verified",60000);
+  await page.goto(base+"/projects/kestrel/replay.html");await waitText(page,"#runtimeText","Go/WASM verified",60000);
   await page.locator("#traceRows [data-index]").first().waitFor({timeout:30000});assert.ok(await page.locator(".SpanBar--bar").count()>0);
   await waitText(page,"#replayValue","MATCH");
   await page.locator("[data-trace=healthy]").click();await page.locator("#traceRows [data-index]").first().click();

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Aster: compare candidate PostgreSQL execution plans with the real Python scoring and uncertainty-gating prototype in your browser.">
+<title>Aster — Plan analysis</title>
+<link rel="stylesheet" href="../demo.css">
+<link rel="stylesheet" href="../product-labs.css">
+<script src="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"></script>
+<script src="./lab.js" defer></script>
+<script src="./explorer.js" defer></script>
+<link rel="stylesheet" href="./explorer.css">
+</head>
+<body class="pl-body pl-aster">
+<header class="pl-global aster-native-header"><a href="../../" aria-label="Back to portfolio">←</a><strong>Aster</strong><nav><a href="https://github.com/yjr28/aster-pg-optimizer">Source ↗</a></nav></header>
+<main class="pl-root">
+  <div class="pl-runtime" id="runtimeChip" role="status"><span class="pl-led"></span><span id="runtimeText">Loading Python…</span></div>
+
+  <nav class="aster-workspaces" aria-label="Aster workspace"><button type="button" id="showExplorer" aria-pressed="true">Plan explorer</button><button type="button" id="showRanker" aria-pressed="false">Candidate ranking</button><a href="https://github.com/dalibo/pev2" target="_blank" rel="noopener noreferrer">Powered by Dalibo PEV2 ↗</a></nav>
+<section id="explorerPane" aria-label="PostgreSQL execution plan visualizer">
+  <iframe id="pevFrame" src="./visualizer.html" title="Dalibo PostgreSQL execution plan visualizer" loading="eager"></iframe>
+</section>
+<section id="rankerPane" hidden class="pl-window" aria-label="Aster interactive plan comparison">
+    <div class="pl-window-head">
+      <div class="pl-window-path"><span>Query Analysis</span><span>/</span><strong>Plan comparison</strong></div>
+      <span class="pl-window-note">Real aster_ranker.py · Pyodide</span>
+    </div>
+    <div class="a-workbench">
+      <aside class="a-config">
+        <div class="a-pane-heading"><h2>Workload</h2><span>01 / Inputs</span></div>
+        <div class="a-query-block">
+          <div class="a-query-heading"><span>SQL example</span><span>Context only</span></div>
+          <pre id="queryText" tabindex="0" aria-label="Example SQL, not executed">SELECT o.id, o.total_cents
+FROM orders o
+JOIN accounts a ON a.id = o.account_id
+WHERE a.region = 'APAC'
+  AND o.created_at >= NOW() - INTERVAL '30 days';</pre>
+          <p>This demo ranks plan inputs; it does not execute this query.</p>
+        </div>
+        <div class="a-config-form">
+          <label>Scenario
+            <select id="scenario">
+              <option value="clear">Clear winner</option>
+              <option value="uncertain">High uncertainty</option>
+              <option value="close">Nearly tied</option>
+            </select>
+          </label>
+          <label>PostgreSQL default
+            <select id="pgChoice">
+              <option value="postgres_default">postgres_default</option>
+              <option value="index_join">index_join</option>
+              <option value="nested_loop">nested_loop</option>
+            </select>
+          </label>
+          <div class="a-number-pair">
+            <label>Max uncertainty
+              <input id="maxUncertainty" type="number" min="0" max="1" step=".05" value=".35">
+            </label>
+            <label>Min score margin
+              <input id="minMargin" type="number" min="0" step=".01" value=".08">
+            </label>
+          </div>
+          <button id="rankButton" class="pl-primary" disabled>Loading Python…</button>
+          <div class="a-runtime-log" id="runtimeLog">Loading the repository's Python source.</div>
+        </div>
+      </aside>
+
+      <section class="a-results" aria-label="Editable candidate plan comparison">
+        <div class="a-pane-heading"><div><h2>Candidate plans</h2><p>Change an estimate, then rerun the ranker.</p></div><span>02 / Compare</span></div>
+        <div class="a-table-hint">Scroll horizontally to edit all five plan signals <span aria-hidden="true">↔</span></div>
+        <div class="a-plan-table">
+          <div class="a-plan-header"><span>Plan</span><span>PG cost</span><span>Rows</span><span>Seq scans</span><span>Nested loops</span><span>Uncertainty</span><span>Score</span></div>
+          <div id="candidateTable"></div>
+        </div>
+
+        <div class="a-comparison">
+          <div class="a-comparison-title"><h3>Model score</h3><span>Lower is better · estimated score, not execution time</span></div>
+          <div id="scoreComparison" class="a-score-bars" aria-live="polite"><div class="pl-empty">The score comparison will appear after Python is ready.</div></div>
+        </div>
+      </section>
+
+      <aside class="a-verdict" aria-label="Ranker decision">
+        <div class="a-pane-heading"><h2>Decision</h2><span>03 / Result</span></div>
+        <div class="a-verdict-top"><span id="decisionStatus" class="pl-small-status">Waiting</span><h2 id="decisionTitle">Evaluating plans…</h2><p id="decisionReason">Loading the original Python ranker.</p></div>
+        <dl class="a-verdict-facts">
+          <div><dt>Model's first choice</dt><dd id="modelChoice">—</dd></div>
+          <div><dt>PostgreSQL default</dt><dd id="defaultChoice">—</dd></div>
+          <div><dt>Top-two score margin</dt><dd id="marginValue">—</dd></div>
+          <div><dt>Required margin</dt><dd id="minimumMarginValue">—</dd></div>
+          <div><dt>Uncertainty limit</dt><dd id="uncertaintyValue">—</dd></div>
+        </dl>
+        <details class="a-raw"><summary>Python output</summary><pre id="console" tabindex="0" aria-label="Python ranking output">Waiting for Python…</pre></details>
+      </aside>
+    </div>
+    <div class="pl-footnote"><span>Safety-gating policy is executable. This prototype does not claim actual measured PostgreSQL query speedups.</span>
+      <a href="https://github.com/yjr28/aster-pg-optimizer/blob/main/aster_ranker.py" target="_blank" rel="noreferrer">Review the ranker source ↗</a>
+    </div>
+  </section>
+<p class="aster-credit">Plan explorer uses <a href="https://github.com/dalibo/pev2">Dalibo PEV2</a> under the <a href="../licenses/pev2.txt">PostgreSQL license</a>. Aster ranking is separate and uses the repository Python prototype. Input is processed in your browser; avoid pasting sensitive query data.</p>
+</main>
+</body>
+</html>

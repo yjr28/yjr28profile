@@ -49,7 +49,7 @@ jobs:
           broken = []
           script_failures = []
           for html in root.rglob('*.html'):
-              if 'projects/kestrel/native/' in str(html):
+              if 'projects/kestrel/native/' in str(html) or 'projects/aster/native/' in str(html):
                   continue  # Upstream prebuilt release; its own build validates the bundle.
               text = html.read_text(encoding='utf-8')
               for ref in re.findall(r'(?:href|src)="([^"]+)"', text):
