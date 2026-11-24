@@ -141,7 +141,7 @@ try {
    assert.equal(await page.locator('#project-info').getAttribute('aria-hidden'),'false');
    await checkLayout(page,name+' '+id);
    if(i===0)await screenshot(page,name+'-project');
-   await page.locator('#info-primary').click();await page.waitForURL(id==='studyhub'?'https://waseda-study-hub.vercel.app/':'**/projects/'+id+'/');
+   await page.locator('#info-primary').click();await page.waitForURL(id==='studyhub'?'https://waseda-study-hub.vercel.app/':id==='kestrel'?'**/projects/kestrel/native/':'**/projects/'+id+'/');
    assert.equal((await page.request.get(page.url())).status(),200);
    record(name+' '+id+' destination');
    await ready(page);

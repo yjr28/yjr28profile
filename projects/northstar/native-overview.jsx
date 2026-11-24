@@ -125,7 +125,7 @@ export class UsageCard extends React.Component {
                                         className="pf-m-sm"
                                         min={0} max={100}
                                         variant={ this.state.cpuUsed > 90 ? ProgressVariant.danger : undefined }
-                                        label={ this.state.cpuUsed + '% ' + cores_str }
+                                        label={ this.state.cpuUsed + '%' }
                                         aria-labelledby="system-usage-cpu-progress"
                                         measureLocation={ProgressMeasureLocation.outside} />
                                 </td>
@@ -138,7 +138,7 @@ export class UsageCard extends React.Component {
                                         min={0} max={this.state.memTotal}
                                         variant={fraction > 0.9 ? ProgressVariant.danger : undefined}
                                         aria-labelledby="system-usage-memory-progress"
-                                        label={this.state.memUsedText}
+                                        label={Math.round(fraction*100)+"%"}
                                         measureLocation={ProgressMeasureLocation.outside} />
                                 </td>
                             </tr>

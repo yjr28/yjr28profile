@@ -103,7 +103,13 @@ jobs:
         env:
           PLAYWRIGHT_MODULE: /tmp/portfolio-browser/node_modules/playwright/index.mjs
         run: node tests/homepage-smoke.mjs
+      - name: Verify native upstream project entry screens
+        env:
+          PLAYWRIGHT_MODULE: /tmp/portfolio-browser/node_modules/playwright/index.mjs
+          ARTIFACT_DIR: /tmp/portfolio-review/native
+        run: node tests/native-projects.mjs
       - name: Exercise project workflows
+        if: always()
         env:
           PLAYWRIGHT_MODULE: /tmp/portfolio-browser/node_modules/playwright/index.mjs
           ARTIFACT_DIR: /tmp/portfolio-review/projects
