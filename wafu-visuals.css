@@ -47,3 +47,12 @@
 @media(max-width:1100px){.world-intro{width:200px}.station-line-heading{min-width:135px}.station-track{left:155px}.station strong{font-size:16px}}
 @media(max-width:760px){.world-intro{top:98px;width:calc(100% - 36px)}.intro-route{margin-bottom:12px}.intro-route>span:last-child{font-size:27px}.world-intro>p:not(.intro-route){font-size:14px;line-height:1.45;margin-bottom:7px}.world-marker,.world-marker:hover,.world-marker[aria-pressed=true]{width:106px;height:47px}.train-label,.train-label:hover,.train-label-green,.train-label-green:hover{width:116px;height:52px}.marker-text,.train-destination{font-size:14px}.marker-text small,.train-destination small{display:none}.station-line{bottom:49px;min-height:103px}.tiny-footer{bottom:3px}.station-track{left:155px}.world-intro .intro-explore{min-height:33px}}
 @media(prefers-reduced-motion:reduce){.world-marker,.train-label{transition:none}}
+
+/* Final navigation polish: no bottom station strip. Native sign links remain
+   projected from the existing 3D anchors. Hand stays inside the sign bounds. */
+.world-marker,.train-label{text-decoration:none;cursor:pointer}
+.pixel-click-hand{position:absolute;top:7%;left:4%;width:16px;height:16px;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(1px 1px 0 #0005);z-index:2}
+.world-marker:hover .pixel-click-hand,.train-label:hover .pixel-click-hand,.world-marker:focus-visible .pixel-click-hand,.train-label:focus-visible .pixel-click-hand{transform:translateY(1px)}
+.archive-link{color:inherit;text-underline-offset:3px;text-decoration:none}.archive-link:hover,.archive-link:focus-visible{text-decoration:underline}
+.world-marker:focus-visible,.train-label:focus-visible{outline:2px solid #16394f!important;outline-offset:2px}
+@media(max-width:760px){.pixel-click-hand{width:12px;height:12px;top:5%;left:3%}.archive-link{font-size:11px}}

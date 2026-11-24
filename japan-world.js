@@ -210,7 +210,7 @@ function buildWorld(){
 
 let toastTimeout=null,frameCount=0,lastFrame=0,lastHover=0;
 const markerButtons=Array.from(document.querySelectorAll(".world-marker"));
-const stationButtons=Array.from(document.querySelectorAll("[data-station]"));
+const stationButtons=markerButtons;
 function toast(message){
  const el=$("world-toast");el.textContent=message;el.classList.add("visible");
  clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove("visible"),2700);
@@ -229,11 +229,11 @@ function closeInfo(){
  $("project-info").inert=true;
  $("project-info").classList.remove("visible");$("project-info").setAttribute("aria-hidden","true");
  app.classList.remove("station-selected");
- if(hadFocus&&animated.focused)document.querySelector(`.station[data-station="${animated.focused}"]`).focus({preventScroll:true});
+ if(hadFocus&&animated.focused){const marker=markerButtons.find(b=>b.dataset.station===animated.focused);const fallback=document.querySelector(".archive-link");(marker&&getComputedStyle(marker).visibility==="visible"?marker:fallback)?.focus({preventScroll:true});}
  animated.focused=null;
  if(camera)resize();
  stationButtons.forEach(b=>b.classList.remove("active"));
- markerButtons.forEach(b=>b.setAttribute("aria-pressed","false"));
+ markerButtons.forEach(b=>b.removeAttribute("aria-current"));
 }
 function resetOverview({animate=true}={}){
  exitRide();closeInfo();closeAbout();
@@ -267,7 +267,7 @@ function focusStation(id){
  resize();
  $("control-hint").classList.add("hidden");
  stationButtons.forEach(b=>b.classList.toggle("active",b.dataset.station===id));
- markerButtons.forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.station===id)));
+ markerButtons.forEach(b=>{if(b.dataset.station===id)b.setAttribute("aria-current","true");else b.removeAttribute("aria-current")});
  $("info-close").focus({preventScroll:true});
  // Details and links are available before the camera settles.
 }
@@ -282,7 +282,7 @@ function bindUI(){
   $("ride-toggle").setAttribute("aria-pressed","true");$("ride-toggle").textContent="Exit the ride";
   $("control-hint").classList.add("hidden");toast("A moving postcard from the LastRide express.");
  });
- stationButtons.forEach(b=>b.addEventListener("click",()=>focusStation(b.dataset.station)));
+ // Project signs are native links. Clicking a 3D landmark or using 1–5 still opens its camera/detail view.
  $("info-close").addEventListener("click",closeInfo);
  $("begin-exploring").addEventListener("click",()=>focusStation("northstar"));
  $("overview-toggle").addEventListener("click",toggleMap);
@@ -410,11 +410,11 @@ function resize(){
  // Render the sky and petals edge to edge; an optical shift avoids a clipped canvas.
  const stage={left:mobile?0:window.innerWidth<=1100?245:270,top:mobile?278:61,
   width:mobile?viewport.width:viewport.width-(window.innerWidth<=1100?250:255),
-  height:viewport.height-(mobile?466:205)};
+  height:viewport.height-(mobile?350:125)};
  if(animated.focused&&!mobile){
   stage.left=30;stage.top=100;stage.width=viewport.width-430;
  }else if(animated.ride){
-  stage.left=0;stage.top=mobile?94:80;stage.width=viewport.width;stage.height=viewport.height-(mobile?290:260);
+  stage.left=0;stage.top=mobile?94:80;stage.width=viewport.width;stage.height=viewport.height-(mobile?172:150);
  }
  const stageAspect=stage.width/stage.height;
  const stageFov=Math.max(mobile?56:43,THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(56)/2)/stageAspect)));
@@ -497,7 +497,7 @@ for(const label of [...markerButtons,...trainLabels]){
  label.hidden=false;
  labelObserver.observe(label);
 }
-const overlaySelectors=[".global-nav",".world-intro",".station-line",".tiny-footer",".project-info.visible",".about-panel.open",".world-control-hint:not(.hidden)",".world-toast.visible"];
+const overlaySelectors=[".global-nav",".world-intro",".tiny-footer",".project-info.visible",".about-panel.open",".world-control-hint:not(.hidden)",".world-toast.visible"];
 function overlaps(a,b,gap=7){return a.left<b.right+gap&&a.right>b.left-gap&&a.top<b.bottom+gap&&a.bottom>b.top-gap}
 function projectAnchor(position){
  cameraSpace.copy(position).applyMatrix4(camera.matrixWorldInverse);

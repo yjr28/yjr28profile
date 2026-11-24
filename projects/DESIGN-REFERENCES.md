@@ -23,3 +23,15 @@ Run `node tests/axon-engine.mjs` for the task-engine contract. For real browser 
 - AXON local scoring is distinct from authoritative backend scoring, ranked Arena, and clinical measurements.
 - Study Hub requires university authentication for private data.
 - Performance numbers must map to reproducible project benchmark evidence.
+
+## Next interface pass: direct screen reuse, not another custom design
+
+Use one actual reference screen per workflow. Keep its component geometry, spacing, typography and interaction structure; change domain data, project branding and the adapter only. Do not combine multiple unrelated reference aesthetics. Where upstream source is reused, retain the applicable license and notices; do not copy proprietary code or logos. An upstream component stylesheet alone is not a complete screen transplant.
+
+- NorthStar: Cockpit Machines / Overview, using the actual Cockpit/PatternFly page components; host and command adapters remain NorthStar's.
+- Kestrel: Jaeger UI TracePage / TraceTimelineViewer, actual upstream React screen rather than only span CSS. Map real Kestrel events to spans without inventing durations; keep replay controls as a separate extension.
+- Aster: Dalibo PEV2's actual full-screen plan explorer, with Aster ranking as a separate workspace. No invented replacement visualization.
+- AXON: Human Benchmark's focused test screen, Brilliant's exercise selection, Aimlabs' results view and Lichess's practice/competition layout. Treat each as a specific screen, not a blended aesthetic. Local data only until real services are connected.
+- Study Hub: use the official deployed product and its own frontend components, not a lookalike student dashboard. Keep public source/case-study links and the existing authentication boundary.
+
+Acceptance: capture side-by-side browser screenshots of each chosen reference and the implementation, and check actual interactions. A design is not accepted merely because static checks pass.

@@ -38,7 +38,7 @@ async function geometry(page) {
   const visible = el => getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none';
   const rect = el => { const r = el.getBoundingClientRect(); return { name:el.className, left:r.left, right:r.right, top:r.top, bottom:r.bottom }; };
   const labels = [...document.querySelectorAll('.world-marker,.train-label')].filter(visible).map(rect);
-  const controls = [...document.querySelectorAll('.global-nav,.world-intro,.station-line,.tiny-footer,.project-info.visible')].filter(visible).map(rect);
+  const controls = [...document.querySelectorAll('.global-nav,.world-intro,.tiny-footer,.project-info.visible')].filter(visible).map(rect);
   const overlap = (a,b) => a.left < b.right-1 && a.right > b.left+1 && a.top < b.bottom-1 && a.bottom > b.top+1;
   return { overflow:document.documentElement.scrollWidth > innerWidth,
    collisions:labels.flatMap((l,i)=>[...labels.slice(i+1),...controls].filter(c=>overlap(l,c)).map(c=>[l.name,c.name])),
@@ -73,7 +73,10 @@ try {
   await ready(page);
   assert.equal(await page.locator('h1').count(),1);
   assert.equal(await page.locator('h1').innerText(),'YoungJun Ryu — Engineering projects on the Japan Line');
-  assert.equal(await page.locator('.station[data-station] .station-dot').count(),5);
+  assert.equal(await page.locator('nav.station-line').count(),0);
+  assert.equal(await page.locator('.world-marker .pixel-click-hand').count(),5);
+  assert.equal(await page.locator('.train-label .pixel-click-hand').count(),2);
+  assert.equal(await page.locator('.world-marker[href]').count(),5);
   assert.deepEqual(await page.locator('.marker-emblem').allTextContents(),['✦','⚙','❀','富','学']);
   await checkLayout(page,name+' initial');
   await screenshot(page,name);
@@ -127,7 +130,8 @@ try {
   await checkLayout(page,name+' map');await screenshot(page,name+'-map');
   const ids=['northstar','axon','aster','kestrel','studyhub'];
   for(const [i,id] of ids.entries()){
-   await page.locator('.station[data-station="'+id+'"]').click();await page.waitForTimeout(700);
+   assert.equal(await page.locator('.world-marker[data-station="'+id+'"]').getAttribute('href'),'projects/'+id+'/');
+   await page.keyboard.press(String(i+1));await page.waitForTimeout(700);
    assert.equal(await page.locator('#info-stop').innerText(),'Selected stop');
    assert.equal(await page.locator('#info-primary').getAttribute('href'),'projects/'+id+'/');
    assert.equal(await page.locator('#project-info').getAttribute('aria-hidden'),'false');
@@ -140,8 +144,9 @@ try {
   }
   await page.locator('#begin-exploring').click();assert.equal(await page.locator('#info-title').innerText(),'NorthStar');
   await page.keyboard.press('Escape');assert.equal(await page.locator('#project-info').evaluate(el=>el.inert),true);
-  await page.locator('.station[data-station="aster"]').focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#info-title').innerText(),'Aster');
-  await page.keyboard.press('Escape');assert.equal(await page.locator('.station[data-station="aster"]').evaluate(el=>el===document.activeElement),true);
+  await page.keyboard.press('3');assert.equal(await page.locator('#info-title').innerText(),'Aster');
+  await page.keyboard.press('Escape');assert.equal(await page.locator('#project-info').evaluate(el=>el.inert),true);
+  await page.locator('.archive-link').focus();await page.keyboard.press('Enter');await page.waitForURL('**/projects.html');await ready(page);
   await page.locator('.about-toggle').click();assert.equal(await page.locator('#about-panel').evaluate(el=>el.inert),false);
   await page.keyboard.press('Escape');assert.equal(await page.locator('#about-panel').evaluate(el=>el.inert),true);
   record(name+' keyboard, intro CTA, panel focus and dismissal');
@@ -166,7 +171,7 @@ try {
  assert.equal(still.motion,false);assert.notDeepEqual(still.trains[0].world,still.trains[1].world);assert.equal(still.trains.filter(t=>t.visible).length,2);
  await reducedPage.waitForTimeout(400);assert.deepEqual((await reducedPage.evaluate(()=>window.__japanTest.snapshot())).trains,still.trains);
  await checkLayout(reducedPage,'reduced-motion');await screenshot(reducedPage,'mobile-reduced-motion');
- await reducedPage.locator('.station[data-station="kestrel"]').click();assert.equal(await reducedPage.locator('#info-title').innerText(),'Kestrel');
+ await reducedPage.keyboard.press('4');assert.equal(await reducedPage.locator('#info-title').innerText(),'Kestrel');
  await reducedPage.locator('#info-close').click();await reducedPage.locator('#overview-toggle').click();
  await reducedPage.locator('#motion-toggle').click();assert.equal((await reducedPage.evaluate(()=>window.__japanTest.snapshot())).motion,true);
  record('reduced motion initializes separate trains, stays still, allows navigation and explicit resume');

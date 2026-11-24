@@ -21,11 +21,11 @@
 <title>YoungJun Ryu — The Japan Line</title>
 </head>
 <body>
-<a class="skip-link" href="#station-line">Skip 3D world and explore projects</a>
+<a class="skip-link" href="projects.html">Skip 3D world and explore projects</a>
 
 <div class="world-app" id="world-app">
   <div class="sky-backdrop" aria-hidden="true"><span class="sky-sun"></span><span class="sky-haze"></span><span class="sky-cloud sky-cloud-one"></span><span class="sky-cloud sky-cloud-two"></span></div>
-  <canvas id="world-canvas" aria-label="Interactive 3D model of Japan with project districts, cherry blossoms and moving trains. Drag to explore; use the project station buttons below to navigate without using the canvas."></canvas>
+  <canvas id="world-canvas" aria-label="Interactive 3D model of Japan with project districts, cherry blossoms and moving trains. Drag to explore; use the floating project links or the Projects archive to navigate without using the canvas."></canvas>
 
   <header class="global-nav">
     <a class="brand" href="./" aria-label="YoungJun Ryu home">
@@ -44,7 +44,7 @@
   <section class="world-intro" aria-labelledby="site-title">
     <p class="intro-route"><span class="route-kanji" lang="ja">日本縦断</span><span>The Japan Line</span></p>
     <h1 id="site-title" class="visually-hidden">YoungJun Ryu — Engineering projects on the Japan Line</h1>
-    <p><span class="intro-greeting">I'm YoungJun.</span> I build backend systems, infrastructure and products. Choose a station or follow the tracks.</p>
+    <p><span class="intro-greeting">I'm YoungJun.</span> I build backend systems, infrastructure and products. Click a station sign or follow the tracks.</p>
     <button class="intro-explore" id="begin-exploring" type="button">Visit the first stop <span aria-hidden="true">↘</span></button>
   </section>
 
@@ -55,17 +55,17 @@
     <button class="hint-dismiss" id="dismiss-hint" aria-label="Dismiss controls hint" type="button">×</button>
   </div>
 
-  <div class="project-markers" id="project-markers" aria-label="Project destinations">
-    <button class="world-marker" data-station="northstar" type="button"><span class="marker-emblem" aria-hidden="true">✦</span><span class="marker-text">NorthStar<small>夜のまち — ノーススター</small></span></button>
-    <button class="world-marker" data-station="axon" type="button"><span class="marker-emblem" aria-hidden="true">⚙</span><span class="marker-text">AXON<small>鉄道工房 — アクソン</small></span></button>
-    <button class="world-marker" data-station="aster" type="button"><span class="marker-emblem" aria-hidden="true">❀</span><span class="marker-text">Aster<small>京都の庭 — アスター</small></span></button>
-    <button class="world-marker" data-station="kestrel" type="button"><span class="marker-emblem" aria-hidden="true">富</span><span class="marker-text">Kestrel<small>富士の風 — ケストレル</small></span></button>
-    <button class="world-marker" data-station="studyhub" type="button"><span class="marker-emblem" aria-hidden="true">学</span><span class="marker-text">Study Hub<small>学びの舎 — スタディハブ</small></span></button>
+  <div class="project-markers" id="project-markers" aria-label="Project destinations"><span id="station-line" class="visually-hidden" aria-hidden="true"></span><span id="work" class="visually-hidden" aria-hidden="true"></span>
+    <a class="world-marker" data-station="northstar" href="projects/northstar/"><img class="pixel-click-hand" src="assets/pixel-hand.svg" width="16" height="16" alt="" aria-hidden="true" draggable="false"><span class="marker-emblem" aria-hidden="true">✦</span><span class="marker-text">NorthStar<small>夜のまち — ノーススター</small></span></a>
+    <a class="world-marker" data-station="axon" href="projects/axon/"><img class="pixel-click-hand" src="assets/pixel-hand.svg" width="16" height="16" alt="" aria-hidden="true" draggable="false"><span class="marker-emblem" aria-hidden="true">⚙</span><span class="marker-text">AXON<small>鉄道工房 — アクソン</small></span></a>
+    <a class="world-marker" data-station="aster" href="projects/aster/"><img class="pixel-click-hand" src="assets/pixel-hand.svg" width="16" height="16" alt="" aria-hidden="true" draggable="false"><span class="marker-emblem" aria-hidden="true">❀</span><span class="marker-text">Aster<small>京都の庭 — アスター</small></span></a>
+    <a class="world-marker" data-station="kestrel" href="projects/kestrel/"><img class="pixel-click-hand" src="assets/pixel-hand.svg" width="16" height="16" alt="" aria-hidden="true" draggable="false"><span class="marker-emblem" aria-hidden="true">富</span><span class="marker-text">Kestrel<small>富士の風 — ケストレル</small></span></a>
+    <a class="world-marker" data-station="studyhub" href="projects/studyhub/"><img class="pixel-click-hand" src="assets/pixel-hand.svg" width="16" height="16" alt="" aria-hidden="true" draggable="false"><span class="marker-emblem" aria-hidden="true">学</span><span class="marker-text">Study Hub<small>学びの舎 — スタディハブ</small></span></a>
   </div>
 
   <div class="train-labels" id="train-labels" aria-label="LastRide trains">
-    <a class="train-label" href="https://lastride.jp/en/" target="_blank" rel="noopener noreferrer" aria-label="LastRide, vermilion express — opens in a new tab" hidden><span class="train-service" lang="ja" aria-hidden="true">特急</span><span class="train-destination">LastRide<small lang="ja">特急 ラストライド</small></span></a>
-    <a class="train-label train-label-green" href="https://lastride.jp/en/" target="_blank" rel="noopener noreferrer" aria-label="LastRide, second express — opens in a new tab" hidden><span class="train-service" lang="ja" aria-hidden="true">特急</span><span class="train-destination">LastRide<small lang="ja">特急 ラストライド</small></span></a>
+    <a class="train-label" href="https://lastride.jp/en/" target="_blank" rel="noopener noreferrer" aria-label="LastRide, vermilion express — opens in a new tab" hidden><img class="pixel-click-hand" src="assets/pixel-hand.svg" width="16" height="16" alt="" aria-hidden="true" draggable="false"><span class="train-service" lang="ja" aria-hidden="true">特急</span><span class="train-destination">LastRide<small lang="ja">特急 ラストライド</small></span></a>
+    <a class="train-label train-label-green" href="https://lastride.jp/en/" target="_blank" rel="noopener noreferrer" aria-label="LastRide, second express — opens in a new tab" hidden><img class="pixel-click-hand" src="assets/pixel-hand.svg" width="16" height="16" alt="" aria-hidden="true" draggable="false"><span class="train-service" lang="ja" aria-hidden="true">特急</span><span class="train-destination">LastRide<small lang="ja">特急 ラストライド</small></span></a>
   </div>
 
   <aside class="project-info" id="project-info" aria-hidden="true" inert aria-labelledby="info-title">
@@ -92,19 +92,8 @@
     <p class="about-foot">Atlanta ↔ Tokyo / Class of 2028</p>
   </aside>
 
-  <nav class="station-line" id="station-line" aria-label="Jump directly to a project">
-    <span id="work" class="legacy-anchor" aria-hidden="true"></span>
-    <div class="station-line-heading"><span class="heading-tiny" lang="ja">次の停車駅</span><strong>Choose a stop</strong></div>
-    <div class="station-track" aria-hidden="true"></div>
-    <button class="station" type="button" data-station="northstar"><span class="station-no station-dot" aria-hidden="true"></span><strong>NorthStar</strong><small>Night city</small></button>
-    <button class="station" type="button" data-station="axon"><span class="station-no station-dot" aria-hidden="true"></span><strong>AXON</strong><small>Cognitive training</small></button>
-    <button class="station" type="button" data-station="aster"><span class="station-no station-dot" aria-hidden="true"></span><strong>Aster</strong><small>Kyoto gardens</small></button>
-    <button class="station" type="button" data-station="kestrel"><span class="station-no station-dot" aria-hidden="true"></span><strong>Kestrel</strong><small>Mount Fuji</small></button>
-    <button class="station" type="button" data-station="studyhub"><span class="station-no station-dot" aria-hidden="true"></span><strong>Study Hub</strong><small>Waseda</small></button>
-    <a class="station station-lastride" aria-label="LastRide express — opens in a new tab" href="https://lastride.jp/en/" target="_blank" rel="noopener noreferrer"><span class="station-no" lang="ja">特急</span><strong>LastRide</strong><small>Board the train ↗</small></a>
-  </nav>
 
-  <div class="tiny-footer"><span>Take the scenic route.</span><span class="tiny-footer-right"><button id="motion-toggle" type="button" aria-pressed="false">Pause motion</button> <span class="footer-sep">/</span> <button id="quality-toggle" type="button" aria-pressed="false">Lite mode</button> <span class="footer-sep">/</span> <span>© 2026 YJ</span></span></div>
+  <div class="tiny-footer"><span><a class="archive-link" href="projects.html">All projects ↗</a></span><span class="tiny-footer-right"><button id="motion-toggle" type="button" aria-pressed="false">Pause motion</button> <span class="footer-sep">/</span> <button id="quality-toggle" type="button" aria-pressed="false">Lite mode</button> <span class="footer-sep">/</span> <span>© 2026 YJ</span></span></div>
 
   <div id="world-toast" class="world-toast" role="status" aria-live="polite"></div>
   <div id="world-loading" class="world-loading" aria-live="polite"><div class="loading-line"><span class="loading-sakura">桜</span><strong>Setting the scene...</strong><small>Japan / just a little further</small></div><div class="loading-progress"><span></span></div></div>
