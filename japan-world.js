@@ -11,7 +11,7 @@ const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const app = $("world-app");
 const stationData = {
   northstar:{number:"1",name:"NorthStar",place:"東京・秋葉原 / Tokyo after dark",tagline:"Control the fleet. Understand the failure.",description:"A hybrid-cloud server management system with native Linux telemetry, a C++ agent, and a Java/Spring control plane. Try the interactive command lifecycle: make a host go offline, queue work, and bring the agent back.",meta:["C++ agent","Spring / Java","PostgreSQL","Telemetry"],url:"projects/northstar/",source:"https://github.com/yjr28/NorthStar",pos:[-35,2,-3],camera:[-27,22,28]},
-  axon:{number:"2",name:"AXON",place:"鉄道工房 / Cognitive training lab",tagline:"Train. Measure. Improve.",description:"A competitive cognitive training application built with Expo, Go, PostgreSQL, Redis and Python. Play a timed exercise using the actual client task engine and inspect your results.",meta:["Expo / Go","PostgreSQL / Redis","Python","Seeded tasks"],url:"projects/axon/",source:"https://github.com/yjr28/Axon",pos:[-19,2,18],camera:[-13,20,42]},
+  axon:{number:"2",name:"AXON",place:"認知訓練 / Cognitive training lab",tagline:"Train. Measure. Improve.",description:"A competitive cognitive training application built with Expo, Go, PostgreSQL, Redis and Python. Play a timed exercise using the actual client task engine and inspect your results.",meta:["Expo / Go","PostgreSQL / Redis","Python","Seeded tasks"],url:"projects/axon/",source:"https://github.com/yjr28/Axon",pos:[-19,2,18],camera:[-13,20,42]},
   aster:{number:"3",name:"Aster",place:"京都・庭園 / Kyoto gardens",tagline:"Choose a plan. Know when to abstain.",description:"A PostgreSQL query-plan ranking prototype that scores candidate plans while enforcing uncertainty and decision-margin thresholds. The demo runs its Python ranker inside your browser.",meta:["PostgreSQL","Python","Query planning","Confidence gates"],url:"projects/aster/",source:"https://github.com/yjr28/aster-pg-optimizer",pos:[0,2,-19],camera:[12,21,16]},
   kestrel:{number:"4",name:"Kestrel",place:"富士山 / The Fuji observatory",tagline:"Find the first divergence, not the loudest symptom.",description:"A Go distributed-systems flight recorder with causal traces and replayable seeded faults. Inject latency and follow the events through a ten-service request using the actual Go core compiled to WebAssembly.",meta:["Go / WebAssembly","Causal traces","Fault injection","Replay"],url:"projects/kestrel/",source:"https://github.com/yjr28/kestrel-replay",pos:[30,2,-18],camera:[34,25,21]},
   studyhub:{number:"5",name:"Waseda Study Hub",place:"早稲田・東京 / Waseda campus",tagline:"Build campus software with a trust boundary.",description:"A student discovery and study-buddy product with verified university sign-in, private conversations, and AI-assisted matching. Explore the authorization and ranking decisions in its case study.",meta:["Next.js","Firebase","Auth / privacy","AI matching"],url:"projects/studyhub/",source:"https://github.com/Waseda-Study-Hub/frontend",pos:[29,2,18],camera:[29,22,49]}
@@ -86,6 +86,77 @@ function signPlane(parent,text,w,h,x,y,z,background,foreground,secondary=""){
  const mat=new THREE.MeshBasicMaterial({map:signTexture(text,{background,foreground,secondary}),side:THREE.DoubleSide,transparent:false});
  return add(parent,new THREE.PlaneGeometry(w,h),mat,x,y,z,false);
 }
+
+// Detail meshes use local deterministic variation and shared instancing, so the
+// original route, camera, moving trains, and layout random sequence are unchanged.
+const detailObject=new THREE.Object3D();
+const detailRockGeometry=new THREE.IcosahedronGeometry(1,1);
+const detailBlossomGeometry=new THREE.IcosahedronGeometry(1,1);
+const detailRockMaterial=matte(0xffffff,.97);
+const detailBlossomMaterial=matte(0xffffff,.85);
+function detailRandom(seed){let n=seed>>>0;return()=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296}}
+function instanceDetail(mesh,i,x,y,z,sx,sy,sz,rx,ry,rz,color){
+ detailObject.position.set(x,y,z);detailObject.scale.set(sx,sy,sz);detailObject.rotation.set(rx,ry,rz);detailObject.updateMatrix();
+ mesh.setMatrixAt(i,detailObject.matrix);if(color!==undefined)mesh.setColorAt(i,new THREE.Color(color));
+}
+function buildStoneTerrace(parent,rx,rz,seed){
+ const rng=detailRandom(seed),perRing=window.innerWidth<760?42:74,rings=2;
+ const stones=new THREE.InstancedMesh(detailRockGeometry,detailRockMaterial,perRing*rings);stones.castShadow=false;stones.receiveShadow=true;
+ const shades=[0x79776e,0x949087,0xb1a99a,0x777d76,0xaca69c,0x888276];
+ for(let j=0;j<rings;j++)for(let i=0;i<perRing;i++){
+  const a=(i+j*.5)/perRing*Math.PI*2,r=1+.035*Math.sin(a*7+rx)+.03*Math.cos(a*11+rz),x=Math.cos(a)*rx*r,z=Math.sin(a)*rz*r;
+  instanceDetail(stones,j*perRing+i,x,-.27+j*.88,z,.62+rng()*.5,.42+rng()*.27,.61+rng()*.42,(rng()-.5)*.3,-a,(rng()-.5)*.2,shades[Math.floor(rng()*shades.length)]);
+ }
+ stones.instanceMatrix.needsUpdate=true;stones.instanceColor.needsUpdate=true;parent.add(stones);
+}
+function addBlossomDetail(group,seed){
+ const rng=detailRandom(seed),count=window.innerWidth<760?46:86;
+ const mesh=new THREE.InstancedMesh(detailBlossomGeometry,detailBlossomMaterial,count);
+ const palette=[0xffdce6,0xf5a1b8,0xfac3d3,0xffeef0,0xe58da7,0xf0b3c7];
+ mesh.castShadow=false;mesh.receiveShadow=true;
+ for(let i=0;i<count;i++){const a=rng()*Math.PI*2,r=Math.sqrt(rng())*2.12,y=3.34+(rng()-.5)*1.75+(.5-r/4),s=.18+rng()*.31;
+  instanceDetail(mesh,i,Math.cos(a)*r,y,Math.sin(a)*r,s,s*(.75+rng()*.32),s,rng(),rng()*6.28,rng(),palette[Math.floor(rng()*palette.length)]);
+ }
+ mesh.instanceMatrix.needsUpdate=true;mesh.instanceColor.needsUpdate=true;group.add(mesh);
+}
+function sculptFuji(parent){
+ const radial=104,levels=52,positions=[],colors=[],indices=[];
+ const rock=new THREE.Color(0x62758d),shadow=new THREE.Color(0x405d78),snow=new THREE.Color(0xf7fbfc),snowShadow=new THREE.Color(0xb3c9d9),out=new THREE.Color(),c=new THREE.Color();
+ for(let j=0;j<=levels;j++){
+  const t=j/levels,baseR=1.3+22*Math.pow(1-t,1.64)+.9*Math.sin(Math.PI*t);
+  for(let i=0;i<=radial;i++){const a=i/radial*Math.PI*2,fold=(Math.sin(a*13+1.8*t)+.48*Math.sin(a*23-4*t)+.35*Math.cos(a*7+3*t))/1.83;
+   const taper=Math.sin(Math.PI*t)*.8+.12, r=baseR*(1+fold*.11*taper),y=24*t+fold*.55*Math.sin(Math.PI*t);
+   positions.push(Math.cos(a)*r,y,Math.sin(a)*r*.86);
+   const snowline=.70+.055*Math.sin(a*9)+.043*Math.sin(a*17+.8)+.035*fold;
+   out.copy(rock).lerp(shadow,THREE.MathUtils.clamp(.35-fold*.36,0,1));
+   c.copy(snow).lerp(snowShadow,THREE.MathUtils.clamp(.15-fold*.46,0,.85));
+   out.lerp(c,THREE.MathUtils.smoothstep(t,snowline-.024,snowline+.038));
+   colors.push(out.r,out.g,out.b);
+  }
+ }
+ for(let j=0;j<levels;j++)for(let i=0;i<radial;i++){const a=j*(radial+1)+i,b=a+radial+1;indices.push(a,b,a+1,b,b+1,a+1)}
+ const geometry=new THREE.BufferGeometry();geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+ const mat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.98,side:THREE.DoubleSide});
+ const mountain=add(parent,geometry,mat,0,0,0,false);mountain.receiveShadow=true;
+ const cap=add(parent,new THREE.CircleGeometry(1.31,48),material.snow,0,24.01,0,false);cap.rotation.x=-Math.PI/2;cap.scale.y=.86;
+}
+function pagodaRoof(parent,width,depth,y){
+ const pos=[],indices=[],ring=[[.52,.52,0],[.45,.45,.20],[.31,.31,.68],[.12,.12,1.02]];
+ const perimeter=[[-1,-1],[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0]];
+ for(const [sx,sz,h] of ring)for(const [x,z] of perimeter){const corner=Math.abs(x)+Math.abs(z)===2;pos.push(x*width*sx,h+(corner?.14*(1-h):0),z*depth*sz)}
+ for(let k=0;k<ring.length-1;k++)for(let i=0;i<8;i++){const a=k*8+i,b=k*8+(i+1)%8;indices.push(a,b,a+8,b,b+8,a+8)}
+ const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));geo.setIndex(indices);geo.computeVertexNormals();
+ const m=new THREE.MeshStandardMaterial({color:0x465b59,roughness:.7,side:THREE.DoubleSide});
+ add(parent,geo,m,0,y,0);
+ box(parent,width*.26,.15,depth*.26,material.roof,0,y+1.03,0);
+ // Fine parallel eave lines, created as one instanced mesh per tier.
+ const count=24,tiles=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),material.roof,count*4);
+ for(let side=0;side<4;side++)for(let i=0;i<count;i++){const f=(i+.5)/count-.5,angle=side*Math.PI/2;const x=side%2===0?f*width:Math.sign(side===1?1:-1)*width*.50,z=side%2===0?(side===0?depth*.50:-depth*.50):f*depth;
+  instanceDetail(tiles,side*count+i,x,y+.04,z,.07,.105,.25,0,angle,0);
+ }
+ tiles.instanceMatrix.needsUpdate=true;tiles.castShadow=false;tiles.receiveShadow=true;parent.add(tiles);
+}
+
 function createIsland(key,x,z,rx,rz,grass,soil=material.dirt){
  const holder=new THREE.Group();holder.position.set(x,0,z);holder.name=key+" island";holder.userData.station=key;world.add(holder);
  const shape=new THREE.Shape();
@@ -100,6 +171,7 @@ function createIsland(key,x,z,rx,rz,grass,soil=material.dirt){
  const geo=new THREE.ExtrudeGeometry(shape,{steps:1,depth:2,bevelEnabled:true,bevelThickness:.25,bevelSize:.25,bevelSegments:1,curveSegments:2});
  geo.rotateX(-Math.PI/2);
  const mesh=add(holder,geo,[grass,soil],0,-.53,0);mesh.receiveShadow=true;
+ buildStoneTerrace(holder,rx,rz,Math.abs(x*1031+z*2137)+1);
  for(let i=0;i<23;i++){
   const a=range(0,Math.PI*2),radius=range(.86,1.04),px=Math.cos(a)*rx*radius,pz=Math.sin(a)*rz*radius;
   const rock=sphere(holder,range(.3,.75),pick([material.stone,material.stoneDark,soil]),px,1.45,pz,0);
@@ -140,6 +212,7 @@ function cherryTree(parent,x,z,s=1,palette=null){
   const leaf=sphere(g,range(.75,1.25),pick(flowers),Math.cos(a)*r,range(2.9,4.2),Math.sin(a)*r,1);
   leaf.scale.set(range(.85,1.3),range(.55,.95),range(.85,1.35));
  }
+ addBlossomDetail(g,Math.abs(Math.round((x+parent.position.x)*1139+(z+parent.position.z)*7919))+71);
  swayers.push({g,phase:range(0,6.28),scale:range(.006,.026)});
  return g;
 }
@@ -162,16 +235,23 @@ function torii(parent,x,z,s=1){
 function pagoda(parent,x,z,s=1){
  const g=new THREE.Group();g.position.set(x,1.55,z);g.scale.setScalar(s);parent.add(g);
  cyl(g,3.7,3.9,.38,material.stone,0,.18,0,8);
- for(let i=0;i<4;i++){
-  const y=.5+i*2.05,f=1-i*.13;
-  box(g,4.3*f,1.7,4*f,material.cream,0,y+.85,0);
-  for(const dx of [-1,1])for(const dz of [-1,1])cyl(g,.12,.12,1.65,material.vermillion,dx*1.55*f,y+.86,dz*1.47*f,6);
-  const roof=add(g,new THREE.ConeGeometry(3.85*f,1.1,4),material.roofGreen,0,y+1.99,0);
-  roof.rotation.y=Math.PI/4;roof.scale.z=.95;
-  box(g,4.4*f,.13,4.2*f,material.roof,0,y+1.61,0);
+ for(let i=0;i<5;i++){
+  const y=.5+i*1.70,f=1-i*.12;
+  box(g,4.15*f,1.36,3.86*f,material.cream,0,y+.68,0);
+  for(const dx of [-1,1])for(const dz of [-1,1])cyl(g,.10,.11,1.45,material.vermillion,dx*1.65*f,y+.74,dz*1.54*f,8);
+  for(const side of [-1,1]){
+   for(const x of [-1.08,0,1.08]){
+    box(g,.67*f,.80,.08,material.warmWindow,x*f,y+.70,side*1.96*f,false);
+    box(g,.07*f,.82,.10,material.red,x*f,y+.70,side*2.01*f,false);
+   }
+   box(g,4.35*f,.15,.19,material.vermillion,0,y+.20,side*2.02*f);
+  }
+  box(g,4.45*f,.13,4.16*f,material.roof,0,y+1.29,0);
+  pagodaRoof(g,5.7*f,5.3*f,y+1.36);
  }
- cyl(g,.08,.12,2.1,material.gold,0,9.37,0,6);
- sphere(g,.22,material.gold,0,10.35,0,0);
+ cyl(g,.07,.11,2.0,material.gold,0,9.66,0,12);
+ for(let i=0;i<6;i++)add(g,new THREE.TorusGeometry(.33-i*.027,.045,6,16),material.gold,0,8.95+i*.22,0,false).rotation.x=Math.PI/2;
+ sphere(g,.15,material.gold,0,10.76,0,1);
  return g;
 }
 function bench(parent,x,z,rot=0){
@@ -297,11 +377,7 @@ function zenGarden(){
 function mountainGroup(){
  const g=new THREE.Group();g.position.set(39,-1.6,-55);world.add(g);
  // Fuji is behind the islands, layered in the perspective rather than pasted onto the sky.
- const foot=add(g,new THREE.ConeGeometry(21,14,40),matte(0x6489a1),0,6.5,0);
- foot.scale.z=.85;
- const mountain=add(g,new THREE.ConeGeometry(15.5,19,36),matte(0x617c95),0,12.6,1.2);
- const snow=add(g,new THREE.ConeGeometry(6.05,7.2,36),material.snow,0,18.6,1.2);
- snow.rotation.y=.11;
+ sculptFuji(g);
  for(let i=0;i<11;i++){
   const a=i/11*6.283;
   const peak=add(g,new THREE.ConeGeometry(range(1.9,3.5),range(5,9),5),matte(pick([0x70949e,0x6c879b,0x829cb1])),Math.cos(a)*17,2,Math.sin(a)*12);
@@ -423,11 +499,13 @@ function buildRailway(){
    for(const side of [-1,1]){
     box(g,.09,.45,3.6,material.deepBlue,side*1.01,1.2,0,false);
     for(let j=0;j<4;j++){
-     const window=box(g,.13,.33,.61,material.neonBlue,side*1.04,1.2,-1.32+j*.88,false);
+     const window=box(g,.13,.33,.61,material.warmWindow,side*1.04,1.2,-1.32+j*.88,false);
      window.castShadow=false;
     }
    }
    box(g,2.08,.14,4.55,accent,0,.39,0,false);
+   for(const side of [-1,1])for(const z of [-1.52,1.52]){const wheel=add(g,new THREE.CylinderGeometry(.33,.33,.16,16),material.stoneDark,side*.82,.20,z,false);wheel.rotation.z=Math.PI/2;}
+   box(g,1.35,.14,3.5,material.roof,0,1.99,0,false);
    if(k===0){
     const nose=add(g,new THREE.ConeGeometry(.97,2.1,8),material.cream,0,1.0,2.8);nose.rotation.x=Math.PI/2;
     box(g,1.18,.32,.18,material.lantern,0,1.12,3.5,false);
@@ -590,7 +668,7 @@ function focusStation(id){
  look.targetPitch=id==="kestrel"?.60:.75;
  look.targetDistance=id==="northstar"?38:id==="kestrel"?45:37;
  $("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";
- $("info-stop").textContent="Station "+d.number;
+ $("info-stop").textContent="Selected stop";
  $("info-place").textContent=d.place;
  $("info-title").textContent=d.name;
  $("info-tagline").textContent=d.tagline;
@@ -892,7 +970,7 @@ function startWorld(){
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
   renderer.setClearColor(0x000000,0);
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,window.innerWidth<760?1.5:2));
   raycaster=new THREE.Raycaster();
   buildWorld();
   resize();bindUI();

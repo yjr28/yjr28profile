@@ -72,8 +72,8 @@ try {
   await ready(page);
   assert.equal(await page.locator('h1').count(),1);
   assert.equal(await page.locator('h1').innerText(),'YoungJun Ryu — Engineering projects on the Japan Line');
-  assert.deepEqual(await page.locator('.station[data-station] .station-no').allTextContents(),['1','2','3','4','5']);
-  assert.deepEqual(await page.locator('.marker-pin').allTextContents(),['1','2','3','4','5']);
+  assert.equal(await page.locator('.station[data-station] .station-dot').count(),5);
+  assert.deepEqual(await page.locator('.marker-emblem').allTextContents(),['✦','⚙','❀','富','学']);
   await checkLayout(page,name+' initial');
   await screenshot(page,name);
   let first;
@@ -127,7 +127,7 @@ try {
   const ids=['northstar','axon','aster','kestrel','studyhub'];
   for(const [i,id] of ids.entries()){
    await page.locator('.station[data-station="'+id+'"]').click();await page.waitForTimeout(700);
-   assert.equal(await page.locator('#info-stop').innerText(),'Station '+(i+1));
+   assert.equal(await page.locator('#info-stop').innerText(),'Selected stop');
    assert.equal(await page.locator('#info-primary').getAttribute('href'),'projects/'+id+'/');
    assert.equal(await page.locator('#project-info').getAttribute('aria-hidden'),'false');
    await checkLayout(page,name+' '+id);
