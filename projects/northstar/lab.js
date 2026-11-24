@@ -178,3 +178,6 @@ logAPI("GET","/api/v1/hosts/"+hosts[0].id+"/telemetry?limit=50",200,"Simulated: 
 renderAll();
 setInterval(sampleTelemetry,1500);
 setInterval(processAgent,450);
+
+window.northstarSnapshot=()=>({hosts:hosts.map(h=>({...h,online:hostOnline(h)})),selected:selectedHostId,agentOn,commands:commands.map(c=>({...c}))});
+window.northstarAction=(action,value)=>{if(action==="select")window.northstarSelectHost(value);else if(action==="heartbeat")document.getElementById("heartbeatButton").click();else if(action==="offline")document.getElementById("offlineButton").click();else if(action==="toggle")agentToggle.click();else if(action==="queue"){document.getElementById("commandType").value=value;document.getElementById("commandForm").requestSubmit()}};

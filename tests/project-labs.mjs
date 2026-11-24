@@ -19,7 +19,7 @@ async function visit(page,project){const r=await page.goto(base+"/projects/"+pro
 async function noOverflow(page){assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),"No page-wide horizontal overflow")}
 try{
  await test("northstar",async page=>{
-  await visit(page,"northstar");await page.locator("#hostList [data-host]").first().waitFor();
+  await page.goto(base+"/projects/northstar/operations.html");await page.locator("#hostList [data-host]").first().waitFor();
   assert.equal(await page.locator("#hostList [data-host]").count(),4);
   await page.locator("#hostList [data-host]").nth(1).click();await waitText(page,"#selectedHostName","api-iad-02");
   await page.locator("#offlineButton").click();await waitText(page,"#statusMetric","OFFLINE");
