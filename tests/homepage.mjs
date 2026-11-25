@@ -78,10 +78,10 @@ try {
   assert.equal(await page.locator('#begin-exploring').count(),0);
   assert.ok(await page.locator('.world-intro').evaluate(el=>el.getBoundingClientRect().top>innerHeight*.65),'Intro is a compact bottom caption');
   assert.equal(await page.locator('nav.station-line').count(),0);
-  assert.equal(await page.locator('.world-marker .pixel-click-hand').count(),5);
+  assert.equal(await page.locator('.world-marker .pixel-click-hand').count(),6);
   assert.equal(await page.locator('.train-label .pixel-click-hand').count(),2);
-  assert.equal(await page.locator('.world-marker[href]').count(),5);
-  assert.deepEqual(await page.locator('.marker-emblem').allTextContents(),['✦','⚙','❀','富','学']);
+  assert.equal(await page.locator('.world-marker[href]').count(),6);
+  assert.deepEqual(await page.locator('.marker-emblem').allTextContents(),['✦','⚙','❀','富','学','鍵']);
   await checkLayout(page,name+' initial');
   await screenshot(page,name);
   let first;

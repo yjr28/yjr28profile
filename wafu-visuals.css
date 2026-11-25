@@ -76,3 +76,5 @@
  .world-control-hint{left:auto;right:19px;bottom:112px;max-width:calc(100% - 38px);width:max-content}
  .world-control-hint small{font-size:10px}
 }
+
+.world-marker[data-station=kagi]{--art:url("assets/wafu-kagi.svg");color:#f7e8bf}.world-marker[data-station=kagi] .marker-text{margin-top:2%;margin-left:18%}.world-marker[data-station=studyhub]{z-index:12}.world-marker[data-station=kagi]{z-index:11}.train-label{z-index:8}

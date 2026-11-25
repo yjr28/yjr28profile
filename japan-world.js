@@ -1,5 +1,5 @@
 import * as THREE from "./assets/three.module.js";
-import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=centered-20261124-2";
+import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=kagi-1";
 
 /* THE JAPAN LINE.
    Every part of this world is generated as real 3D geometry, not a flat image.
@@ -15,7 +15,8 @@ const stationData = {
   axon:{number:"2",name:"AXON",place:"認知訓練 / Cognitive training lab",tagline:"Train. Measure. Improve.",description:"A competitive cognitive training application built with Expo, Go, PostgreSQL, Redis and Python. Play a timed exercise using the actual client task engine and inspect your results.",meta:["Expo / Go","PostgreSQL / Redis","Python","Seeded tasks"],url:"projects/axon/",source:"https://github.com/yjr28/Axon",pos:[-14,2,20],camera:[-13,20,42]},
   aster:{number:"3",name:"Aster",place:"京都・庭園 / Kyoto gardens",tagline:"Choose a plan. Know when to abstain.",description:"A PostgreSQL query-plan ranking prototype that scores candidate plans while enforcing uncertainty and decision-margin thresholds. The demo runs its Python ranker inside your browser.",meta:["PostgreSQL","Python","Query planning","Confidence gates"],url:"projects/aster/",source:"https://github.com/yjr28/aster-pg-optimizer",pos:[-7,2,-20],camera:[12,21,16]},
   kestrel:{number:"4",name:"Kestrel",place:"富士山 / The Fuji observatory",tagline:"Find the first divergence, not the loudest symptom.",description:"A Go distributed-systems flight recorder with causal traces and replayable seeded faults. Inject latency and follow the events through a ten-service request using the actual Go core compiled to WebAssembly.",meta:["Go / WebAssembly","Causal traces","Fault injection","Replay"],url:"projects/kestrel/",source:"https://github.com/yjr28/kestrel-replay",pos:[20,2,-22],camera:[34,25,21]},
-  studyhub:{number:"5",name:"Waseda Study Hub",place:"早稲田・東京 / Waseda campus",tagline:"Build campus software with a trust boundary.",description:"A student discovery and study-buddy product with verified university sign-in, private conversations, and AI-assisted matching. Explore the authorization and ranking decisions in its case study.",meta:["Next.js","Firebase","Auth / privacy","AI matching"],url:"projects/studyhub/",source:"https://github.com/Waseda-Study-Hub/frontend",pos:[39,2,-2],camera:[29,22,49]}
+  studyhub:{number:"5",name:"Waseda Study Hub",place:"早稲田・東京 / Waseda campus",tagline:"Build campus software with a trust boundary.",description:"A student discovery and study-buddy product with verified university sign-in, private conversations, and AI-assisted matching. Explore the authorization and ranking decisions in its case study.",meta:["Next.js","Firebase","Auth / privacy","AI matching"],url:"projects/studyhub/",source:"https://github.com/Waseda-Study-Hub/frontend",pos:[39,2,-2],camera:[29,22,49]},
+  kagi:{number:"6",name:"Kagi",place:"水門 / Water gate",tagline:"A collaborative hackathon project.",description:"Explore Kagi, a project built with a partner, on its official Devpost submission.",meta:["Collaborative project","Hackathon"],url:"projects/kagi/",source:"https://devpost.com/software/kagi",pos:[4,1,10],camera:[4,20,42]}
 };
 const LASTRIDE = "https://lastride.jp/en/";
 const clamp = THREE.MathUtils.clamp;
@@ -314,7 +315,7 @@ function bindUI(){
   if(e.key.toLowerCase()==="t"){$("ride-toggle").click();e.preventDefault();return}
   if(e.key.toLowerCase()==="m"){toggleMap();e.preventDefault();return}
   if(e.key.toLowerCase()==="r"){resetOverview();e.preventDefault();return}
-  if(/^[1-5]$/.test(e.key)){focusStation(Object.keys(stationData)[Number(e.key)-1]);e.preventDefault();return}
+  if(/^[1-6]$/.test(e.key)){focusStation(Object.keys(stationData)[Number(e.key)-1]);e.preventDefault();return}
   if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a"){look.targetYaw-=.16;e.preventDefault()}
   if(e.key==="ArrowRight"||e.key.toLowerCase()==="d"){look.targetYaw+=.16;e.preventDefault()}
   if(e.key==="ArrowUp"||e.key.toLowerCase()==="w"){look.targetDistance=clamp(look.targetDistance*.91,minDistance,maxDistance);e.preventDefault()}
@@ -510,7 +511,7 @@ function placeLabel(label,point,occupied,lifts,slide=false){
  let placed=null;
  if(point&&size){
   placement: for(const lift of lifts){
-   for(const shift of slide?[0,-size.width*.4,size.width*.4]:[0]){
+   for(const shift of slide?[0,-size.width*.4,size.width*.4,-size.width*.8,size.width*.8]:[0]){
    const rect={left:point.x-size.width/2+shift,right:point.x+size.width/2+shift,top:point.y-size.height-lift,bottom:point.y-lift};
    if(rect.left<8||rect.right>app.clientWidth-8||rect.top<8||rect.bottom>app.clientHeight-8)continue;
    if(occupied.some(other=>overlaps(rect,other)))continue;
@@ -534,16 +535,17 @@ function updateMarkers(){
  const occupied=Array.from(document.querySelectorAll(overlaySelectors.join(",")))
   .filter(el=>getComputedStyle(el).visibility!=="hidden")
   .map(el=>{const r=el.getBoundingClientRect();return {left:r.left-appBounds.left,right:r.right-appBounds.left,top:r.top-appBounds.top,bottom:r.bottom-appBounds.top}});
- // The roof point comes from the very same lead carriage that is rendered this frame.
- // No independent CSS animation or route approximation can drift away from the train.
+ // Reserve every fixed project sign before moving train advertisements.
+ const ordered=[...markerButtons].sort((a,b)=>Number(b.dataset.station==="studyhub")-Number(a.dataset.station==="studyhub"));
+ for(const marker of ordered){
+  const point=projectAnchor(V(...anchors[marker.dataset.station]));
+  placeLabel(marker,point,occupied,[9,25,43,62,82,110,140,175,210],true);
+ }
+ // Moving labels yield to station signs, not the other way around.
  trains.forEach((train,i)=>{
   const roof=train.cars[0].localToWorld(V(0,2.1,0));
-  placeLabel(trainLabels[i],projectAnchor(roof),occupied,[9,25,45]);
+  placeLabel(trainLabels[i],projectAnchor(roof),occupied,[9,25,45,65,90],true);
  });
- for(const marker of markerButtons){
-  const d=stationData[marker.dataset.station];
-  placeLabel(marker,projectAnchor(V(...anchors[marker.dataset.station])),occupied,[9,25,43,62,82],true);
- }
 }
 
 function startWorld(){
