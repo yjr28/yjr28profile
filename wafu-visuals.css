@@ -78,3 +78,11 @@
 }
 
 .world-marker[data-station=kagi]{--art:url("assets/wafu-kagi.svg");color:#f7e8bf}.world-marker[data-station=kagi] .marker-text{margin-top:2%;margin-left:18%}.world-marker[data-station=studyhub]{z-index:12}.world-marker[data-station=kagi]{z-index:11}.train-label{z-index:8}
+
+/* Compact signs give the scenery breathing room and keep all destinations visible. */
+.world-marker,.world-marker:hover,.world-marker[aria-pressed=true]{width:clamp(126px,11.3vw,195px);height:clamp(54px,5.05vw,87px)}
+.train-label,.train-label:hover,.train-label-green,.train-label-green:hover{width:clamp(132px,11.7vw,202px);height:clamp(58px,5.25vw,90px)}
+.marker-text,.train-destination{font-size:clamp(15px,1.48vw,25px)}
+.marker-text small,.train-destination small{font-size:clamp(7px,.62vw,10px)}
+.world-marker::after,.train-label::after{top:var(--stem-y,100%);left:var(--stem-x,50%);height:var(--leader,12px);transform:rotate(var(--stem-angle,0rad));transform-origin:top center;pointer-events:none}
+@media(max-width:760px){.world-marker,.world-marker:hover,.world-marker[aria-pressed=true]{width:98px;height:44px}.train-label,.train-label:hover,.train-label-green,.train-label-green:hover{width:104px;height:47px}.marker-text,.train-destination{font-size:13px}}

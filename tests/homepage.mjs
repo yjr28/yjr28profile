@@ -16,7 +16,7 @@ window.__japanTest = {
   trains:trains.map((t,i)=>{const p=t.cars[0].localToWorld(V(0,2.1,0));const ndc=p.clone().project(camera);const r=trainLabels[i].getBoundingClientRect();return {
    world:p.toArray(),x:(ndc.x*.5+.5)*viewport.width,y:(-ndc.y*.5+.5)*viewport.height,
    visible:getComputedStyle(trainLabels[i]).visibility==='visible',left:r.left,right:r.right,top:r.top,bottom:r.bottom,
-   leader:parseFloat(trainLabels[i].style.getPropertyValue('--leader'))};})};},
+   leader:parseFloat(trainLabels[i].style.getPropertyValue('--leader')),stemX:parseFloat(trainLabels[i].style.getPropertyValue('--stem-x')),stemY:parseFloat(trainLabels[i].style.getPropertyValue('--stem-y')),angle:parseFloat(trainLabels[i].style.getPropertyValue('--stem-angle'))};})};},
  freeze(){animated.motion=false;},
  sampleRoute(t){const p=railwayCurve.getPointAt(t).project(camera);return {x:(p.x*.5+.5)*viewport.width,y:(-p.y*.5+.5)*viewport.height};},
  hit(x,y){return rayHit({clientX:x,clientY:y});},
@@ -82,15 +82,15 @@ try {
   assert.equal(await page.locator('.train-label .pixel-click-hand').count(),2);
   assert.equal(await page.locator('.world-marker[href]').count(),6);
   assert.deepEqual(await page.locator('.marker-emblem').allTextContents(),['✦','⚙','❀','富','学','鍵']);
-  if(!mobile)assert.equal(await page.locator('.world-marker[data-station=studyhub]').isVisible(),true,'Study Hub is visible in the desktop overview');
+  if(!mobile){assert.equal(await page.locator('.world-marker:visible').count(),6,'all six permanent project signs visible');assert.equal(await page.locator('.train-label:visible').count(),2,'both LastRide signs visible');}
   await checkLayout(page,name+' initial');
   await screenshot(page,name);
   let first;
   for(let i=0;i<8;i++){
    const snap=await page.evaluate(()=>window.__japanTest.snapshot());
    if(!first) first=snap;
-   snap.trains.forEach(t=>{if(t.visible){assert.ok(Math.abs((t.left+t.right)/2-t.x)<.15,'label follows actual carriage x');assert.ok(Math.abs(t.bottom+t.leader-t.y)<.15,'leader ends at actual roof y');assert.ok(t.bottom<t.y,'sign stays above train');}});
-   if(!mobile)assert.equal(await page.locator('.world-marker[data-station=studyhub]').isVisible(),true,'Study Hub is not displaced by moving train signs');
+   snap.trains.forEach(t=>{if(t.visible){assert.ok(Math.abs(t.left+t.stemX-Math.sin(t.angle)*t.leader-t.x)<.6,'leader follows actual carriage x');assert.ok(Math.abs(t.top+t.stemY+Math.cos(t.angle)*t.leader-t.y)<.6,'leader ends at actual roof y');}});
+   if(!mobile){assert.equal(await page.locator('.world-marker:visible').count(),6,'station signs stay visible');assert.equal(await page.locator('.train-label:visible').count(),2,'moving train signs stay visible');}
    await checkLayout(page,name+' tracking '+i);
    await page.waitForTimeout(180);
   }

@@ -1,5 +1,5 @@
 import * as THREE from "./assets/three.module.js";
-import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=kagi-1";
+import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=harbor-2";
 
 /* THE JAPAN LINE.
    Every part of this world is generated as real 3D geometry, not a flat image.
@@ -16,7 +16,7 @@ const stationData = {
   aster:{number:"3",name:"Aster",place:"京都・庭園 / Kyoto gardens",tagline:"Choose a plan. Know when to abstain.",description:"A PostgreSQL query-plan ranking prototype that scores candidate plans while enforcing uncertainty and decision-margin thresholds. The demo runs its Python ranker inside your browser.",meta:["PostgreSQL","Python","Query planning","Confidence gates"],url:"projects/aster/",source:"https://github.com/yjr28/aster-pg-optimizer",pos:[-7,2,-20],camera:[12,21,16]},
   kestrel:{number:"4",name:"Kestrel",place:"富士山 / The Fuji observatory",tagline:"Find the first divergence, not the loudest symptom.",description:"A Go distributed-systems flight recorder with causal traces and replayable seeded faults. Inject latency and follow the events through a ten-service request using the actual Go core compiled to WebAssembly.",meta:["Go / WebAssembly","Causal traces","Fault injection","Replay"],url:"projects/kestrel/",source:"https://github.com/yjr28/kestrel-replay",pos:[20,2,-22],camera:[34,25,21]},
   studyhub:{number:"5",name:"Waseda Study Hub",place:"早稲田・東京 / Waseda campus",tagline:"Build campus software with a trust boundary.",description:"A student discovery and study-buddy product with verified university sign-in, private conversations, and AI-assisted matching. Explore the authorization and ranking decisions in its case study.",meta:["Next.js","Firebase","Auth / privacy","AI matching"],url:"projects/studyhub/",source:"https://github.com/Waseda-Study-Hub/frontend",pos:[39,2,-2],camera:[29,22,49]},
-  kagi:{number:"6",name:"Kagi",place:"水門 / Water gate",tagline:"A collaborative hackathon project.",description:"Explore Kagi, a project built with a partner, on its official Devpost submission.",meta:["Collaborative project","Hackathon"],url:"projects/kagi/",source:"https://devpost.com/software/kagi",pos:[4,1,10],camera:[4,20,42]}
+  kagi:{number:"6",name:"Kagi",place:"水門 / Water gate",tagline:"A collaborative hackathon project.",description:"Explore Kagi, a project built with a partner, on its official Devpost submission.",meta:["Collaborative project","Hackathon"],url:"projects/kagi/",source:"https://devpost.com/software/kagi",pos:[65,3,27],camera:[65,28,62]}
 };
 const LASTRIDE = "https://lastride.jp/en/";
 const clamp = THREE.MathUtils.clamp;
@@ -239,7 +239,7 @@ function closeInfo(){
 function resetOverview({animate=true}={}){
  exitRide();closeInfo();closeAbout();
  animated.overview=true;
- look.target.set(0,1,0);look.targetYaw=.08;look.targetPitch=1.14;look.targetDistance=window.innerWidth<760?115:124;
+ look.target.set(12,1,2);look.targetYaw=.08;look.targetPitch=1.14;look.targetDistance=window.innerWidth<760?146:138;
  $("overview-toggle").setAttribute("aria-pressed","true");$("overview-label").textContent="Free camera";
  if(!animate){look.center.copy(look.target);look.yaw=look.targetYaw;look.pitch=look.targetPitch;look.distance=look.targetDistance}
 }
@@ -250,7 +250,7 @@ function focusStation(id){
  look.target.set(...d.pos);
  look.targetYaw=id==="northstar"?.24:id==="studyhub"?-.18:id==="kestrel"?-.12:.28;
  look.targetPitch=id==="kestrel"?.60:.75;
- look.targetDistance=id==="northstar"?38:id==="kestrel"?45:37;
+ look.targetDistance=id==="northstar"?38:id==="kestrel"?45:id==="kagi"?44:37;
  $("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";
  $("info-stop").textContent="Selected stop";
  $("info-place").textContent=d.place;
@@ -273,7 +273,7 @@ function focusStation(id){
  // Details and links are available before the camera settles.
 }
 function toggleMap(){
- if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";look.target.set(1,5,-1);look.targetYaw=.035;look.targetPitch=.60;look.targetDistance=window.innerWidth<760?128:112;return}
+ if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";look.target.set(12,5,2);look.targetYaw=.035;look.targetPitch=.60;look.targetDistance=window.innerWidth<760?146:126;return}
  resetOverview();
 }
 function bindUI(){
@@ -507,26 +507,32 @@ function projectAnchor(position){
  return {x:viewport.left+(projected.x*.5+.5)*viewport.width,y:viewport.top+(-projected.y*.5+.5)*viewport.height};
 }
 function placeLabel(label,point,occupied,lifts,slide=false){
- const size=labelSizes.get(label);
- let placed=null;
+ const size=labelSizes.get(label);let placed=null;
  if(point&&size){
-  placement: for(const lift of lifts){
-   for(const shift of slide?[0,-size.width*.4,size.width*.4,-size.width*.8,size.width*.8]:[0]){
-   const rect={left:point.x-size.width/2+shift,right:point.x+size.width/2+shift,top:point.y-size.height-lift,bottom:point.y-lift};
-   if(rect.left<8||rect.right>app.clientWidth-8||rect.top<8||rect.bottom>app.clientHeight-8)continue;
-   if(occupied.some(other=>overlaps(rect,other)))continue;
-   placed=rect;break placement;
-   }
+  const W=app.clientWidth,H=app.clientHeight,w=size.width,h=size.height;
+  const preferred={x:point.x-w/2,y:point.y-h-12};
+  const valid=(x,y)=>{const rect={left:x,right:x+w,top:y,bottom:y+h};return rect.left>=8&&rect.right<=W-8&&rect.top>=8&&rect.bottom<=H-8&&!occupied.some(other=>overlaps(rect,other))?rect:null};
+  const candidates=[];
+  for(const lift of lifts)for(const shift of (slide?[0,-.22,.22,-.45,.45,-.75,.75,-1,1]:[0]))candidates.push([preferred.x+shift*w,point.y-h-lift]);
+  // Find the nearest unoccupied rectangle, including lateral and lower placements.
+  // No station is discarded simply because a moving train passes beneath it.
+  if(slide){
+   const xs=[8,W-w-8,clamp(preferred.x,8,Math.max(8,W-w-8))],ys=[8,H-h-8,clamp(preferred.y,8,Math.max(8,H-h-8))];
+   for(const o of occupied){xs.push(o.left-w-8,o.right+8);ys.push(o.top-h-8,o.bottom+8)}
+   for(const x of xs)for(const y of ys)candidates.push([x,y]);
   }
+  let best=Infinity;
+  for(const [x,y] of candidates){const r=valid(x,y);if(!r)continue;const score=(x-preferred.x)**2+(y-preferred.y)**2*1.25+(y>=point.y?2000:0);if(score<best){best=score;placed=r}}
  }
- // Visibility also removes offscreen signs from keyboard navigation.
- label.classList.toggle("marker-hidden",!placed);
- label.style.visibility=placed?"visible":"hidden";
+ label.classList.toggle("marker-hidden",!placed);label.style.visibility=placed?"visible":"hidden";
  if(placed){
-  label.style.left=placed.left+"px";label.style.top=placed.top+"px";
-  label.style.transform="none";
-  label.style.setProperty("--leader",(point.y-placed.bottom)+"px");
-  label.style.setProperty("--stem-x",(point.x-placed.left)+"px");
+  label.style.left=placed.left+"px";label.style.top=placed.top+"px";label.style.transform="none";
+  // A rotated leader connects the actual projected roof/landmark to the sign
+  // even when the collision solver needs to slide the sign sideways.
+  const sx=clamp(point.x-placed.left,8,size.width-8),sy=point.y<placed.top?0:point.y>placed.bottom?size.height:(point.x<placed.left?size.height*.5:point.x>placed.right?size.height*.5:size.height);
+  const dx=point.x-(placed.left+sx),dy=point.y-(placed.top+sy);
+  label.style.setProperty("--stem-x",sx+"px");label.style.setProperty("--stem-y",sy+"px");
+  label.style.setProperty("--leader",Math.hypot(dx,dy)+"px");label.style.setProperty("--stem-angle",(-Math.atan2(dx,dy))+"rad");
   occupied.push(placed);
  }
 }
@@ -535,17 +541,9 @@ function updateMarkers(){
  const occupied=Array.from(document.querySelectorAll(overlaySelectors.join(",")))
   .filter(el=>getComputedStyle(el).visibility!=="hidden")
   .map(el=>{const r=el.getBoundingClientRect();return {left:r.left-appBounds.left,right:r.right-appBounds.left,top:r.top-appBounds.top,bottom:r.bottom-appBounds.top}});
- // Reserve every fixed project sign before moving train advertisements.
  const ordered=[...markerButtons].sort((a,b)=>Number(b.dataset.station==="studyhub")-Number(a.dataset.station==="studyhub"));
- for(const marker of ordered){
-  const point=projectAnchor(V(...anchors[marker.dataset.station]));
-  placeLabel(marker,point,occupied,[9,25,43,62,82,110,140,175,210],true);
- }
- // Moving labels yield to station signs, not the other way around.
- trains.forEach((train,i)=>{
-  const roof=train.cars[0].localToWorld(V(0,2.1,0));
-  placeLabel(trainLabels[i],projectAnchor(roof),occupied,[9,25,45,65,90]);
- });
+ for(const marker of ordered)placeLabel(marker,projectAnchor(V(...anchors[marker.dataset.station])),occupied,[9,25,43,62,82,110,140,175,210],true);
+ trains.forEach((train,i)=>{const roof=train.cars[0].localToWorld(V(0,2.1,0));placeLabel(trainLabels[i],projectAnchor(roof),occupied,[9,25,45,65,90,120,160],true)});
 }
 
 function startWorld(){
@@ -562,7 +560,7 @@ function startWorld(){
   resetOverview({animate:false});
   animated.overview=false;
   // Center the complete diorama, including Fuji and the outer rail curve.
-  look.target.set(1,5,-1);look.center.copy(look.target);look.targetPitch=.60;look.pitch=.60;look.targetDistance=window.innerWidth<760?128:112;look.distance=look.targetDistance;look.targetYaw=.035;look.yaw=.035;
+  look.target.set(12,5,2);look.center.copy(look.target);look.targetPitch=.60;look.pitch=.60;look.targetDistance=window.innerWidth<760?146:126;look.distance=look.targetDistance;look.targetYaw=.035;look.yaw=.035;
   $("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";
   window.addEventListener("resize",resize,{passive:true});
   window.addEventListener("visibilitychange",()=>{lastFrame=performance.now()});
