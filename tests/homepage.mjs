@@ -17,6 +17,7 @@ window.__japanTest = {
    world:p.toArray(),x:(ndc.x*.5+.5)*viewport.width,y:(-ndc.y*.5+.5)*viewport.height,
    visible:getComputedStyle(trainLabels[i]).visibility==='visible',left:r.left,right:r.right,top:r.top,bottom:r.bottom,
    leader:parseFloat(trainLabels[i].style.getPropertyValue('--leader')),stemX:parseFloat(trainLabels[i].style.getPropertyValue('--stem-x')),stemY:parseFloat(trainLabels[i].style.getPropertyValue('--stem-y')),angle:parseFloat(trainLabels[i].style.getPropertyValue('--stem-angle'))};})};},
+ testRouteCoverage(){const old=trains.map(t=>t.start);const failures=[];try{for(let i=0;i<32;i++){trains.forEach((t,k)=>{t.start=(old[k]+i/32)%1;positionTrain(t)});updateMarkers();const missing=[...markerButtons,...trainLabels].filter(l=>getComputedStyle(l).visibility!=='visible').map(l=>l.dataset.station||'LastRide');if(missing.length)failures.push({phase:i,missing})}return failures}finally{trains.forEach((t,k)=>{t.start=old[k];positionTrain(t)});updateMarkers()}},
  freeze(){animated.motion=false;},
  sampleRoute(t){const p=railwayCurve.getPointAt(t).project(camera);return {x:(p.x*.5+.5)*viewport.width,y:(-p.y*.5+.5)*viewport.height};},
  hit(x,y){return rayHit({clientX:x,clientY:y});},
@@ -83,6 +84,7 @@ try {
   assert.equal(await page.locator('.world-marker[href]').count(),6);
   assert.deepEqual(await page.locator('.marker-emblem').allTextContents(),['✦','⚙','❀','富','学','鍵']);
   if(!mobile){assert.equal(await page.locator('.world-marker:visible').count(),6,'all six permanent project signs visible');assert.equal(await page.locator('.train-label:visible').count(),2,'both LastRide signs visible');}
+  if(!mobile)assert.deepEqual(await page.evaluate(()=>window.__japanTest.testRouteCoverage()),[],'All eight signs remain visible across 32 sampled railway phases');
   await checkLayout(page,name+' initial');
   await screenshot(page,name);
   let first;

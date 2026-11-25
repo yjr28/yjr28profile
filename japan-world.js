@@ -1,5 +1,5 @@
 import * as THREE from "./assets/three.module.js";
-import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=harbor-2";
+import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=harbor-3";
 
 /* THE JAPAN LINE.
    Every part of this world is generated as real 3D geometry, not a flat image.

@@ -126,7 +126,7 @@ function waterGate(world,mark){
  b.box("dark",0,5.53,.51,1.55,1.08,.15);b.box("gold",0,5.53,.61,1.28,.85,.045);b.box("red",0,5.53,.65,1.06,.64,.04);b.put("ring","gold",0,5.53,.68,.27,.27,.06);b.box("gold",0,5.21,.69,.07,.44,.04);b.box("gold",.12,5.05,.69,.20,.07,.04);
  for(const x of [-2,-1,1,2]){b.put("cyl","gold",x,4.39,0,.036,.55,.036);b.box("lamp",x,3.99,0,.19,.30,.19);b.box("dark",x,3.80,0,.24,.055,.24)}
  // Traditional covered boat moored alongside, separate from the central passage.
- const boat=new T.Group();boat.position.set(.3,-1.38,5.1);boat.rotation.y=-.18;g.add(boat);const bb=batch(boat);
+ const boat=new T.Group();boat.position.set(.3,-.74,5.1);boat.rotation.y=-.18;g.add(boat);const bb=batch(boat);
  for(let i=0;i<28;i++){const z=(i-13.5)*.22,w=.28+1.18*Math.sin((i+.5)/28*Math.PI);bb.box("wood",0,-.64,z,w,.30,.23);for(const side of [-1,1]){bb.box("dark",side*w*.48,-.46,z,.075,.35,.23);bb.box("gold",side*w*.49,-.25,z,.05,.055,.23)}}
  bb.box("wood",0,-.30,0,1.23,.13,3.9);
  for(const x of [-.56,.56])for(const z of [-1.35,1.35])bb.box("dark",x,.26,z,.085,1.05,.085);
