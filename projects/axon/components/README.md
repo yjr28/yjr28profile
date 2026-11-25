@@ -1,0 +1,1 @@
+Original Card, Table and Chart source from shadcn/ui commit 055aa6b7837b1808456a24beb4c97a677864aa82, listed on 21st.dev/@shadcn. MIT license retained. AXON composes the upstream components with the original task engine and real session data.
