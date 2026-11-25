@@ -1,5 +1,5 @@
 import * as THREE from "./assets/three.module.js";
-import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=harbor-3";
+import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=detail-1";
 import {addStationPeople,addConductor} from "./wafu-people.js?v=1";
 
 /* THE JAPAN LINE.
@@ -111,7 +111,7 @@ function buildRailway(){
    railPts.push(p.add(side));
   }
   const railCurve=new THREE.CatmullRomCurve3(railPts,false,"centripetal");
-  const rail=add(world,new THREE.TubeGeometry(railCurve,N,Math.abs(offset)>1?.14:.11,6,false),Math.abs(offset)>1?material.vermillion:material.rail,0,0,0,false);
+  const rail=add(world,new THREE.TubeGeometry(railCurve,N,Math.abs(offset)>1?.14:.11,10,false),Math.abs(offset)>1?material.vermillion:material.rail,0,0,0,false);
   mark(rail,"route",LASTRIDE);rail.name="Clickable LastRide rail";
  }
  // Invisible to the eye, but large enough to hit with a mouse or touch.
@@ -125,6 +125,9 @@ function buildRailway(){
   dummy.rotation.set(0,Math.atan2(tan.x,tan.z),0);dummy.scale.setScalar(1);dummy.updateMatrix();sleepers.setMatrixAt(i,dummy.matrix);
  }
  sleepers.instanceMatrix.needsUpdate=true;
+ // Two rows of miniature fasteners bind the rail to the sleepers.
+ const clips=new THREE.InstancedMesh(new THREE.BoxGeometry(.16,.055,.20),material.stoneDark,740);world.add(clips);clips.receiveShadow=true;
+ for(let i=0;i<370;i++){const p=railwayCurve.getPointAt(i/370),v=railwayCurve.getTangentAt(i/370),side=V(-v.z,0,v.x).normalize();for(let k=0;k<2;k++){dummy.position.copy(p).addScaledVector(side,k===0?-.73:.73).add(V(0,-.09,0));dummy.rotation.set(0,Math.atan2(v.x,v.z),0);dummy.scale.setScalar(1);dummy.updateMatrix();clips.setMatrixAt(i*2+k,dummy.matrix)}}clips.instanceMatrix.needsUpdate=true;
  buildViaduct(world,railwayCurve,railLength);
  // Deliberately contrasting cream shinkansen that remain animated even when the camera rests.
  function addTrain(start,accent){
@@ -139,13 +142,17 @@ function buildRailway(){
     for(let j=0;j<4;j++){
      const window=box(g,.13,.33,.61,material.warmWindow,side*1.04,1.2,-1.32+j*.88,false);
      window.castShadow=false;
+     for(const z of [-1.32+j*.88-.32,-1.32+j*.88+.32])box(g,.035,.39,.045,material.gold,side*1.105,1.2,z,false);
+     for(const y of [1.39,1.01])box(g,.035,.045,.66,material.gold,side*1.105,y,-1.32+j*.88,false);
     }
    }
    box(g,2.08,.14,4.55,accent,0,.39,0,false);
    for(const side of [-1,1])for(const z of [-1.52,1.52]){const wheel=add(g,new THREE.CylinderGeometry(.33,.33,.16,16),material.stoneDark,side*.82,.20,z,false);wheel.rotation.z=Math.PI/2;}
    box(g,1.35,.14,3.5,material.roof,0,1.99,0,false);
+   for(const z of [-1.18,.92]){box(g,.72,.075,.50,material.stoneDark,0,2.10,z,false);for(let n=0;n<5;n++)box(g,.58,.028,.033,material.rail,0,2.15,z-.16+n*.08,false)}
+   for(const side of [-1,1]){box(g,.032,.91,.56,material.cream,side*1.075,.95,1.8,false);box(g,.036,.42,.31,material.deepBlue,side*1.099,1.18,1.8,false);box(g,.05,.04,.12,material.gold,side*1.12,.89,1.95,false)}
    if(k===0){
-    const nose=sphere(g,1,material.cream,0,.98,2.18,3);nose.scale.set(.99,.88,1.17);
+    const nose=sphere(g,1,material.cream,0,.98,2.18,4);nose.scale.set(.99,.88,1.17);
     const windshield=sphere(g,.65,material.deepBlue,0,1.31,2.88,2);windshield.scale.set(1.18,.47,.40);
     for(const x of [-.55,.55]){const l=sphere(g,.15,material.lantern,x,.74,3.15,2);l.scale.set(1,.7,.65);}
    }
@@ -165,6 +172,8 @@ function buildRailway(){
   box(platform,2.3,.31,5.5,material.stone,0,0,0);
   for(const zz of [-2.2,2.2])cyl(platform,.08,.08,2.1,material.red,-.75,1.05,zz,6);
   box(platform,2.5,.2,5.8,material.roofGreen,-.75,2.12,0);
+  for(let n=0;n<12;n++)box(platform,2.49,.07,.055,material.roof,-.75,2.24,-2.7+n*.49,false);
+  for(const z of [-1.65,1.65]){box(platform,.55,.12,1.05,material.cream,-.45,.67,z);for(const zz of [-.4,.4])box(platform,.07,.50,.07,material.stoneDark,-.45,.34,z+zz)}
   lantern(platform,-.83,1.5,.22);
   if(t===.23)addConductor(platform,stationActors);
  }
@@ -209,9 +218,9 @@ function buildWorld(){
  scene.add(new THREE.HemisphereLight(0xfff3df,0x486b82,1.17));
  scene.add(new THREE.AmbientLight(0xbcdfff,.22));
  const sun=new THREE.DirectionalLight(0xffdfac,3.0);sun.position.set(55,60,16);sun.castShadow=true;
- sun.shadow.mapSize.set(window.innerWidth<760?1024:2048,window.innerWidth<760?1024:2048);
+ const shadowSize=window.innerWidth<760?1024:Math.min(3072,renderer.capabilities.maxTextureSize);sun.shadow.mapSize.set(shadowSize,shadowSize);
  sun.shadow.camera.left=-82;sun.shadow.camera.right=82;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;
- sun.shadow.camera.near=2;sun.shadow.camera.far=210;sun.shadow.normalBias=.08;sun.shadow.bias=-.0003;sun.shadow.radius=3;
+ sun.shadow.camera.near=2;sun.shadow.camera.far=210;sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;sun.shadow.radius=2;
  scene.add(sun);
  const fill=new THREE.DirectionalLight(0xc0dfff,1.1);fill.position.set(-45,24,-45);scene.add(fill);
  buildScenery({world,mark,swayers,pulses});
