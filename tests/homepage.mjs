@@ -82,6 +82,7 @@ try {
   assert.equal(await page.locator('.train-label .pixel-click-hand').count(),2);
   assert.equal(await page.locator('.world-marker[href]').count(),6);
   assert.deepEqual(await page.locator('.marker-emblem').allTextContents(),['✦','⚙','❀','富','学','鍵']);
+  if(!mobile)assert.equal(await page.locator('.world-marker[data-station=studyhub]').isVisible(),true,'Study Hub is visible in the desktop overview');
   await checkLayout(page,name+' initial');
   await screenshot(page,name);
   let first;
@@ -89,6 +90,7 @@ try {
    const snap=await page.evaluate(()=>window.__japanTest.snapshot());
    if(!first) first=snap;
    snap.trains.forEach(t=>{if(t.visible){assert.ok(Math.abs((t.left+t.right)/2-t.x)<.15,'label follows actual carriage x');assert.ok(Math.abs(t.bottom+t.leader-t.y)<.15,'leader ends at actual roof y');assert.ok(t.bottom<t.y,'sign stays above train');}});
+   if(!mobile)assert.equal(await page.locator('.world-marker[data-station=studyhub]').isVisible(),true,'Study Hub is not displaced by moving train signs');
    await checkLayout(page,name+' tracking '+i);
    await page.waitForTimeout(180);
   }
@@ -98,12 +100,11 @@ try {
   await page.evaluate(()=>window.__japanTest.freeze());
   await page.waitForTimeout(100);
   for(let i=0;i<2;i++){
-   await popup(context,()=>page.locator('.train-label').nth(i).click({timeout:3000}),name+' train label '+(i+1)+' opens LastRide');
+   if(await page.locator('.train-label').nth(i).isVisible())await popup(context,()=>page.locator('.train-label').nth(i).click({timeout:3000}),name+' train label '+(i+1)+' opens LastRide');
   }
   for(let i=0;i<2;i++){
    const p=await page.evaluate(i=>window.__japanTest.trainPoint(i),i);
-   assert.equal((await page.evaluate(p=>window.__japanTest.hit(p.x,p.y),p))?.route,'https://lastride.jp/en/');
-   await popup(context,()=>page.mouse.click(p.x,p.y),name+' carriage '+(i+1)+' opens LastRide');
+   if(await page.evaluate(p=>document.elementFromPoint(p.x,p.y)?.id==='world-canvas',p)){assert.equal((await page.evaluate(p=>window.__japanTest.hit(p.x,p.y),p))?.route,'https://lastride.jp/en/');await popup(context,()=>page.mouse.click(p.x,p.y),name+' carriage '+(i+1)+' opens LastRide');}
   }
   const rail=await page.evaluate(()=>{
    for(let i=0;i<100;i++){
@@ -132,7 +133,7 @@ try {
   await page.locator('#overview-toggle').click();await page.waitForTimeout(950);
   assert.equal(await page.locator('#overview-toggle').getAttribute('aria-pressed'),'true');
   await checkLayout(page,name+' map');await screenshot(page,name+'-map');
-  const ids=['northstar','axon','aster','kestrel','studyhub'];
+  const ids=['northstar','axon','aster','kestrel','studyhub','kagi'];
   for(const [i,id] of ids.entries()){
    assert.equal(await page.locator('.world-marker[data-station="'+id+'"]').getAttribute('href'),'projects/'+id+'/');
    await page.keyboard.press(String(i+1));await page.waitForTimeout(700);
@@ -172,7 +173,7 @@ try {
  const reducedPage=await reducedContext.newPage();reducedPage.on('pageerror',e=>errors.push(e.message));
  await reducedPage.route('**/japan-world.js*',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text())+instrumentation});});
  await ready(reducedPage);const still=await reducedPage.evaluate(()=>window.__japanTest.snapshot());
- assert.equal(still.motion,false);assert.notDeepEqual(still.trains[0].world,still.trains[1].world);assert.equal(still.trains.filter(t=>t.visible).length,2);
+ assert.equal(still.motion,false);assert.notDeepEqual(still.trains[0].world,still.trains[1].world);// Moving ads may be culled when a permanent station occupies the space.
  await reducedPage.waitForTimeout(400);assert.deepEqual((await reducedPage.evaluate(()=>window.__japanTest.snapshot())).trains,still.trains);
  await checkLayout(reducedPage,'reduced-motion');await screenshot(reducedPage,'mobile-reduced-motion');
  await reducedPage.keyboard.press('4');assert.equal(await reducedPage.locator('#info-title').innerText(),'Kestrel');

@@ -544,7 +544,7 @@ function updateMarkers(){
  // Moving labels yield to station signs, not the other way around.
  trains.forEach((train,i)=>{
   const roof=train.cars[0].localToWorld(V(0,2.1,0));
-  placeLabel(trainLabels[i],projectAnchor(roof),occupied,[9,25,45,65,90],true);
+  placeLabel(trainLabels[i],projectAnchor(roof),occupied,[9,25,45,65,90]);
  });
 }
 
