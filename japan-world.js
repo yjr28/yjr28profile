@@ -272,7 +272,7 @@ function focusStation(id){
  // Details and links are available before the camera settles.
 }
 function toggleMap(){
- if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";look.target.set(1,5,-1);look.targetYaw=.035;look.targetPitch=.60;look.targetDistance=128;return}
+ if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";look.target.set(1,5,-1);look.targetYaw=.035;look.targetPitch=.60;look.targetDistance=window.innerWidth<760?128:112;return}
  resetOverview();
 }
 function bindUI(){
@@ -560,7 +560,7 @@ function startWorld(){
   resetOverview({animate:false});
   animated.overview=false;
   // Center the complete diorama, including Fuji and the outer rail curve.
-  look.target.set(1,5,-1);look.center.copy(look.target);look.targetPitch=.60;look.pitch=.60;look.targetDistance=window.innerWidth<760?128:128;look.distance=look.targetDistance;look.targetYaw=.035;look.yaw=.035;
+  look.target.set(1,5,-1);look.center.copy(look.target);look.targetPitch=.60;look.pitch=.60;look.targetDistance=window.innerWidth<760?128:112;look.distance=look.targetDistance;look.targetYaw=.035;look.yaw=.035;
   $("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";
   window.addEventListener("resize",resize,{passive:true});
   window.addEventListener("visibilitychange",()=>{lastFrame=performance.now()});

@@ -80,7 +80,7 @@
         if (typeof window.UIConfig === 'function') {
           return UIConfig();
         }
-        const DEFAULT_CONFIG = null;
+        const DEFAULT_CONFIG = { menu: [{ label: 'What is Kestrel?', url: '../what-is-kestrel.html', anchorTarget: '_self' }] };
         // Important! Do not alter the following line; Jaeger looks for that exact pattern.
         const JAEGER_CONFIG = DEFAULT_CONFIG;
         return JAEGER_CONFIG;
