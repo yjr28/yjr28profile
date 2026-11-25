@@ -1,5 +1,6 @@
 import * as THREE from "./assets/three.module.js";
 import {buildScenery,locations,anchors,routeNodes,buildViaduct,buildWaterSurface,addClouds} from "./wafu-scene.js?v=harbor-3";
+import {addStationPeople,addConductor} from "./wafu-people.js?v=1";
 
 /* THE JAPAN LINE.
    Every part of this world is generated as real 3D geometry, not a flat image.
@@ -16,7 +17,7 @@ const stationData = {
   aster:{number:"3",name:"Aster",place:"京都・庭園 / Kyoto gardens",tagline:"Choose a plan. Know when to abstain.",description:"A PostgreSQL query-plan ranking prototype that scores candidate plans while enforcing uncertainty and decision-margin thresholds. The demo runs its Python ranker inside your browser.",meta:["PostgreSQL","Python","Query planning","Confidence gates"],url:"projects/aster/",source:"https://github.com/yjr28/aster-pg-optimizer",pos:[-7,2,-20],camera:[12,21,16]},
   kestrel:{number:"4",name:"Kestrel",place:"富士山 / The Fuji observatory",tagline:"Find the first divergence, not the loudest symptom.",description:"A Go distributed-systems flight recorder with causal traces and replayable seeded faults. Inject latency and follow the events through a ten-service request using the actual Go core compiled to WebAssembly.",meta:["Go / WebAssembly","Causal traces","Fault injection","Replay"],url:"projects/kestrel/",source:"https://github.com/yjr28/kestrel-replay",pos:[20,2,-22],camera:[34,25,21]},
   studyhub:{number:"5",name:"Waseda Study Hub",place:"早稲田・東京 / Waseda campus",tagline:"Build campus software with a trust boundary.",description:"A student discovery and study-buddy product with verified university sign-in, private conversations, and AI-assisted matching. Explore the authorization and ranking decisions in its case study.",meta:["Next.js","Firebase","Auth / privacy","AI matching"],url:"projects/studyhub/",source:"https://github.com/Waseda-Study-Hub/frontend",pos:[39,2,-2],camera:[29,22,49]},
-  kagi:{number:"6",name:"Kagi",place:"水門 / Water gate",tagline:"A collaborative hackathon project.",description:"Explore Kagi, a project built with a partner, on its official Devpost submission.",meta:["Collaborative project","Hackathon"],url:"projects/kagi/",source:"https://devpost.com/software/kagi",pos:[65,3,27],camera:[65,28,62]}
+  kagi:{number:"6",name:"Kagi",place:"水門 / Water gate",tagline:"The key to your identity.",description:"A physical identity key prototype that answers verification questions without revealing the underlying personal information. Explore the collaborative hackathon submission.",meta:["Hardware key","Identity verification","Privacy"],url:"projects/kagi/",source:"https://devpost.com/software/kagi",pos:[65,3,27],camera:[65,28,62]}
 };
 const LASTRIDE = "https://lastride.jp/en/";
 const clamp = THREE.MathUtils.clamp;
@@ -50,6 +51,15 @@ const staticMeshes={};
 const animated={clock:0,motion:!reduced,lite:false,focused:null,overview:false,sceneReady:false,railHovered:false,ride:false};
 const look={center:V(0,0,0),target:V(0,0,0),yaw:0.14,pitch:0.98,distance:125,targetYaw:0.14,targetPitch:0.98,targetDistance:125};
 const minDistance=20,maxDistance=170;
+// Desktop camera calibrated against the supplied 2048 × 1017 screenshot.
+// Target, yaw and pitch are world-space values; no static render is substituted.
+const HOME_VIEW=Object.freeze({target:[16,-1.5,-8.7],yaw:-.375,pitch:.566,distance:106.25});
+function homeCamera(snap=false){
+ const v=window.innerWidth<760?{target:[12,5,2],yaw:.035,pitch:.60,distance:146}:HOME_VIEW;
+ look.target.set(...v.target);look.targetYaw=v.yaw;look.targetPitch=v.pitch;look.targetDistance=v.distance;
+ if(snap){look.center.copy(look.target);look.yaw=v.yaw;look.pitch=v.pitch;look.distance=v.distance}
+}
+const stationActors=[];
 const pointer={down:false,dragged:false,x:0,y:0,x0:0,y0:0,mode:"orbit"};
 const viewport={width:0,height:0,left:0,top:0};
 const touchPoints=new Map();
@@ -156,6 +166,7 @@ function buildRailway(){
   for(const zz of [-2.2,2.2])cyl(platform,.08,.08,2.1,material.red,-.75,1.05,zz,6);
   box(platform,2.5,.2,5.8,material.roofGreen,-.75,2.12,0);
   lantern(platform,-.83,1.5,.22);
+  if(t===.23)addConductor(platform,stationActors);
  }
 }
 function positionTrain(train){
@@ -204,6 +215,7 @@ function buildWorld(){
  scene.add(sun);
  const fill=new THREE.DirectionalLight(0xc0dfff,1.1);fill.position.set(-45,24,-45);scene.add(fill);
  buildScenery({world,mark,swayers,pulses});
+ addStationPeople(world,locations,stationActors);
  buildRailway();addClouds(scene,clouds);buildPetals();
  waWater=buildWaterSurface(world,scene,renderer,camera);
  scene.fog=new THREE.FogExp2(0xa7cbe2,.0022);
@@ -273,7 +285,7 @@ function focusStation(id){
  // Details and links are available before the camera settles.
 }
 function toggleMap(){
- if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";look.target.set(12,5,2);look.targetYaw=.035;look.targetPitch=.60;look.targetDistance=window.innerWidth<760?146:126;return}
+ if(animated.overview){animated.overview=false;$("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";homeCamera();resize();return}
  resetOverview();
 }
 function bindUI(){
@@ -412,13 +424,15 @@ function resize(){
  const stage={left:margin,top:mobile?70:76,
   width:Math.max(1,viewport.width-2*margin),
   height:Math.max(1,viewport.height-(mobile?195:174))};
+ if(!mobile&&!animated.focused&&!animated.ride){stage.top=viewport.height*.088;stage.height=viewport.height*.799;}
  if(animated.focused&&!mobile){
   stage.left=30;stage.top=100;stage.width=viewport.width-430;
  }else if(animated.ride){
   stage.left=0;stage.top=mobile?94:80;stage.width=viewport.width;stage.height=viewport.height-(mobile?172:150);
  }
  const stageAspect=stage.width/stage.height;
- const stageFov=Math.max(mobile?56:43,THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(56)/2)/stageAspect)));
+ const overviewFov=!mobile&&!animated.focused&&!animated.ride&&!animated.overview?THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(43)/2)*Math.max(1,2.34/stageAspect))):43;
+ const stageFov=Math.max(mobile?56:overviewFov,THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(56)/2)/stageAspect)));
  camera.aspect=viewport.width/viewport.height;
  camera.fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(stageFov)/2)*viewport.height/stage.height));
  camera.setViewOffset(viewport.width,viewport.height,viewport.width/2-stage.left-stage.width/2,viewport.height/2-stage.top-stage.height/2,viewport.width,viewport.height);
@@ -458,6 +472,7 @@ function animateWorld(dt,now){
    dots.instanceMatrix.needsUpdate=true;
   }
   for(const c of clouds){c.g.position.x+=dt*c.speed*c.direction;if(c.g.position.x>125)c.g.position.x=-125;if(c.g.position.x< -125)c.g.position.x=125}
+  for(const actor of stationActors)actor.update(t);
   for(const s of swayers){s.g.rotation.z=Math.sin(t*.8+s.phase)*s.scale;s.g.rotation.x=Math.cos(t*.55+s.phase)*s.scale*.5}
   for(const p of pulses){
    if(p.kind==="rotate")p.object.rotation.y+=dt*p.speed;
@@ -571,14 +586,14 @@ function startWorld(){
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
   renderer.setClearColor(0x000000,0);
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,window.innerWidth<760?1.5:2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,window.innerWidth<760?1.5:2.5));
   raycaster=new THREE.Raycaster();
   buildWorld();
   resize();bindUI();
   resetOverview({animate:false});
   animated.overview=false;
   // Center the complete diorama, including Fuji and the outer rail curve.
-  look.target.set(12,5,2);look.center.copy(look.target);look.targetPitch=.60;look.pitch=.60;look.targetDistance=window.innerWidth<760?146:126;look.distance=look.targetDistance;look.targetYaw=.035;look.yaw=.035;
+  homeCamera(true);resize();
   $("overview-toggle").setAttribute("aria-pressed","false");$("overview-label").textContent="Map view";
   window.addEventListener("resize",resize,{passive:true});
   window.addEventListener("visibilitychange",()=>{lastFrame=performance.now()});

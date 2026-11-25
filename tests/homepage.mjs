@@ -12,7 +12,7 @@ const errors = [];
 const instrumentation = `
 // Test-only inspection, appended by Playwright's route handler; never shipped to visitors.
 window.__japanTest = {
- snapshot(){return {camera:camera.position.toArray(),yaw:look.targetYaw,distance:look.targetDistance,motion:animated.motion,ride:animated.ride,
+ snapshot(){return {camera:camera.position.toArray(),yaw:look.targetYaw,pitch:look.targetPitch,target:look.target.toArray(),distance:look.targetDistance,actors:stationActors.map(a=>({id:a.id,pose:a.figure.children[0].rotation.x})),motion:animated.motion,ride:animated.ride,
   trains:trains.map((t,i)=>{const p=t.cars[0].localToWorld(V(0,2.1,0));const ndc=p.clone().project(camera);const r=trainLabels[i].getBoundingClientRect();return {
    world:p.toArray(),x:(ndc.x*.5+.5)*viewport.width,y:(-ndc.y*.5+.5)*viewport.height,
    visible:getComputedStyle(trainLabels[i]).visibility==='visible',left:r.left,right:r.right,top:r.top,bottom:r.bottom,
@@ -85,6 +85,9 @@ try {
   assert.deepEqual(await page.locator('.marker-emblem').allTextContents(),['✦','⚙','❀','富','学','鍵']);
   if(!mobile){assert.equal(await page.locator('.world-marker:visible').count(),6,'all six permanent project signs visible');assert.equal(await page.locator('.train-label:visible').count(),2,'both LastRide signs visible');}
   if(!mobile)assert.deepEqual(await page.evaluate(()=>window.__japanTest.testRouteCoverage()),[],'Train signs maintain an exact roof anchor and 12px gap across 128 railway phases');
+  const initial=await page.evaluate(()=>window.__japanTest.snapshot());
+  assert.equal(initial.actors.length,8,'all seven project vignettes are present');
+  if(!mobile){assert.equal(initial.yaw,-.375);assert.equal(initial.pitch,.566);assert.equal(initial.distance,106.25);assert.deepEqual(initial.target,[16,-1.5,-8.7]);}
   await checkLayout(page,name+' initial');
   await screenshot(page,name);
   let first;
@@ -98,6 +101,7 @@ try {
   }
   const moved=await page.evaluate(()=>window.__japanTest.snapshot());
   first.trains.forEach((t,i)=>assert.notDeepEqual(t.world,moved.trains[i].world));
+  assert.notDeepEqual(first.actors,moved.actors,'miniature gestures animate');
   record(name+' both trains and their projected labels move together');
   await page.evaluate(()=>window.__japanTest.freeze());
   await page.waitForTimeout(100);
