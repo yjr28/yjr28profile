@@ -17,7 +17,7 @@ window.__japanTest = {
    world:p.toArray(),x:(ndc.x*.5+.5)*viewport.width,y:(-ndc.y*.5+.5)*viewport.height,
    visible:getComputedStyle(trainLabels[i]).visibility==='visible',left:r.left,right:r.right,top:r.top,bottom:r.bottom,
    leader:parseFloat(trainLabels[i].style.getPropertyValue('--leader')),stemX:parseFloat(trainLabels[i].style.getPropertyValue('--stem-x')),stemY:parseFloat(trainLabels[i].style.getPropertyValue('--stem-y')),angle:parseFloat(trainLabels[i].style.getPropertyValue('--stem-angle'))};})};},
- testRouteCoverage(){const old=trains.map(t=>t.start);const failures=[];try{for(let i=0;i<32;i++){trains.forEach((t,k)=>{t.start=(old[k]+i/32)%1;positionTrain(t)});updateMarkers();const missing=[...markerButtons,...trainLabels].filter(l=>getComputedStyle(l).visibility!=='visible').map(l=>l.dataset.station||'LastRide');if(missing.length)failures.push({phase:i,missing})}return failures}finally{trains.forEach((t,k)=>{t.start=old[k];positionTrain(t)});updateMarkers()}},
+ testRouteCoverage(){const old=trains.map(t=>t.start);const failures=[];try{for(let i=0;i<128;i++){trains.forEach((t,k)=>{t.start=(old[k]+i/128)%1;positionTrain(t)});updateMarkers();trains.forEach((t,k)=>{const point=projectAnchor(t.cars[0].localToWorld(V(0,2.1,0))),label=trainLabels[k],size=labelSizes.get(label),visible=getComputedStyle(label).visibility==='visible';if(visible!==!!(point&&size)){failures.push({phase:i,train:k,reason:'unexpected visibility'});return}if(!visible)return;const x=parseFloat(label.style.left)+size.width/2,y=parseFloat(label.style.top)+size.height;if(Math.abs(x-point.x)>.05||Math.abs(y+12-point.y)>.05||parseFloat(label.style.getPropertyValue('--leader'))!==12||parseFloat(label.style.getPropertyValue('--stem-angle'))!==0)failures.push({phase:i,train:k,reason:'anchor moved independently'})});}return failures}finally{trains.forEach((t,k)=>{t.start=old[k];positionTrain(t)});updateMarkers()}},
  freeze(){animated.motion=false;},
  sampleRoute(t){const p=railwayCurve.getPointAt(t).project(camera);return {x:(p.x*.5+.5)*viewport.width,y:(-p.y*.5+.5)*viewport.height};},
  hit(x,y){return rayHit({clientX:x,clientY:y});},
@@ -38,7 +38,7 @@ async function geometry(page) {
  return page.evaluate(() => {
   const visible = el => getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none';
   const rect = el => { const r = el.getBoundingClientRect(); return { name:el.className, left:r.left, right:r.right, top:r.top, bottom:r.bottom }; };
-  const labels = [...document.querySelectorAll('.world-marker,.train-label')].filter(visible).map(rect);
+  const labels = [...document.querySelectorAll('.world-marker')].filter(visible).map(rect); // Moving train signs deliberately may pass in front of station signs.
   const controls = [...document.querySelectorAll('.global-nav,.world-intro,.tiny-footer,.project-info.visible')].filter(visible).map(rect);
   const overlap = (a,b) => a.left < b.right-1 && a.right > b.left+1 && a.top < b.bottom-1 && a.bottom > b.top+1;
   return { overflow:document.documentElement.scrollWidth > innerWidth,
@@ -84,14 +84,14 @@ try {
   assert.equal(await page.locator('.world-marker[href]').count(),6);
   assert.deepEqual(await page.locator('.marker-emblem').allTextContents(),['✦','⚙','❀','富','学','鍵']);
   if(!mobile){assert.equal(await page.locator('.world-marker:visible').count(),6,'all six permanent project signs visible');assert.equal(await page.locator('.train-label:visible').count(),2,'both LastRide signs visible');}
-  if(!mobile)assert.deepEqual(await page.evaluate(()=>window.__japanTest.testRouteCoverage()),[],'All eight signs remain visible across 32 sampled railway phases');
+  if(!mobile)assert.deepEqual(await page.evaluate(()=>window.__japanTest.testRouteCoverage()),[],'Train signs maintain an exact roof anchor and 12px gap across 128 railway phases');
   await checkLayout(page,name+' initial');
   await screenshot(page,name);
   let first;
   for(let i=0;i<8;i++){
    const snap=await page.evaluate(()=>window.__japanTest.snapshot());
    if(!first) first=snap;
-   snap.trains.forEach(t=>{if(t.visible){assert.ok(Math.abs(t.left+t.stemX-Math.sin(t.angle)*t.leader-t.x)<.6,'leader follows actual carriage x');assert.ok(Math.abs(t.top+t.stemY+Math.cos(t.angle)*t.leader-t.y)<.6,'leader ends at actual roof y');}});
+   snap.trains.forEach(t=>{if(t.visible){assert.ok(Math.abs((t.left+t.right)/2-t.x)<.6,'sign stays centered on actual carriage');assert.ok(Math.abs(t.bottom+12-t.y)<.6,'fixed 12px gap above train roof');assert.equal(t.leader,12);assert.equal(t.angle,0);}});
    if(!mobile){assert.equal(await page.locator('.world-marker:visible').count(),6,'station signs stay visible');assert.equal(await page.locator('.train-label:visible').count(),2,'moving train signs stay visible');}
    await checkLayout(page,name+' tracking '+i);
    await page.waitForTimeout(180);

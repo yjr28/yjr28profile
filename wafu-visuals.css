@@ -86,3 +86,6 @@
 .marker-text small,.train-destination small{font-size:clamp(7px,.62vw,10px)}
 .world-marker::after,.train-label::after{top:var(--stem-y,100%);left:var(--stem-x,50%);height:var(--leader,12px);transform:rotate(var(--stem-angle,0rad));transform-origin:top center;pointer-events:none}
 @media(max-width:760px){.world-marker,.world-marker:hover,.world-marker[aria-pressed=true]{width:98px;height:44px}.train-label,.train-label:hover,.train-label-green,.train-label-green:hover{width:104px;height:47px}.marker-text,.train-destination{font-size:13px}}
+
+/* A LastRide sign has no independent position animation. */
+.train-label,.train-label:hover,.train-label-green,.train-label-green:hover{transition:none!important}

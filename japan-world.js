@@ -536,6 +536,24 @@ function placeLabel(label,point,occupied,lifts,slide=false){
   occupied.push(placed);
  }
 }
+// Train banners are rigidly anchored to the leading carriage's projected roof.
+ // No collision avoidance, clamping, interpolation or independent animation:
+ // their only movement comes from the train and camera, at a fixed screen gap.
+function placeTrainLabel(label,point){
+ const size=labelSizes.get(label);
+ const visible=!!(point&&size);
+ label.classList.toggle("marker-hidden",!visible);
+ label.style.visibility=visible?"visible":"hidden";
+ if(!visible)return;
+ const gap=12;
+ label.style.left=(point.x-size.width/2)+"px";
+ label.style.top=(point.y-size.height-gap)+"px";
+ label.style.transform="none";
+ label.style.setProperty("--stem-x",size.width/2+"px");
+ label.style.setProperty("--stem-y",size.height+"px");
+ label.style.setProperty("--leader",gap+"px");
+ label.style.setProperty("--stem-angle","0rad");
+}
 function updateMarkers(){
  const appBounds=app.getBoundingClientRect();
  const occupied=Array.from(document.querySelectorAll(overlaySelectors.join(",")))
@@ -543,7 +561,7 @@ function updateMarkers(){
   .map(el=>{const r=el.getBoundingClientRect();return {left:r.left-appBounds.left,right:r.right-appBounds.left,top:r.top-appBounds.top,bottom:r.bottom-appBounds.top}});
  const ordered=[...markerButtons].sort((a,b)=>Number(b.dataset.station==="studyhub")-Number(a.dataset.station==="studyhub"));
  for(const marker of ordered)placeLabel(marker,projectAnchor(V(...anchors[marker.dataset.station])),occupied,[9,25,43,62,82,110,140,175,210],true);
- trains.forEach((train,i)=>{const roof=train.cars[0].localToWorld(V(0,2.1,0));placeLabel(trainLabels[i],projectAnchor(roof),occupied,[9,25,45,65,90,120,160],true)});
+ trains.forEach((train,i)=>{const roof=train.cars[0].localToWorld(V(0,2.1,0));placeTrainLabel(trainLabels[i],projectAnchor(roof))});
 }
 
 function startWorld(){
