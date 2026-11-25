@@ -58,14 +58,14 @@
           setTimeout(function () {
             var root = document.getElementById('jaeger-ui-root');
             if (root && !root.hasChildNodes()) {
-              root.textContent = 'Jaeger UI did not load. Unknown or invalid path: ' + path;
+              root.textContent = 'Kestrel did not load. Unknown or invalid path: ' + path;
             }
           }, 3000);
         });
       })();
     </script>
     <link rel="shortcut icon" href="./static/favicon-BxcVf0am.ico" />
-    <title>Jaeger UI</title>
+    <title>Kestrel</title>
     <script>
       // Jaeger UI config data is embedded by Jaeger backend via search-replace.
       // Please see ./README.md#configuration for details.
@@ -129,5 +129,6 @@
   <body>
     <div id="jaeger-ui-root"></div>
   <script src="../jaeger-bridge.js"></script>
+  <script src="../kestrel-branding.js"></script>
 </body>
 </html>
