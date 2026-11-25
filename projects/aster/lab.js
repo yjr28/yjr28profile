@@ -30,6 +30,11 @@ let runtimeReady=false;
 
 function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderCandidates(rows){
+  if(table.tagName==="TBODY"){
+    table.innerHTML=rows.map((p,i)=>'<tr class="a-candidate border-b hover:bg-muted/50" data-slot="table-row" data-row="'+i+'"><td data-slot="table-cell" class="a-candidate-name"><b>'+escapeHTML(p.name)+'</b><span>candidate '+(i+1)+'</span></td>'+[["PG cost","postgres_cost"],["Rows","estimated_rows"],["Seq scans","seq_scans"],["Nested loops","nested_loops"],["Uncertainty","uncertainty"]].map(([label,key])=>'<td data-slot="table-cell"><input aria-label="'+p.name+' '+label+'" data-key="'+key+'" type="number" min="0" '+(key==="uncertainty"?'max="1" step=".01"':'step="1"')+' value="'+p[key]+'"></td>').join("")+'<td data-slot="table-cell" class="a-score" data-score>—</td></tr>').join("");
+    return;
+  }
+
   table.innerHTML=rows.map((p,i)=>`
     <div class="a-candidate" data-row="${i}">
       <div class="a-candidate-name"><b>${escapeHTML(p.name)}</b><span>candidate ${i+1}</span></div>
@@ -107,6 +112,7 @@ json.dumps({
 }
 
 function renderScoreComparison(result){
+  window.dispatchEvent(new CustomEvent('aster-result',{detail:result}));
   const scoreRoot=document.getElementById("scoreComparison");
   const max=Math.max(.0001,...result.ranking.map(row=>row.score));
   scoreRoot.innerHTML=result.ranking.map(row=>{
@@ -164,6 +170,7 @@ async function runAster(){
     document.getElementById("uncertaintyValue").textContent=payload.max_uncertainty.toFixed(2);
     consoleEl.textContent=result.ranking.map((r,i)=>(i+1)+". "+r.name.padEnd(18)+" score="+r.score.toFixed(4)+" uncertainty="+r.uncertainty.toFixed(2)).join("\n")+"\n\nselected_plan="+result.selected_plan+"\nfallback="+result.fallback+"\nreason="+result.reason;
   }catch(err){
+    window.dispatchEvent(new CustomEvent('aster-result',{detail:null}));
     document.getElementById("decisionStatus").textContent="Invalid input";
     document.getElementById("decisionStatus").className="pl-small-status is-error";
     document.getElementById("decisionTitle").textContent="Unable to compare plans";
@@ -177,6 +184,7 @@ async function runAster(){
 }
 
 function markDirty(){
+  window.dispatchEvent(new CustomEvent('aster-result',{detail:null}));
   document.getElementById("decisionStatus").textContent="Inputs changed";
   document.getElementById("decisionStatus").className="pl-small-status";
   document.getElementById("decisionTitle").textContent="Result is out of date";
@@ -198,8 +206,8 @@ renderCandidates(presets.clear);
 
 (async()=>{
   try{
-    pyodide=await loadPyodide({indexURL:"https://cdn.jsdelivr.net/pyodide/v314.0.7/full/"});
-    const sourceResponse=await fetch("https://cdn.jsdelivr.net/gh/yjr28/aster-pg-optimizer@main/aster_ranker.py",{cache:"no-store"});
+    pyodide=await loadPyodide({indexURL:document.body.dataset.asterUi?"https://cdn.jsdelivr.net/pyodide/v0.27.7/full/":"https://cdn.jsdelivr.net/pyodide/v314.0.7/full/"});
+    const sourceResponse=await fetch(document.body.dataset.asterUi?"./aster_ranker.py":"https://cdn.jsdelivr.net/gh/yjr28/aster-pg-optimizer@main/aster_ranker.py",{cache:"no-store"});
     if(!sourceResponse.ok)throw new Error("Could not load aster_ranker.py");
     const source=await sourceResponse.text();
     pyodide.runPython(source);
